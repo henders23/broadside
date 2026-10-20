@@ -282,6 +282,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
         <button class="mbtn" type="button" data-page="diff">Enemy captain <small id="mv-diff"></small></button>
         <button class="mbtn" type="button" data-page="gfx">Graphics <small id="mv-gfx"></small></button>
         <button class="mbtn" type="button" data-page="controls">Controls</button>
+        <button class="mbtn" type="button" id="music1" aria-pressed="true">Music <small id="mv-music">On</small></button>
         <button class="mbtn" type="button" id="fs">Full screen</button>
       </nav>
     </div>
@@ -340,7 +341,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
           <div><kbd>T</kbd> torpedo · <kbd>B</kbd> batteries free</div>
           <div><kbd>Drag</kbd> orbit · <kbd>Wheel</kbd> zoom</div>
           <div><kbd>C</kbd> look at enemy · <kbd>Tab</kbd> plot</div>
-          <div><kbd>P</kbd> pause · <kbd>M</kbd> mute · <kbd>G</kbd> graphics</div>
+          <div><kbd>P</kbd> pause · <kbd>G</kbd> graphics</div>
+          <div><kbd>M</kbd> sound effects on/off · <kbd>N</kbd> music on/off</div>
         </div>
         <p class="hint">Needs a keyboard. Shells take seconds to arrive and turrets aim where the enemy will be if it holds course, so changing course spoils their aim and yours. Torpedoes are weak against shields and strong against bare hull; the lance is the reverse.</p>
       </div>
@@ -352,6 +354,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div class="btnrow">
       <button class="btn" type="button" id="resume">Resume</button>
       <button class="btn ghost" type="button" id="quit">Leave the bridge</button>
+      <button class="btn ghost" type="button" id="music2" aria-pressed="true">Music: on</button>
       <button class="btn ghost" type="button" id="fs2">Full screen</button>
     </div>
     <div class="diff" role="group" aria-label="Graphics while paused">
@@ -880,6 +883,43 @@ const Sfx = {
     }
   }
 };
+// ---------------- music ----------------
+// two looping tracks streamed by <audio> elements; tick() fades toward whichever one is wanted
+const Music = {
+  on: true, want: null, tracks: {}, blocked: false,
+  TRACKS: { title: { url: 'music/weightless-descent.mp3', vol: 0.5 }, battle: { url: 'music/untitled.mp3', vol: 0.3 } },
+  init() {
+    try { this.on = localStorage.getItem('broadside-music') !== 'off'; } catch (e) {}
+    for (const k in this.TRACKS) { const a = new Audio(this.TRACKS[k].url); a.loop = true; a.preload = 'auto'; a.volume = 0; this.tracks[k] = a; }
+    // browsers only allow audio once the player has clicked or pressed a key, so retry inside that gesture
+    const unlock = () => { this.blocked = false; this.start(); };
+    window.addEventListener('pointerdown', unlock, true); window.addEventListener('keydown', unlock, true);
+    musicLabels();
+  },
+  play(k, restart) { const a = this.tracks[k]; if (restart && a && a.paused) a.currentTime = 0; this.want = k; },
+  start() {
+    const a = this.tracks[this.want];
+    if (!this.on || !a || !a.paused || this.blocked || a._starting) return;
+    a._starting = true;
+    a.play().then(() => { a._starting = false; }, () => { a._starting = false; this.blocked = true; });
+  },
+  toggle() { this.on = !this.on; try { localStorage.setItem('broadside-music', this.on ? 'on' : 'off'); } catch (e) {} musicLabels(); this.start(); return this.on; },
+  tick(dt) {
+    this.start();
+    for (const k in this.tracks) {
+      const a = this.tracks[k], target = this.on && this.want === k ? this.TRACKS[k].vol * (state === 'paused' ? 0.4 : 1) : 0;
+      a.volume = a.paused ? 0 : clamp(a.volume + clamp(target - a.volume, -dt * 0.4, dt * 0.4), 0, 1);   // a held-back track fades in once it starts
+      if (target === 0 && a.volume === 0 && !a.paused) a.pause();
+    }
+  }
+};
+function musicLabels() {
+  $('mv-music').textContent = Music.on ? 'On' : 'Off'; $('music2').textContent = 'Music: ' + (Music.on ? 'on' : 'off');
+  for (const id of ['music1', 'music2']) $(id).setAttribute('aria-pressed', String(Music.on));
+}
+function toggleMusic() { const on = Music.toggle(); if (state === 'playing' || state === 'paused') showMsg(on ? 'Music on' : 'Music off', 1.2); }
+$('music1').addEventListener('click', toggleMusic); $('music2').addEventListener('click', toggleMusic);
+
 function volAt(p) { const d = camera.position.distanceTo(p); return clamp(1 - d / 6000, 0, 1) ** 1.6; }
 
 // ---------------- model loading ----------------
@@ -1107,7 +1147,7 @@ function clearWorld() {
   fire.clear(); smoke.clear();
 }
 function startGame() {
-  Sfx.init();
+  Sfx.init(); Music.play('battle', true);
   clearWorld(); display.visible = false;
   const pk = choice.ship, others = Object.keys(CLASSES).filter(k => k !== pk), ek = others[Math.floor(Math.random() * others.length)];
   player = makeShip(pk, 'p'); enemy = makeShip(ek, 'e');
@@ -1143,7 +1183,7 @@ function showOver() {
   $('hud').hidden = true; $('over').hidden = false; Sfx.engine(0, false);
 }
 function toMenu(page = 'main') {
-  state = 'menu'; game = null; clearWorld(); player = enemy = null;
+  state = 'menu'; game = null; clearWorld(); player = enemy = null; Music.play('title');
   display.visible = true; updateDisplay();
   $('hud').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('menu').hidden = false;
   showPage(page);
@@ -1621,6 +1661,7 @@ window.addEventListener('keydown', e => {
   if (k === 'KeyC') cam.mode = cam.mode === 'chase' ? 'target' : 'chase';
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
   if (k === 'KeyM') Sfx.toggle();
+  if (k === 'KeyN') toggleMusic();
   const P = player; if (!P.alive) return;
   if (k === 'KeyW') P.step = Math.min(4, P.step + 1);
   if (k === 'KeyS') P.step = Math.max(0, P.step - 1);
@@ -2026,7 +2067,7 @@ function trackFrame(ms) {
 async function boot() {
   resize(); window.addEventListener('resize', resize);
   setQuality(gfx.q); $('fps').hidden = !gfx.fps;
-  prefetchSfx();
+  prefetchSfx(); Music.init(); Music.play('title');
   requestAnimationFrame(frame);
   try {
     const Cs = Object.values(CLASSES);
@@ -2057,11 +2098,11 @@ function frame(now) {
   if (player && state === 'playing') Sfx.engine(STEPS[player.step], player.alive);
   drawShells();
   if (!(state === 'loading' || (state === 'menu' && menuPage !== 'ship'))) composer.render();
-  updateHud(dt); hudFast(dt);
+  updateHud(dt); hudFast(dt); Music.tick(Math.min(ms / 1000, 0.1));
 }
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
-  get state() { return state; }, get game() { return game; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, choice, DIFF,
+  get state() { return state; }, get game() { return game; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, choice, DIFF, Music,
   start: startGame, setPips, fireGroup, inArc, Sfx,
   step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } }
 };

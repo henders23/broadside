@@ -34,7 +34,7 @@ python3 -m http.server 8000
 | B | Batteries free: guns fire automatically when loaded and in arc |
 | Drag / wheel | Orbit / zoom the camera · C looks toward the enemy |
 | Tab | Enlarged tactical plot |
-| G | Cycle graphics quality · P pause · M mute |
+| G | Cycle graphics quality · P pause · M sound effects on/off · N music on/off |
 
 ## Performance
 
@@ -52,9 +52,10 @@ The title screen's **Graphics** page has Low / Medium / High presets, an optiona
 ```
 index.html      the whole game (three.js 0.169 from jsDelivr via an import map)
 img/            title screen art
+music/          title and battle music (.mp3, looped)
 models/         ship models (.glb, meshopt-compressed, textures as WebP)
 sfx/            sound effects (.mp3)
-vercel.json     cache headers for art, models and sounds
+vercel.json     cache headers for art, models, music and sounds
 ```
 
 ## Deploying to Vercel
@@ -64,5 +65,5 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 ## Assets
 
 - Ship models were generated with Tripo, then simplified to about 65k triangles each and compressed for the web (meshopt geometry, 1024 px WebP textures) with glTF Transform.
-- The title screen art was supplied by the project owner.
+- The title screen art and both music tracks ("Weightless Descent" on the title screen, "Untitled" in battle) were supplied by the project owner. The music was re-encoded at 128 kbps.
 - Sound effects come from a sci-fi weapon sound pack supplied by the project owner. The original file names credit universfield, rescopicsound, magiazzz, soundreality and freesound_community; check those creators' licence terms before publishing the game widely.

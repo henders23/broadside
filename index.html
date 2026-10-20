@@ -131,13 +131,42 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .title{font-family:var(--f-display);font-weight:800;text-transform:uppercase;line-height:.85;font-size:clamp(56px,min(10vw,15vh),148px);letter-spacing:.01em;margin:0}
 .title span{color:transparent;-webkit-text-stroke:2px var(--hud)}
 .tag{font-size:13px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin:0;max-width:62ch;line-height:1.6}
-.ships{display:flex;flex-wrap:wrap;gap:14px;max-width:800px}
-.ship{flex:1 1 320px;min-width:0;max-width:390px;text-align:left;background:var(--panel);border:1px solid var(--line);padding:16px 18px;cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,background .15s}
+.shipsel{display:flex;flex-direction:column;gap:10px;max-width:800px}
+/* menu: title box and a short list of buttons over the title art; each button opens a page */
+#menu,#loading{align-items:center;text-align:center}
+.screen.bgimg{background:linear-gradient(180deg,rgba(4,6,11,.3),rgba(4,6,11,.1) 45%,rgba(4,6,11,.75)),url(img/title.webp) center/cover no-repeat,var(--ink)}
+#menu.left{align-items:flex-start}
+.mpage{display:flex;flex-direction:column;align-items:center;gap:22px;width:100%;margin-block:auto}
+#menu.left .mpage{align-items:flex-start}
+.titlebox{background:#000;border:1px solid var(--line);padding:clamp(18px,3vw,30px) clamp(20px,4vw,48px);display:flex;flex-direction:column;align-items:center;gap:14px;max-width:100%;box-shadow:0 24px 70px rgba(0,0,0,.65)}
+.titlebox .tag{text-align:center;max-width:54ch;font-size:12px}
+.mlist{display:flex;flex-direction:column;gap:8px;width:min(380px,100%)}
+.mbtn{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:50px;padding:0 18px;background:rgba(0,0,0,.84);border:1px solid var(--line);color:var(--text);font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-align:left}
+.mbtn small{font-family:var(--f-mono);font-size:11px;font-weight:400;letter-spacing:.14em;color:var(--hud)}
+.mbtn:hover,.mbtn:focus-visible{border-color:var(--hud);background:rgba(30,23,10,.92);outline:none}
+.mbtn.primary{justify-content:center;border-color:var(--hud);color:var(--hud-hi);background:rgba(44,31,9,.92)}
+.mpanel{background:rgba(0,0,0,.86);border:1px solid var(--line);padding:18px 22px 22px;display:flex;flex-direction:column;gap:16px;width:min(840px,100%);text-align:left}
+.mhead{display:flex;align-items:center;gap:16px}
+.mhead h2{margin:0;font-family:var(--f-display);font-weight:800;font-size:32px;line-height:1;text-transform:uppercase;letter-spacing:.04em}
+.back{min-height:40px;padding:0 14px;border:1px solid var(--line);background:transparent;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;font-size:12px;cursor:pointer;flex:none}
+.back:hover,.back:focus-visible{border-color:var(--hud);color:var(--hud-hi);outline:none}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;flex-direction:column;gap:4px;text-align:left;padding:12px 16px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:12px;line-height:1.5;cursor:pointer}
+.opt b{font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:.1em;text-transform:uppercase;color:var(--text)}
+.opt:hover,.opt:focus-visible{border-color:rgba(255,183,77,.7);outline:none}
+.opt[aria-pressed="true"]{border-color:var(--hud);background:rgba(30,23,10,.82)}
+.opt[aria-pressed="true"] b{color:var(--hud-hi)}
+.chks{display:flex;flex-wrap:wrap;gap:4px 18px}
+.chks .chk{margin-left:0}
+.ships{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ship{min-width:0;text-align:left;background:var(--panel);border:1px solid var(--line);padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:border-color .15s,background .15s;color:var(--text)}
 .ship:hover,.ship:focus-visible{border-color:rgba(255,183,77,.7);outline:none}
 .ship[aria-pressed="true"]{border-color:var(--hud);background:rgba(30,23,10,.82)}
-.ship .eb{font-size:10px;letter-spacing:.2em;color:var(--hud);text-transform:uppercase}
-.ship h2{margin:0;font-family:var(--f-display);font-weight:800;font-size:36px;line-height:1;text-transform:uppercase;letter-spacing:.03em}
-.ship p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+.ship .eb,.shipinfo .eb{font-size:10px;letter-spacing:.2em;color:var(--hud);text-transform:uppercase}
+.ship h2{margin:0;font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;text-transform:uppercase;letter-spacing:.03em;overflow-wrap:anywhere}
+.shipinfo{background:var(--panel);border:1px solid var(--line);padding:14px 18px;display:flex;flex-direction:column;gap:8px}
+.shipinfo p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+@media (max-width:620px){.ships{grid-template-columns:repeat(2,minmax(0,1fr))}.ship h2{font-size:22px}.mhead h2{font-size:26px}}
 .spec{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:2px}
 .spec div{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);padding-top:5px;min-width:0}
 .spec small{font-size:9px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
@@ -241,55 +270,83 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
   </div>
 
   <div id="fps" hidden></div>
-  <section class="screen" id="menu" hidden>
-    <h1 class="title">Broad<span>side</span></h1>
-    <p class="tag">A capital ship duel. Turn your strongest shield into the fire, keep the enemy inside your firing arcs, and spend reactor power where the fight needs it.</p>
-    <div class="ships" role="group" aria-label="Choose your ship">
-      <button class="ship" type="button" id="pick-bastion" aria-pressed="true">
-        <span class="eb">Heavy battleship · 294 m</span>
-        <h2>Bastion</h2>
-        <p>Slow and wide. Six-gun broadsides on each beam and dorsal turrets that cover almost every bearing. Thick shields, wide turning circle.</p>
-        <div class="spec"><div><small>Hull</small><b>3000</b></div><div><small>Shields</small><b>4×620</b></div><div><small>Top m/s</small><b>42</b></div><div><small>Turn</small><b>5.5°/s</b></div></div>
-        <div class="arm">2 × 6-turret broadside (18 shells a salvo) · 2 dorsal turrets · 4 torpedo tubes, 8 torpedoes</div>
-      </button>
-      <button class="ship" type="button" id="pick-halberd" aria-pressed="false">
-        <span class="eb">Lance cruiser · 260 m</span>
-        <h2>Halberd</h2>
-        <p>Narrow and quick on the helm. Built around a spinal lance that only fires dead ahead, so you aim it by pointing the whole ship. Lighter broadsides.</p>
-        <div class="spec"><div><small>Hull</small><b>2500</b></div><div><small>Shields</small><b>4×520</b></div><div><small>Top m/s</small><b>58</b></div><div><small>Turn</small><b>9°/s</b></div></div>
-        <div class="arm">Spinal lance · 2 × 4-turret broadside (16 shells a salvo) · 2 torpedo tubes, 6 torpedoes</div>
-      </button>
+  <section class="screen bgimg" id="menu" hidden>
+    <div class="mpage" id="m-main">
+      <div class="titlebox">
+        <h1 class="title">Broad<span>side</span></h1>
+        <p class="tag">A capital ship duel. Turn your strongest shield into the fire, keep the enemy inside your firing arcs, and spend reactor power where the fight needs it.</p>
+      </div>
+      <nav class="mlist" aria-label="Main menu">
+        <button class="mbtn primary go" type="button">Take command</button>
+        <button class="mbtn" type="button" data-page="ship">Select ship <small id="mv-ship"></small></button>
+        <button class="mbtn" type="button" data-page="diff">Enemy captain <small id="mv-diff"></small></button>
+        <button class="mbtn" type="button" data-page="gfx">Graphics <small id="mv-gfx"></small></button>
+        <button class="mbtn" type="button" data-page="controls">Controls</button>
+        <button class="mbtn" type="button" id="music1" aria-pressed="true">Music <small id="mv-music">On</small></button>
+        <button class="mbtn" type="button" id="fs">Full screen</button>
+      </nav>
     </div>
-    <div class="diff" role="group" aria-label="Enemy captain">
-      <span class="sec">Enemy captain</span>
-      <button type="button" data-d="commander" aria-pressed="false">Commander</button>
-      <button type="button" data-d="captain" aria-pressed="true">Captain</button>
-      <button type="button" data-d="admiral" aria-pressed="false">Admiral</button>
+
+    <div class="mpage" id="m-ship" hidden>
+      <div class="mpanel">
+        <div class="mhead"><button class="back" type="button">◂ Back</button><h2>Select ship</h2></div>
+        <div class="shipsel">
+          <div class="ships" role="group" aria-label="Choose your ship" id="ships"></div>
+          <div class="shipinfo" id="shipinfo" aria-live="polite"></div>
+        </div>
+        <div class="btnrow"><button class="btn go" type="button">Take command</button><span class="hint">The enemy flies one of the other three ships.</span></div>
+      </div>
     </div>
-    <div class="diff" role="group" aria-label="Graphics">
-      <span class="sec">Graphics</span>
-      <button type="button" data-q="low" aria-pressed="false">Low</button>
-      <button type="button" data-q="medium" aria-pressed="true">Medium</button>
-      <button type="button" data-q="high" aria-pressed="false">High</button>
-      <label class="chk" for="opt-fps"><input type="checkbox" id="opt-fps"> Show frame rate</label>
-      <label class="chk" for="opt-auto"><input type="checkbox" id="opt-auto" checked> Lower resolution if it struggles</label>
+
+    <div class="mpage" id="m-diff" hidden>
+      <div class="mpanel">
+        <div class="mhead"><button class="back" type="button">◂ Back</button><h2>Enemy captain</h2></div>
+        <div class="opts" role="group" aria-label="Enemy captain">
+          <button class="opt" type="button" data-d="commander" aria-pressed="false"><b>Commander</b><span>Slow to react and loose with its gunnery. Often leaves the wrong shield reinforced. A good first fight.</span></button>
+          <button class="opt" type="button" data-d="captain" aria-pressed="true"><b>Captain</b><span>Turns its shields toward your fire and keeps its guns on you. The standard fight.</span></button>
+          <button class="opt" type="button" data-d="admiral" aria-pressed="false"><b>Admiral</b><span>Reacts in under a second, lays its guns tightly and launches torpedoes the moment one of your shields drops.</span></button>
+        </div>
+      </div>
     </div>
-    <div class="btnrow"><button class="btn" type="button" id="go">Take command</button><button class="btn ghost" type="button" id="fs">Full screen</button><span class="hint">The enemy flies the other ship.</span></div>
-    <div class="controls" aria-label="Controls">
-      <div><kbd>W</kbd><kbd>S</kbd> engine telegraph</div>
-      <div><kbd>A</kbd><kbd>D</kbd> rudder (stays set) · <kbd>X</kbd> centre</div>
-      <div><kbd>R</kbd><kbd>F</kbd> climb / dive</div>
-      <div><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> reinforce a shield facing</div>
-      <div><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> power to engines, shields, weapons</div>
-      <div><kbd>4</kbd> even power split</div>
-      <div><kbd>Q</kbd> port battery · <kbd>E</kbd> starboard</div>
-      <div><kbd>Space</kbd> lance or dorsal turrets</div>
-      <div><kbd>T</kbd> torpedo · <kbd>B</kbd> batteries free</div>
-      <div><kbd>Drag</kbd> orbit · <kbd>Wheel</kbd> zoom</div>
-      <div><kbd>C</kbd> look at enemy · <kbd>Tab</kbd> plot</div>
-      <div><kbd>P</kbd> pause · <kbd>M</kbd> mute · <kbd>G</kbd> graphics</div>
+
+    <div class="mpage" id="m-gfx" hidden>
+      <div class="mpanel">
+        <div class="mhead"><button class="back" type="button">◂ Back</button><h2>Graphics</h2></div>
+        <div class="diff" role="group" aria-label="Graphics quality">
+          <span class="sec">Quality</span>
+          <button type="button" data-q="low" aria-pressed="false">Low</button>
+          <button type="button" data-q="medium" aria-pressed="true">Medium</button>
+          <button type="button" data-q="high" aria-pressed="false">High</button>
+        </div>
+        <div class="chks">
+          <label class="chk" for="opt-fps"><input type="checkbox" id="opt-fps"> Show frame rate</label>
+          <label class="chk" for="opt-auto"><input type="checkbox" id="opt-auto" checked> Lower resolution if it struggles</label>
+        </div>
+        <p class="hint">Low turns off the glow and halves the sky detail. <kbd>G</kbd> cycles the quality during a battle.</p>
+      </div>
     </div>
-    <p class="hint">Needs a keyboard. Shells take seconds to arrive and turrets aim where the enemy will be if it holds course, so changing course spoils their aim and yours. Torpedoes are weak against shields and strong against bare hull; the lance is the reverse.</p>
+
+    <div class="mpage" id="m-controls" hidden>
+      <div class="mpanel">
+        <div class="mhead"><button class="back" type="button">◂ Back</button><h2>Controls</h2></div>
+        <div class="controls" aria-label="Controls">
+          <div><kbd>W</kbd><kbd>S</kbd> engine telegraph</div>
+          <div><kbd>A</kbd><kbd>D</kbd> rudder (stays set) · <kbd>X</kbd> centre</div>
+          <div><kbd>R</kbd><kbd>F</kbd> climb / dive</div>
+          <div><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> reinforce a shield facing</div>
+          <div><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> power to engines, shields, weapons</div>
+          <div><kbd>4</kbd> even power split</div>
+          <div><kbd>Q</kbd> port battery · <kbd>E</kbd> starboard</div>
+          <div><kbd>Space</kbd> forward weapon (lance, turrets or bow guns)</div>
+          <div><kbd>T</kbd> torpedo · <kbd>B</kbd> batteries free</div>
+          <div><kbd>Drag</kbd> orbit · <kbd>Wheel</kbd> zoom</div>
+          <div><kbd>C</kbd> look at enemy · <kbd>Tab</kbd> plot</div>
+          <div><kbd>P</kbd> pause · <kbd>G</kbd> graphics</div>
+          <div><kbd>M</kbd> sound effects on/off · <kbd>N</kbd> music on/off</div>
+        </div>
+        <p class="hint">Needs a keyboard. Shells take seconds to arrive and turrets aim where the enemy will be if it holds course, so changing course spoils their aim and yours. Torpedoes are weak against shields and strong against bare hull; the lance is the reverse.</p>
+      </div>
+    </div>
   </section>
 
   <section class="screen" id="pause" hidden>
@@ -297,6 +354,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div class="btnrow">
       <button class="btn" type="button" id="resume">Resume</button>
       <button class="btn ghost" type="button" id="quit">Leave the bridge</button>
+      <button class="btn ghost" type="button" id="music2" aria-pressed="true">Music: on</button>
       <button class="btn ghost" type="button" id="fs2">Full screen</button>
     </div>
     <div class="diff" role="group" aria-label="Graphics while paused">
@@ -306,7 +364,6 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
       <button type="button" data-q="high" aria-pressed="false">High</button>
     </div>
   </section>
-
   <section class="screen" id="over" hidden>
     <h2 class="bigword" id="over-word">Victory</h2>
     <p class="tag" id="over-sub"></p>
@@ -317,10 +374,14 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     </div>
   </section>
 
-  <section class="screen" id="loading">
-    <h1 class="title">Broad<span>side</span></h1>
-    <div id="loadbar"><i></i></div>
-    <div id="loadtxt">Loading hulls</div>
+  <section class="screen bgimg" id="loading">
+    <div class="mpage">
+      <div class="titlebox">
+        <h1 class="title">Broad<span>side</span></h1>
+        <div id="loadbar"><i></i></div>
+        <div id="loadtxt">Loading hulls</div>
+      </div>
+    </div>
   </section>
 </div>
 
@@ -370,7 +431,10 @@ const CLASSES = {
       { id: 'torp', label: 'Torpedoes', key: 'T', type: 'torpedo', sub: 'torp', center: 0, half: 70, elevMin: -40, elev: 40, range: 5200, reload: 12, tubes: 4, ammo: 8, dmg: 340,
         guns: [[-14, -22, -146], [14, -22, -146]] }
     ],
-    fore: 'Dorsal turrets'
+    fore: 'Dorsal turrets', tip: 'Dorsal turrets (<b>Space</b>) cover almost every bearing: use them whenever they are loaded.',
+    len: 294, blurb: 'Slow and wide. Six-gun broadsides on each beam and dorsal turrets that cover almost every bearing. Thick shields, wide turning circle.',
+    arm: '2 × 6-turret broadside (18 shells a salvo) · 2 dorsal turrets · 4 torpedo tubes, 8 torpedoes',
+    pref: 1900, camDist: 820, menuRot: 0.4
   },
   halberd: {
     key: 'halberd', name: 'Halberd', cls: 'Lance cruiser', url: 'models/halberd.glb', size: 910540, scale: 265, rotY: Math.PI / 2,
@@ -387,7 +451,50 @@ const CLASSES = {
       { id: 'torp', label: 'Torpedoes', key: 'T', type: 'torpedo', sub: 'torp', center: 0, half: 70, elevMin: -40, elev: 40, range: 5200, reload: 10, tubes: 2, ammo: 6, dmg: 340,
         guns: [[-8, -30, -124], [8, -30, -124]] }
     ],
-    fore: 'Spinal lance'
+    fore: 'Spinal lance', tip: 'The lance (<b>Space</b>) fires only dead ahead: point the bow, then fire. It strips shields fast.',
+    len: 260, blurb: 'Narrow and quick on the helm. Built around a spinal lance that only fires dead ahead, so you aim it by pointing the whole ship. Lighter broadsides.',
+    arm: 'Spinal lance · 2 × 4-turret broadside (16 shells a salvo) · 2 torpedo tubes, 6 torpedoes',
+    pref: 2000, camDist: 700, menuRot: -0.3
+  },
+  sabre: {
+    key: 'sabre', name: 'Sabre', cls: 'Battlecruiser', url: 'models/sabre.glb', size: 798228, scale: 286, rotY: Math.PI,
+    hull: 2400, shield: 500, regen: 26, vmax: 62, accel: 3.8, turn: deg(7.5), angAcc: deg(2.1), pitchMax: deg(16), grip: 0.55,
+    hullE: { c: [0, -10, 0], r: [36, 30, 139] }, shieldE: { c: [0, 0, 0], r: [58, 64, 168] },
+    engines: [[-17, 5, 139], [17, 5, 139], [0, 11, 139], [-10, -5, 139], [10, -5, 139]], glow: 12,
+    weapons: [
+      { id: 'bow', label: 'Bow battery', key: 'Space', type: 'battery', sub: 'fore', center: 0, half: 55, elevMin: -20, elev: 30, range: 3100, reload: 6, dmg: 50, speed: 540, shots: 3, snd: 'turret', mount: 1.4,
+        guns: [[0, 4, -96], [0, 7, -78], [0, 10, -60]] },
+      { id: 'port', label: 'Port battery', key: 'Q', type: 'battery', sub: 'port', center: -90, half: 66, elevMin: -35, elev: 35, range: 2600, reload: 6, dmg: 42, speed: 500, shots: 3, snd: 'lasercannon',
+        guns: [[-32, -4, -40], [-35, -4, -10], [-43, -4, 30], [-43, -4, 70]] },
+      { id: 'stbd', label: 'Starboard battery', key: 'E', type: 'battery', sub: 'stbd', center: 90, half: 66, elevMin: -35, elev: 35, range: 2600, reload: 6, dmg: 42, speed: 500, shots: 3, snd: 'lasercannon',
+        guns: [[32, -4, -40], [35, -4, -10], [43, -4, 30], [43, -4, 70]] },
+      { id: 'torp', label: 'Torpedoes', key: 'T', type: 'torpedo', sub: 'torp', center: 0, half: 70, elevMin: -40, elev: 40, range: 5200, reload: 10, tubes: 2, ammo: 6, dmg: 340,
+        guns: [[-8, -28, -128], [8, -28, -128]] }
+    ],
+    fore: 'Bow battery', tip: 'The bow battery (<b>Space</b>) covers the forward quarter. Close in bow-first, then turn to bring a broadside to bear as well.',
+    len: 280, blurb: 'The fastest hull in the fleet. Three heavy turrets on the foredeck fire across the forward quarter, so it fights best charging in at an angle. Thin shields.',
+    arm: '3-turret bow battery · 2 × 4-turret broadside (12 shells a salvo) · 2 torpedo tubes, 6 torpedoes',
+    pref: 2300, beam: 45, camDist: 760, menuRot: 0.6
+  },
+  warden: {
+    key: 'warden', name: 'Warden', cls: 'Siege dreadnought', url: 'models/warden.glb', size: 831496, scale: 320, rotY: Math.PI,
+    hull: 3600, shield: 600, regen: 24, vmax: 36, accel: 1.8, turn: deg(4.5), angAcc: deg(1.2), pitchMax: deg(12), grip: 0.4,
+    hullE: { c: [0, -12, 0], r: [36, 32, 155] }, shieldE: { c: [0, 0, 0], r: [58, 64, 188] },
+    engines: [[-23, 13, 156], [23, 13, 156], [-13, -4, 156], [13, -4, 156]], glow: 15,
+    weapons: [
+      { id: 'siege', label: 'Siege cannons', key: 'Space', type: 'battery', sub: 'fore', center: 0, half: 22, elevMin: -12, elev: 20, range: 4200, reload: 12, dmg: 150, speed: 640, shots: 2, snd: 'cannon', mount: 2.2, bow: true,
+        guns: [[0, 10, -118], [0, 12, -86]] },
+      { id: 'port', label: 'Port battery', key: 'Q', type: 'battery', sub: 'port', center: -90, half: 64, elevMin: -35, elev: 35, range: 2700, reload: 8, dmg: 44, speed: 470, shots: 3, snd: 'cannon',
+        guns: [[-28, -4, -90], [-40, -4, -50], [-40, -4, -10], [-39, -4, 30], [-40, -4, 70]] },
+      { id: 'stbd', label: 'Starboard battery', key: 'E', type: 'battery', sub: 'stbd', center: 90, half: 64, elevMin: -35, elev: 35, range: 2700, reload: 8, dmg: 44, speed: 470, shots: 3, snd: 'cannon',
+        guns: [[28, -4, -90], [40, -4, -50], [40, -4, -10], [39, -4, 30], [40, -4, 70]] },
+      { id: 'torp', label: 'Torpedoes', key: 'T', type: 'torpedo', sub: 'torp', center: 0, half: 80, elevMin: -40, elev: 40, range: 5200, reload: 11, tubes: 6, ammo: 16, dmg: 340,
+        guns: [[-10, -35, -140], [10, -35, -140], [-16, -40, -120], [16, -40, -120], [-20, -40, -100], [20, -40, -100]] }
+    ],
+    fore: 'Siege cannons', tip: 'Siege cannons (<b>Space</b>) hit hardest and reach farthest, but only within a narrow arc ahead. Point the bow and fire from long range.',
+    len: 314, blurb: 'The heaviest hull and the slowest helm. Two siege cannons out-range every other gun but only fire ahead, and six torpedo tubes finish what they open up.',
+    arm: '2 siege cannons · 2 × 5-turret broadside (15 shells a salvo) · 6 torpedo tubes, 16 torpedoes',
+    pref: 2500, camDist: 880, menuRot: -0.5
   }
 };
 const SUBS = ['engines', 'shields', 'reactor', 'port', 'stbd', 'fore', 'torp'];
@@ -776,6 +883,43 @@ const Sfx = {
     }
   }
 };
+// ---------------- music ----------------
+// two looping tracks streamed by <audio> elements; tick() fades toward whichever one is wanted
+const Music = {
+  on: true, want: null, tracks: {}, blocked: false,
+  TRACKS: { title: { url: 'music/weightless-descent.mp3', vol: 0.5 }, battle: { url: 'music/untitled.mp3', vol: 0.3 } },
+  init() {
+    try { this.on = localStorage.getItem('broadside-music') !== 'off'; } catch (e) {}
+    for (const k in this.TRACKS) { const a = new Audio(this.TRACKS[k].url); a.loop = true; a.preload = 'auto'; a.volume = 0; this.tracks[k] = a; }
+    // browsers only allow audio once the player has clicked or pressed a key, so retry inside that gesture
+    const unlock = () => { this.blocked = false; this.start(); };
+    window.addEventListener('pointerdown', unlock, true); window.addEventListener('keydown', unlock, true);
+    musicLabels();
+  },
+  play(k, restart) { const a = this.tracks[k]; if (restart && a && a.paused) a.currentTime = 0; this.want = k; },
+  start() {
+    const a = this.tracks[this.want];
+    if (!this.on || !a || !a.paused || this.blocked || a._starting) return;
+    a._starting = true;
+    a.play().then(() => { a._starting = false; }, () => { a._starting = false; this.blocked = true; });
+  },
+  toggle() { this.on = !this.on; try { localStorage.setItem('broadside-music', this.on ? 'on' : 'off'); } catch (e) {} musicLabels(); this.start(); return this.on; },
+  tick(dt) {
+    this.start();
+    for (const k in this.tracks) {
+      const a = this.tracks[k], target = this.on && this.want === k ? this.TRACKS[k].vol * (state === 'paused' ? 0.4 : 1) : 0;
+      a.volume = a.paused ? 0 : clamp(a.volume + clamp(target - a.volume, -dt * 0.4, dt * 0.4), 0, 1);   // a held-back track fades in once it starts
+      if (target === 0 && a.volume === 0 && !a.paused) a.pause();
+    }
+  }
+};
+function musicLabels() {
+  $('mv-music').textContent = Music.on ? 'On' : 'Off'; $('music2').textContent = 'Music: ' + (Music.on ? 'on' : 'off');
+  for (const id of ['music1', 'music2']) $(id).setAttribute('aria-pressed', String(Music.on));
+}
+function toggleMusic() { const on = Music.toggle(); if (state === 'playing' || state === 'paused') showMsg(on ? 'Music on' : 'Music off', 1.2); }
+$('music1').addEventListener('click', toggleMusic); $('music2').addEventListener('click', toggleMusic);
+
 function volAt(p) { const d = camera.position.distanceTo(p); return clamp(1 - d / 6000, 0, 1) ** 1.6; }
 
 // ---------------- model loading ----------------
@@ -854,7 +998,7 @@ function makeShip(key, team) {
   const groups = C.weapons.map(w => {
     const gr = { ...w, charge: w.type === 'lance' ? 0.4 : 1, beamT: 0, tubesT: w.tubes ? new Array(w.tubes).fill(0) : null, ammo: w.ammo || 0, holdT: 0, mounts: [] };
     if (w.type === 'battery') for (const g of w.guns) {
-      const t = new THREE.Group(); t.position.fromArray(g); t.add(new THREE.Mesh(TURRET_GEO, TURRET_MAT));
+      const t = new THREE.Group(); t.position.fromArray(g); t.add(new THREE.Mesh(TURRET_GEO, TURRET_MAT)); if (w.mount) t.scale.setScalar(w.mount);
       const br = new THREE.Group(); br.position.y = 0.8; t.add(br);
       for (const sx of [-1.4, 1.4]) { const b = new THREE.Mesh(BARREL_GEO, TURRET_MAT); b.position.x = sx; br.add(b); }
       if (w.id === 'port') t.rotation.y = Math.PI / 2; else if (w.id === 'stbd') t.rotation.y = -Math.PI / 2;
@@ -863,8 +1007,9 @@ function makeShip(key, team) {
     return gr;
   });
   let lanceGlow = null, beam = null;
-  if (key === 'halberd') {
-    lanceGlow = makeGlow(team === 'p' ? new THREE.Color(0.8, 2, 4) : new THREE.Color(4, 1.6, 0.6), 1); lanceGlow.position.fromArray(C.weapons[0].guns[0]); body.add(lanceGlow);
+  const lanceW = C.weapons.find(w => w.type === 'lance');
+  if (lanceW) {
+    lanceGlow = makeGlow(team === 'p' ? new THREE.Color(0.8, 2, 4) : new THREE.Color(4, 1.6, 0.6), 1); lanceGlow.position.fromArray(lanceW.guns[0]); body.add(lanceGlow);
     beam = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 16, 1, true).rotateX(Math.PI / 2).translate(0, 0, -0.5), new THREE.ShaderMaterial({
       uniforms: { uCol: { value: team === 'p' ? new THREE.Color(0.6, 1.8, 4) : new THREE.Color(4, 1.4, 0.5) }, uT: { value: 0 } },
       vertexShader: LOGV + `varying vec3 vN; varying vec3 vV; varying float vZ; void main(){ vZ=position.z; vec4 mv=modelViewMatrix*vec4(position,1.); vN=normalize(normalMatrix*normal); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv;
@@ -1002,9 +1147,9 @@ function clearWorld() {
   fire.clear(); smoke.clear();
 }
 function startGame() {
-  Sfx.init();
+  Sfx.init(); Music.play('battle', true);
   clearWorld(); display.visible = false;
-  const pk = choice.ship, ek = pk === 'bastion' ? 'halberd' : 'bastion';
+  const pk = choice.ship, others = Object.keys(CLASSES).filter(k => k !== pk), ek = others[Math.floor(Math.random() * others.length)];
   player = makeShip(pk, 'p'); enemy = makeShip(ek, 'e');
   player.target = enemy; enemy.target = player;
   const off = rand(-900, 900);
@@ -1012,7 +1157,7 @@ function startGame() {
   placeShip(enemy, new V3(-off, rand(-120, 120), -2700), Math.PI);
   enemy.ai = { diff: DIFF[choice.diff], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
   game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [] };
-  cam.yaw = 0.55; cam.pitch = 0.3; cam.dist = player.key === 'bastion' ? 820 : 700; cam.mode = 'chase'; cam.curYaw = player.yaw + cam.yaw; cam.curPitch = undefined;
+  cam.yaw = 0.55; cam.pitch = 0.3; cam.dist = player.C.camDist; cam.mode = 'chase'; cam.curYaw = player.yaw + cam.yaw; cam.curPitch = undefined;
   tacFull = false; $('tacfull').hidden = true;
   buildHud();
   state = 'playing';
@@ -1032,15 +1177,16 @@ function showOver() {
   const st = player.stats, acc = st.shots ? Math.round(st.hits / st.shots * 100) : 0;
   const t = game.time, mm = Math.floor(t / 60), ss = Math.floor(t % 60);
   const rows = [['Battle time', mm + ':' + String(ss).padStart(2, '0')], ['Damage dealt', Math.round(st.dealt)], ['Damage taken', Math.round(st.taken)], ['Gun accuracy', acc + '%'], ['Torpedo hits', st.torpHits]];
-  if (player.key === 'halberd') rows.push(['Lance damage', Math.round(st.lanceDmg)]);
+  if (player.groups.some(g => g.type === 'lance')) rows.push(['Lance damage', Math.round(st.lanceDmg)]);
   rows.push(['Hull left', Math.max(0, Math.round(player.hull))]);
   $('over-stats').innerHTML = rows.map(r => `<div><small>${r[0]}</small><b>${r[1]}</b></div>`).join('');
   $('hud').hidden = true; $('over').hidden = false; Sfx.engine(0, false);
 }
-function toMenu() {
-  state = 'menu'; game = null; clearWorld(); player = enemy = null;
+function toMenu(page = 'main') {
+  state = 'menu'; game = null; clearWorld(); player = enemy = null; Music.play('title');
   display.visible = true; updateDisplay();
   $('hud').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('menu').hidden = false;
+  showPage(page);
   Sfx.engine(0, false);
 }
 function pause(on) {
@@ -1438,9 +1584,9 @@ function aiUpdate(s, dt) {
   if (!s.alive) return;
   if (!t || !t.alive) { s.rudder += clamp(0 - s.rudder, -dt, dt); s.step = 2; return; }
   bearingTo(s, t.pos, _br); const b = _br.b, el = _br.el, dist = _br.d;
-  const lance = s.groups.find(g => g.type === 'lance');
+  const lance = s.groups.find(g => g.type === 'lance' || g.bow);
   const port = s.groups.find(g => g.id === 'port'), stbd = s.groups.find(g => g.id === 'stbd');
-  const pref = s.key === 'bastion' ? 1900 : 2000;
+  const pref = s.C.pref;
   let desired;
   ai.sideT -= dt;
   if (lance && lance.charge >= 1 && subEff(s, lance) > 0.15 && dist < lance.range * 0.95 && dist > 500 && (Math.abs(b) < 75 || ai.mode === 'lance')) { desired = 0; ai.mode = 'lance'; }
@@ -1453,7 +1599,7 @@ function aiUpdate(s, dt) {
       if (want !== ai.side) { ai.side = want; ai.sideT = 12; }
     }
     const corr = clamp((dist - pref) / 1200, -1, 1) * 45;
-    desired = ai.side * (90 - corr); ai.mode = 'broadside';
+    desired = ai.side * ((s.C.beam || 90) - corr); ai.mode = 'broadside';
   }
   let err = wrapDeg(b - desired);
   // steer around rocks in the way
@@ -1515,6 +1661,7 @@ window.addEventListener('keydown', e => {
   if (k === 'KeyC') cam.mode = cam.mode === 'chase' ? 'target' : 'chase';
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
   if (k === 'KeyM') Sfx.toggle();
+  if (k === 'KeyN') toggleMusic();
   const P = player; if (!P.alive) return;
   if (k === 'KeyW') P.step = Math.min(4, P.step + 1);
   if (k === 'KeyS') P.step = Math.max(0, P.step - 1);
@@ -1550,16 +1697,40 @@ function playerHelm(dt) {
 }
 
 // menu
-$('pick-bastion').addEventListener('click', () => pickShip('bastion'));
-$('pick-halberd').addEventListener('click', () => pickShip('halberd'));
-function pickShip(k) { choice.ship = k; saveChoice(); $('pick-bastion').setAttribute('aria-pressed', String(k === 'bastion')); $('pick-halberd').setAttribute('aria-pressed', String(k === 'halberd')); updateDisplay(); }
+$('ships').innerHTML = Object.values(CLASSES).map(C => `<button class="ship" type="button" data-ship="${C.key}" aria-pressed="false"><span class="eb">${C.cls}</span><h2>${C.name}</h2></button>`).join('');
+document.querySelectorAll('[data-ship]').forEach(b => b.addEventListener('click', () => pickShip(b.dataset.ship)));
+function pickShip(k) {
+  choice.ship = k; saveChoice();
+  document.querySelectorAll('[data-ship]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ship === k)));
+  const C = CLASSES[k];
+  $('shipinfo').innerHTML = `<span class="eb">${C.cls} · ${C.len} m</span><p>${C.blurb}</p>` +
+    `<div class="spec"><div><small>Hull</small><b>${C.hull}</b></div><div><small>Shields</small><b>4×${C.shield}</b></div><div><small>Top m/s</small><b>${C.vmax}</b></div><div><small>Turn</small><b>${+r2d(C.turn).toFixed(1)}°/s</b></div></div>` +
+    `<div class="arm">${C.arm}</div>`;
+  updateDisplay();
+}
 document.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => { choice.diff = b.dataset.d; saveChoice(); document.querySelectorAll('[data-d]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
 document.querySelectorAll('[data-d]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.d === choice.diff)));
-$('go').addEventListener('click', startGame);
+document.querySelectorAll('.go').forEach(b => b.addEventListener('click', startGame));
 $('resume').addEventListener('click', () => pause(false));
-$('quit').addEventListener('click', toMenu);
+$('quit').addEventListener('click', () => toMenu());
 $('again').addEventListener('click', startGame);
-$('tomenu').addEventListener('click', toMenu);
+$('tomenu').addEventListener('click', () => toMenu('ship'));
+let menuPage = 'main';
+function showPage(pg) {
+  const from = menuPage; menuPage = pg;
+  document.querySelectorAll('#menu .mpage').forEach(el => { el.hidden = el.id !== 'm-' + pg; });
+  // the ship page drops the title art so the turning 3D model shows through
+  $('menu').classList.toggle('bgimg', pg !== 'ship'); $('menu').classList.toggle('left', pg === 'ship');
+  menuValues();
+  const f = pg === 'main' ? document.querySelector(`[data-page="${from}"]`) || document.querySelector('#m-main .go') : $('m-' + pg).querySelector('[aria-pressed="true"]') || $('m-' + pg).querySelector('.back');
+  if (f && !$('menu').hidden) f.focus({ preventScroll: true });
+}
+function menuValues() {
+  $('mv-ship').textContent = CLASSES[choice.ship].name; $('mv-diff').textContent = DIFF[choice.diff].label; $('mv-gfx').textContent = gfx.q;
+}
+document.querySelectorAll('[data-page]').forEach(b => b.addEventListener('click', () => showPage(b.dataset.page)));
+document.querySelectorAll('#menu .back').forEach(b => b.addEventListener('click', () => showPage('main')));
+window.addEventListener('keydown', e => { if (state === 'menu' && e.code === 'Escape' && menuPage !== 'main') showPage('main'); });
 
 // ---------------- camera ----------------
 function updateCamera(dt) {
@@ -1596,10 +1767,12 @@ function updateCamera(dt) {
 // ---------------- menu display ----------------
 const display = new THREE.Group(); scene.add(display);
 const displayShips = {};
+const PARKED = [[700, -80, -1100], [-900, -160, -1500], [1700, 40, -2100]];
 function updateDisplay() {
+  let i = 0;
   for (const k in displayShips) {
-    const o = displayShips[k], sel = k === choice.ship;
-    o.position.set(sel ? 0 : 700, sel ? 0 : -80, sel ? 0 : -1100);
+    const o = displayShips[k];
+    if (k === choice.ship) o.position.set(0, 0, 0); else o.position.fromArray(PARKED[i++ % PARKED.length]);
   }
 }
 
@@ -1632,13 +1805,12 @@ function buildHud() {
   wEls = {}; for (const g of player.groups) { const r = $('w-' + g.id); wEls[g.id] = { r, bar: r.querySelector('.bar i'), st: r.querySelector('.st') }; }
   subEls = {}; for (const k of SUBS) { const r = $('sub-' + k); subEls[k] = { r, bar: r.children[1].firstChild, v: r.children[2] }; }
   pipEls = {}; for (const k of ['eng', 'shd', 'wpn']) pipEls[k] = Array.from($('pp-' + k).children);
-  const fore = player.key === 'halberd' ? 'The lance (<b>Space</b>) fires only dead ahead: point the bow, then fire. It strips shields fast.' : 'Dorsal turrets (<b>Space</b>) cover almost every bearing: use them whenever they are loaded.';
   game.tips = [
     'Your guns fire on <b>Q</b> (port) and <b>E</b> (starboard). On the tactical plot an arc turns <b>green</b> when the enemy is inside it and that battery is loaded.',
     'Arrow keys pull shield strength toward one facing: <b>↑</b> fore, <b>↓</b> aft, <b>←</b> port, <b>→</b> starboard. Press the same arrow again to balance.',
     'Reactor power is limited. <b>1 2 3</b> move a unit to engines, shields or weapons. Engines also tighten your turn.',
     'The rudder stays where you leave it, and a big hull takes seconds to start or stop a turn. Watch the dashed course line on the plot. <b>X</b> centres the rudder.',
-    fore,
+    player.C.tip,
     'Torpedoes (<b>T</b>) are slow and weak against shields. Wait until a facing is down, then launch at that side.'
   ];
   game.tipIdx = 0; game.tipT = 0; $('tip').style.opacity = 1; $('tip').innerHTML = game.tips[0];
@@ -1895,17 +2067,17 @@ function trackFrame(ms) {
 async function boot() {
   resize(); window.addEventListener('resize', resize);
   setQuality(gfx.q); $('fps').hidden = !gfx.fps;
-  prefetchSfx();
+  prefetchSfx(); Music.init(); Music.play('title');
   requestAnimationFrame(frame);
   try {
-    const [b, h] = await Promise.all([load(CLASSES.bastion.url, 'b', CLASSES.bastion.size), load(CLASSES.halberd.url, 'h', CLASSES.halberd.size)]);
-    templates.bastion = prep(b, CLASSES.bastion.scale, CLASSES.bastion.rotY);
-    templates.halberd = prep(h, CLASSES.halberd.scale, CLASSES.halberd.rotY);
+    const Cs = Object.values(CLASSES);
+    const gltfs = await Promise.all(Cs.map(C => load(C.url, C.key, C.size)));
+    Cs.forEach((C, i) => { templates[C.key] = prep(gltfs[i], C.scale, C.rotY); });
   } catch (e) { $('loadtxt').textContent = 'The ship models failed to load. Reload the page to try again.'; console.error(e); return; }
-  for (const k of ['bastion', 'halberd']) {
+  for (const k in CLASSES) {
     const o = new THREE.Group(); o.add(instanceModel(k)); display.add(o); displayShips[k] = o;
     for (const p of CLASSES[k].engines) { const g = makeGlow(new THREE.Color(0.3, 0.75, 1.8), CLASSES[k].glow); g.position.fromArray(p); o.add(g); }
-    o.rotation.y = k === 'bastion' ? 0.4 : -0.3;
+    o.rotation.y = CLASSES[k].menuRot;
   }
   pickShip(choice.ship);
   toMenu();
@@ -1925,12 +2097,12 @@ function frame(now) {
   dust.material.uniforms.uCam.value.copy(camera.position);
   if (player && state === 'playing') Sfx.engine(STEPS[player.step], player.alive);
   drawShells();
-  composer.render();
-  updateHud(dt); hudFast(dt);
+  if (!(state === 'loading' || (state === 'menu' && menuPage !== 'ship'))) composer.render();
+  updateHud(dt); hudFast(dt); Music.tick(Math.min(ms / 1000, 0.1));
 }
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
-  get state() { return state; }, get game() { return game; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, choice, DIFF,
+  get state() { return state; }, get game() { return game; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, choice, DIFF, Music,
   start: startGame, setPips, fireGroup, inArc, Sfx,
   step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } }
 };

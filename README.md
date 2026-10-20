@@ -1,9 +1,11 @@
 # Broadside
 
-A tactical capital-ship duel that runs in the browser. You command one of two ships against an AI captain flying the other:
+A tactical capital-ship duel that runs in the browser. Pick one of four ships under **Select ship** on the title screen; an AI captain flies one of the other three:
 
 - **Bastion** – a slow, wide heavy battleship with six-turret broadsides on each beam, dorsal turrets and thick shields.
 - **Halberd** – a narrow, quicker lance cruiser built around a spinal lance that only fires dead ahead.
+- **Sabre** – the fastest hull: a battlecruiser with a three-turret bow battery covering the forward quarter and thin shields.
+- **Warden** – the heaviest and slowest: a siege dreadnought with long-range siege cannons that fire only ahead, and six torpedo tubes.
 
 The game is about shield facings, reactor power, firing arcs and turning circles rather than twitch flying.
 
@@ -27,16 +29,16 @@ python3 -m http.server 8000
 | Arrow keys | Reinforce the fore, aft, port or starboard shield (same arrow again balances) |
 | 1 / 2 / 3 | Move reactor power to engines / shields / weapons · 4 splits evenly |
 | Q / E | Fire port / starboard battery |
-| Space | Spinal lance (Halberd) or dorsal turrets (Bastion) |
+| Space | Forward weapon: dorsal turrets (Bastion), spinal lance (Halberd), bow battery (Sabre) or siege cannons (Warden) |
 | T | Torpedo |
 | B | Batteries free: guns fire automatically when loaded and in arc |
 | Drag / wheel | Orbit / zoom the camera · C looks toward the enemy |
 | Tab | Enlarged tactical plot |
-| G | Cycle graphics quality · P pause · M mute |
+| G | Cycle graphics quality · P pause · M sound effects on/off · N music on/off |
 
 ## Performance
 
-The menu has Low / Medium / High graphics, an optional frame-rate meter, and an option to lower the render resolution automatically when frames run long. The main costs are kept down by:
+The title screen's **Graphics** page has Low / Medium / High presets, an optional frame-rate meter, and an option to lower the render resolution automatically when frames run long. The main costs are kept down by:
 
 - baking the nebula and planet into a cube map once instead of shading them every frame;
 - capping render resolution per preset and blurring the glow at screen-pixel resolution;
@@ -49,9 +51,11 @@ The menu has Low / Medium / High graphics, an optional frame-rate meter, and an 
 
 ```
 index.html      the whole game (three.js 0.169 from jsDelivr via an import map)
+img/            title screen art
+music/          title and battle music (.mp3, looped)
 models/         ship models (.glb, meshopt-compressed, textures as WebP)
 sfx/            sound effects (.mp3)
-vercel.json     cache headers for models and sounds
+vercel.json     cache headers for art, models, music and sounds
 ```
 
 ## Deploying to Vercel
@@ -60,5 +64,6 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 
 ## Assets
 
-- Ship models were generated with Tripo, then simplified to about 65k triangles each and compressed for the web.
+- Ship models were generated with Tripo, then simplified to about 65k triangles each and compressed for the web (meshopt geometry, 1024 px WebP textures) with glTF Transform.
+- The title screen art and both music tracks ("Weightless Descent" on the title screen, "Untitled" in battle) were supplied by the project owner. The music was re-encoded at 128 kbps.
 - Sound effects come from a sci-fi weapon sound pack supplied by the project owner. The original file names credit universfield, rescopicsound, magiazzz, soundreality and freesound_community; check those creators' licence terms before publishing the game widely.

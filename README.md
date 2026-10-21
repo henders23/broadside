@@ -1,11 +1,20 @@
 # Broadside
 
-A tactical capital-ship duel that runs in the browser. Pick one of four ships under **Select ship** on the title screen; an AI captain flies one of the other three:
+A tactical capital-ship duel that runs in the browser. Pick one of four ships under **Select ship** on the title screen. An AI captain flies one of the other three, or one of four hostile ships you can only meet in battle.
+
+Ships you can command:
 
 - **Bastion** – a slow, wide heavy battleship with six-turret broadsides on each beam, dorsal turrets and thick shields.
 - **Halberd** – a narrow, quicker lance cruiser built around a spinal lance that only fires dead ahead.
 - **Sabre** – the fastest hull: a battlecruiser with a three-turret bow battery covering the forward quarter and thin shields.
 - **Warden** – the heaviest and slowest: a siege dreadnought with long-range siege cannons that fire only ahead, and six torpedo tubes.
+
+Enemy-only ships:
+
+- **Wraith** – an alien bioship. Slow green plasma bolts that drain shields, swarms of homing spore missiles, and a hull that grows back when it isn't under fire.
+- **Scrapjaw** – a pirate ram. Heavy armour and weak shields; autocannon tracer streams, shotgun-like scatterguns at short range, and a reinforced prow it drives into you.
+- **Seraph** – a beam frigate. Strong, fast-recharging shields on a fragile hull; three tracking beam emitters and a long-range railgun. It keeps its distance.
+- **Revenant** – a minelayer on the Warden hull in a dark red livery. Missile salvos, flak broadsides, and proximity mines dropped astern for anyone chasing it.
 
 The game is about shield facings, reactor power, firing arcs and turning circles rather than twitch flying.
 
@@ -64,6 +73,6 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 
 ## Assets
 
-- Ship models were generated with Tripo, then simplified to about 65k triangles each and compressed for the web (meshopt geometry, 1024 px WebP textures) with glTF Transform.
+- Ship models were generated with Tripo (Revenant reuses the Warden hull with a darker tint), then simplified to about 65k triangles each and compressed for the web (meshopt geometry, 1024 px WebP textures) with glTF Transform.
 - The title screen art and both music tracks ("Weightless Descent" on the title screen, "Untitled" in battle) were supplied by the project owner. The music was re-encoded at 128 kbps.
-- Sound effects come from a sci-fi weapon sound pack supplied by the project owner. The original file names credit universfield, rescopicsound, magiazzz, soundreality and freesound_community; check those creators' licence terms before publishing the game widely.
+- Every weapon's sound comes from the supplied pack, pitched differently per weapon. Sound effects come from a sci-fi weapon sound pack supplied by the project owner. The original file names credit universfield, rescopicsound, magiazzz, soundreality and freesound_community; check those creators' licence terms before publishing the game widely.

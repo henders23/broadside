@@ -35,6 +35,7 @@ python3 -m http.server 8000
 | W / S | Engine telegraph up / down |
 | A / D | Rudder (stays where you leave it) · X centres it |
 | R / F | Climb / dive |
+| Shift (hold) | Afterburner: about 7 s at 1.7× top speed, refills in about 22 s; widens the turn and halves shield regeneration while burning |
 | Arrow keys | Reinforce the fore, aft, port or starboard shield (same arrow again balances) |
 | 1 / 2 / 3 | Move reactor power to engines / shields / weapons · 4 splits evenly |
 | Q / E | Fire port / starboard battery |

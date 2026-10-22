@@ -586,7 +586,10 @@ const choice = { ship: 'bastion', diff: 'captain' };
 const CAMPAIGN_KEY = 'broadside-campaign-v1';
 const CAMPAIGN_OPERATIONS = {
   1: { enemy: 'scrapjaw', commander: 'Captain Kora Vex', title: 'Distress at Kestrel', objective: 'Defeat Captain Kora Vex and secure the trade lane' },
-  2: { enemy: 'revenant', commander: 'Commander Orren Sable', title: 'The Cinder Wake', objective: 'Defeat the Ash Fleet minelayer and recover the transponder evidence' }
+  2: { enemy: 'revenant', commander: 'Commander Orren Sable', title: 'The Cinder Wake', objective: 'Defeat the Ash Fleet minelayer and recover the transponder evidence' },
+  3: { enemy: 'scrapjaw', commander: 'Captain Garrick Thorne', title: "The Widow's Toll", objective: 'Force Captain Thorne to surrender or destroy his toll raider' },
+  4: { enemy: 'seraph', commander: 'ORACLE-9', title: 'Ghost Frequency', objective: 'Disable ORACLE-9 and recover its transmission archive' },
+  5: { enemy: 'wraith', commander: 'The Cantor', title: 'The First Bloom', objective: 'Survive 100 seconds of first contact or destroy the bioship' }
 };
 const campaignMissionId = Number(new URLSearchParams(location.search).get('campaign')) || 0;
 const campaignMission = CAMPAIGN_OPERATIONS[campaignMissionId] || null;
@@ -1385,10 +1388,17 @@ function showOver() {
   rows.push(['Hull left', Math.max(0, Math.round(player.hull))]);
   $('over-stats').innerHTML = rows.map(r => `<div><small>${r[0]}</small><b>${r[1]}</b></div>`).join('');
   $('hud').hidden = true; $('over').hidden = false; Sfx.engine(0, false);
+  if (campaignMission && win && game.campaignOutcome === 'surrender') {
+    $('over-word').textContent = 'Pirate commander surrendered';
+    $('over-sub').textContent = 'Captain Thorne has powered down his weapons and surrendered the Red Narrows toll lane.';
+  } else if (campaignMission && win && game.campaignOutcome === 'extracted') {
+    $('over-word').textContent = 'First contact survived';
+    $('over-sub').textContent = 'The Cantor remains at large. Your ship has transmitted alien biosignatures and escaped the engagement.';
+  }
   if (campaignMission) {
     const saved = readCampaignSave();
     if (saved) {
-      saved.pendingResult = { id: campaignMissionId, outcome: win ? 'win' : 'loss', time: Math.round(game.time) };
+      saved.pendingResult = { id: campaignMissionId, outcome: win ? 'win' : 'loss', time: Math.round(game.time), tacticalOutcome: game.campaignOutcome || (win ? 'enemy_destroyed' : 'flagship_lost') };
       saved.hull = win ? clamp(player.hull / player.C.hull, 0.1, 1) : 0.45;
       saved.sub = win ? { ...player.sub } : null;
       const torpGroup = player.groups.find(g => g.type === 'torpedo');
@@ -1398,7 +1408,8 @@ function showOver() {
     }
     $('again').hidden = true;
     $('tomenu').textContent = 'Return to campaign';
-    $('over-sub').textContent = win ? 'Operation secured. Ship damage, subsystem condition and remaining torpedoes have been recorded.' : 'Rescue teams are bringing surviving crew back to Meridian space. Return to the campaign map to regroup.';
+    if (!win) $('over-sub').textContent = 'Rescue teams are bringing surviving crew back to Meridian space. Return to the campaign map to regroup.';
+    else if (!game.campaignOutcome) $('over-sub').textContent = 'Operation secured. Ship damage, subsystem condition and remaining torpedoes have been recorded.';
   }
 }
 function toMenu(page = 'main') {
@@ -2337,6 +2348,27 @@ function hudFast(dt) {
 // ---------------- main update ----------------
 function updateGame(dt) {
   game.time += dt;
+  if (campaignMission && !game.ending) {
+    if (campaignMissionId === 3 && enemy?.alive && player?.alive && enemy.hull <= enemy.C.hull * .28) {
+      game.campaignOutcome = 'surrender';
+      enemy.target = null; enemy.ai = null; enemy.step = 0;
+      endGame('win'); game.endT = 1.5;
+      player.isWinner = true;
+    }
+    if (campaignMissionId === 5 && player?.alive) {
+      const second = Math.min(100, Math.floor(game.time));
+      if (game.objectiveSecond !== second) {
+        game.objectiveSecond = second;
+        $('campaign-objective').textContent = 'FIRST CONTACT // HOLD FAST ' + second + ' / 100 SECONDS · SURVIVE TO TRANSMIT';
+      }
+      if (game.time >= 100 && !game.ending) {
+        game.campaignOutcome = 'extracted';
+        enemy.target = null; enemy.ai = null; enemy.step = 0;
+        endGame('win'); game.endT = 1.5;
+        player.isWinner = true;
+      }
+    }
+  }
   for (const a of asteroids) { a.mesh.rotation.x += a.spin.x * dt; a.mesh.rotation.y += a.spin.y * dt; }
   if (player.alive) playerHelm(dt);
   for (const s of ships) {

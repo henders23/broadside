@@ -1,6 +1,6 @@
 # Broadside
 
-A tactical capital-ship duel that runs in the browser. Pick one of four ships under **Select ship** on the title screen. An AI captain flies one of the other three, or one of four hostile ships you can only meet in battle.
+A tactical capital-ship combat game with a developing persistent galactic campaign, running in the browser. Pick one of four ships under **Select ship** on the title screen. An AI captain flies one of the other three, or one of four hostile ships you can only meet in battle.
 
 Ships you can command:
 
@@ -17,6 +17,21 @@ Enemy-only ships:
 - **Revenant** – a minelayer on the Warden hull in a dark red livery. Missile salvos, flak broadsides, and proximity mines dropped astern for anyone chasing it.
 
 The game is about shield facings, reactor power, firing arcs and turning circles rather than twitch flying.
+
+## Campaign: The Shattered Reach
+
+Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use **Campaign** from the title menu). The existing skirmish mode remains available.
+
+- Cinematic interactive star chart built on `img/campaign-atlas.webp`, with **33 clickable systems**, navigation routes and six regions.
+- **Five linked operations** with named enemies: Captain Kora Vex (Scrapjaw), Commander Orren Sable (Revenant), Captain Garrick Thorne (Scrapjaw), ORACLE-9 (Seraph) and the alien Cantor (Wraith).
+- Persistent campaign save in browser localStorage (key `broadside-campaign-v1`): selected flagship, progress, decisions, hull condition, critical subsystem damage, surviving torpedoes and requisition.
+- Mission three can end in a pirate surrender. The fifth operation can be won by surviving **100 seconds** or destroying the bioship.
+- **Shipyard** for hull repairs and torpedo resupply, **Officers** for bridge-character dossiers, and **Intel** for campaign clues and branching narrative decisions.
+- Completing a mission unlocks the next operation. A mission loss returns you to the sector campaign with a damaged but recoverable flagship rather than deleting the save.
+
+The first five operations are a **campaign vertical slice**, not a finished grand-strategy game: battles still use the existing one-versus-one engine, and officer abilities, fleet encounters and multi-objective escort scenarios are planned rather than implemented. `campaign.html` supplies the strategic UI while `index.html?campaign=N` launches the tactical encounters.
+
+See [Campaign design and technical notes](docs/CAMPAIGN.md) for current architecture, known limitations and roadmap.
 
 ## Play
 

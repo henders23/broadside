@@ -2460,7 +2460,7 @@ async function boot() {
   // Skip the skirmish menu when a campaign operation is launched from the star map.
   if (campaignMission) {
     const save = readCampaignSave();
-    if (save && (campaignMissionId === 1 || (save.completed || []).includes(campaignMissionId - 1))) startGame();
+    if (save && !(save.completed || []).includes(campaignMissionId) && (campaignMissionId === 1 || (save.completed || []).includes(campaignMissionId - 1))) startGame();
     else location.replace('campaign.html');
   }
 }

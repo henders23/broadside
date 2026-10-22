@@ -63,6 +63,7 @@ The title screen's **Graphics** page has Low / Medium / High presets, an optiona
 index.html      the whole game (three.js 0.169 from jsDelivr via an import map)
 img/            title screen art
 music/          title and battle music (.mp3, looped)
+voice/          spoken bridge alerts (.mp3)
 models/         ship models (.glb, meshopt-compressed, textures as WebP)
 sfx/            sound effects (.mp3)
 vercel.json     cache headers for art, models, music and sounds
@@ -75,5 +76,6 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 ## Assets
 
 - Ship models were generated with Tripo (Revenant reuses the Warden hull with a darker tint), then simplified to about 65k triangles each and compressed for the web (meshopt geometry, 1024 px WebP textures) with glTF Transform.
+- Spoken alerts were generated with ElevenLabs (voice: Philippa). To add a line, put its .mp3 in `voice/` and add its name to `VOICE_LINES` in `index.html`; the game already asks for these lines at the right moments: `enemy-shields-down`, `hull-critical`, `torpedoes-inbound`, `mines-detected`, `torpedo-away`, `afterburners`, `brace`, `battle-stations`, `enemy-destroyed`, `ship-lost`.
 - The title screen art and both music tracks ("Weightless Descent" on the title screen, "Untitled" in battle) were supplied by the project owner. The music was re-encoded at 128 kbps.
 - Every weapon's sound comes from the supplied pack, pitched differently per weapon. Sound effects come from a sci-fi weapon sound pack supplied by the project owner. The original file names credit universfield, rescopicsound, magiazzz, soundreality and freesound_community; check those creators' licence terms before publishing the game widely.

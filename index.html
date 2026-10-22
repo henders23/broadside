@@ -233,6 +233,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div id="msg"></div>
     <div id="warn" hidden></div>
     <div id="tip"></div>
+    <div id="campaign-objective" hidden style="position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:5;background:#061523e8;border:1px solid #d4a269;padding:8px 15px;text-align:center;font-size:11px;letter-spacing:.1em;color:#ffda9e;max-width:55%;pointer-events:none"></div>
 
     <div class="panel" id="own">
       <div class="ptitle"><b id="own-name">—</b><small id="own-cls"></small></div>
@@ -283,7 +284,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
         <p class="tag">A capital ship duel. Turn your strongest shield into the fire, keep the enemy inside your firing arcs, and spend reactor power where the fight needs it.</p>
       </div>
       <nav class="mlist" aria-label="Main menu">
-        <button class="mbtn primary go" type="button">Take command</button>
+        <button class="mbtn primary" id="campaign-menu" type="button">Campaign <small>THE SHATTERED REACH</small></button>
+        <button class="mbtn go" type="button">Skirmish · take command</button>
         <button class="mbtn" type="button" data-page="ship">Select ship <small id="mv-ship"></small></button>
         <button class="mbtn" type="button" data-page="diff">Enemy captain <small id="mv-diff"></small></button>
         <button class="mbtn" type="button" data-page="gfx">Graphics <small id="mv-gfx"></small></button>
@@ -580,6 +582,15 @@ const DIFF = {
 
 // ---------------- options ----------------
 const choice = { ship: 'bastion', diff: 'captain' };
+// The Shattered Reach uses the existing battle engine for the opening two operations.
+const CAMPAIGN_KEY = 'broadside-campaign-v1';
+const CAMPAIGN_OPERATIONS = {
+  1: { enemy: 'scrapjaw', commander: 'Captain Kora Vex', title: 'Distress at Kestrel', objective: 'Defeat Captain Kora Vex and secure the trade lane' },
+  2: { enemy: 'revenant', commander: 'Commander Orren Sable', title: 'The Cinder Wake', objective: 'Defeat the Ash Fleet minelayer and recover the transponder evidence' }
+};
+const campaignMissionId = Number(new URLSearchParams(location.search).get('campaign')) || 0;
+const campaignMission = CAMPAIGN_OPERATIONS[campaignMissionId] || null;
+function readCampaignSave() { try { const v = JSON.parse(localStorage.getItem(CAMPAIGN_KEY) || 'null'); return v && v.version === 1 ? v : null; } catch(e) { return null; } }
 try { const s = JSON.parse(localStorage.getItem('broadside') || '{}'); if (CLASSES[s.ship] && !CLASSES[s.ship].enemyOnly) choice.ship = s.ship; if (DIFF[s.diff]) choice.diff = s.diff; } catch (e) {}
 function saveChoice() { try { localStorage.setItem('broadside', JSON.stringify(choice)); } catch (e) {} }
 
@@ -1324,9 +1335,24 @@ function clearWorld() {
 function startGame() {
   Sfx.init(); Music.play('battle', true);
   clearWorld(); display.visible = false;
-  const pk = choice.ship, others = Object.keys(CLASSES).filter(k => k !== pk), ek = others[Math.floor(Math.random() * others.length)];
+  const campaignSave = campaignMission ? readCampaignSave() : null;
+  const pk = campaignSave && CLASSES[campaignSave.ship] && !CLASSES[campaignSave.ship].enemyOnly ? campaignSave.ship : choice.ship;
+  const others = Object.keys(CLASSES).filter(k => k !== pk);
+  const ek = campaignMission ? campaignMission.enemy : others[Math.floor(Math.random() * others.length)];
   player = makeShip(pk, 'p'); enemy = makeShip(ek, 'e');
   player.target = enemy; enemy.target = player;
+  if (campaignMission) {
+    player.name = (campaignSave && campaignSave.shipName) || 'MNS Resolute';
+    enemy.name = campaignMission.commander;
+    if (campaignSave && typeof campaignSave.hull === 'number') {
+      player.hull = Math.round(player.C.hull * clamp(campaignSave.hull, 0.25, 1));
+    }
+    if (campaignSave && campaignSave.sub) {
+      for (const k of SUBS) if (typeof campaignSave.sub[k] === 'number') player.sub[k] = clamp(campaignSave.sub[k], 0, 100);
+    }
+    const torps = player.groups.find(g => g.type === 'torpedo');
+    if (torps && campaignSave && Number.isInteger(campaignSave.torps)) torps.ammo = clamp(campaignSave.torps, 0, torps.ammo);
+  }
   const off = rand(-900, 900);
   placeShip(player, new V3(off * 0.3, 0, 2700), 0);
   placeShip(enemy, new V3(-off, rand(-120, 120), -2700), Math.PI);
@@ -1339,6 +1365,8 @@ function startGame() {
   $('menu').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
   sizeCanvases();
   renderer.compile(scene, camera);
+  $('campaign-objective').hidden = !campaignMission;
+  if (campaignMission) $('campaign-objective').textContent = 'OPERATION 0' + campaignMissionId + ' // ' + campaignMission.objective;
   showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[choice.diff].label, 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
   setTimeout(() => Voice.say('battle-stations', 0), 2000);
@@ -1357,6 +1385,21 @@ function showOver() {
   rows.push(['Hull left', Math.max(0, Math.round(player.hull))]);
   $('over-stats').innerHTML = rows.map(r => `<div><small>${r[0]}</small><b>${r[1]}</b></div>`).join('');
   $('hud').hidden = true; $('over').hidden = false; Sfx.engine(0, false);
+  if (campaignMission) {
+    const saved = readCampaignSave();
+    if (saved) {
+      saved.pendingResult = { id: campaignMissionId, outcome: win ? 'win' : 'loss', time: Math.round(game.time) };
+      saved.hull = win ? clamp(player.hull / player.C.hull, 0.1, 1) : 0.45;
+      saved.sub = win ? { ...player.sub } : null;
+      const torpGroup = player.groups.find(g => g.type === 'torpedo');
+      saved.torps = win && torpGroup ? torpGroup.ammo : null;
+      if (!win) saved.credits = Math.max(0, (saved.credits || 0) - 100);
+      try { localStorage.setItem(CAMPAIGN_KEY, JSON.stringify(saved)); } catch (e) { console.warn('Could not save campaign outcome', e); }
+    }
+    $('again').hidden = true;
+    $('tomenu').textContent = 'Return to campaign';
+    $('over-sub').textContent = win ? 'Operation secured. Ship damage, subsystem condition and remaining torpedoes have been recorded.' : 'Rescue teams are bringing surviving crew back to Meridian space. Return to the campaign map to regroup.';
+  }
 }
 function toMenu(page = 'main') {
   state = 'menu'; game = null; clearWorld(); player = enemy = null; Music.play('title');
@@ -1988,10 +2031,11 @@ function pickShip(k) {
 document.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => { choice.diff = b.dataset.d; saveChoice(); document.querySelectorAll('[data-d]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
 document.querySelectorAll('[data-d]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.d === choice.diff)));
 document.querySelectorAll('.go').forEach(b => b.addEventListener('click', startGame));
+$('campaign-menu').addEventListener('click', () => { location.href = 'campaign.html'; });
 $('resume').addEventListener('click', () => pause(false));
-$('quit').addEventListener('click', () => toMenu());
+$('quit').addEventListener('click', () => campaignMission ? location.assign('campaign.html') : toMenu());
 $('again').addEventListener('click', startGame);
-$('tomenu').addEventListener('click', () => toMenu('ship'));
+$('tomenu').addEventListener('click', () => campaignMission ? location.assign('campaign.html') : toMenu('ship'));
 let menuPage = 'main';
 function showPage(pg) {
   const from = menuPage; menuPage = pg;
@@ -2374,6 +2418,12 @@ async function boot() {
   toMenu();
   $('loading').hidden = true;
   renderer.compile(scene, camera);
+  // Skip the skirmish menu when a campaign operation is launched from the star map.
+  if (campaignMission) {
+    const save = readCampaignSave();
+    if (save && (campaignMissionId === 1 || (save.completed || []).includes(campaignMissionId - 1))) startGame();
+    else location.replace('campaign.html');
+  }
 }
 let last = performance.now();
 function frame(now) {

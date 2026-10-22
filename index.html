@@ -86,6 +86,11 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .rudder::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,183,77,.4)}
 .rudder i{position:absolute;top:2px;bottom:2px;width:10px;margin-left:-5px;background:var(--hud);left:50%}
 .rudlbl{display:flex;justify-content:space-between;gap:6px;font-size:10px;color:var(--muted);letter-spacing:.12em}
+.abrow{display:grid;grid-template-columns:auto 1fr 92px;gap:8px;align-items:center;font-size:10px;color:var(--muted);letter-spacing:.12em}
+.abrow b{font-weight:400;text-align:right;color:var(--muted)}
+.abrow .bar i{background:var(--ice)}
+.abrow.on b{color:var(--hud-hi)}.abrow.on .bar i{background:var(--hud-hi)}
+.abrow.lock b{color:var(--hostile)}.abrow.lock .bar i{background:var(--hostile)}
 .readouts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .readouts div{display:flex;flex-direction:column;gap:1px;min-width:0}
 .readouts small{font-size:9px;letter-spacing:.14em;color:var(--muted)}
@@ -253,6 +258,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
       <div class="tele" id="tele"><span>Astern</span><span>Stop</span><span>⅓</span><span>⅔</span><span>Full</span></div>
       <div class="rudlbl"><span>◂ PORT <kbd>A</kbd></span><span><kbd>X</kbd> CENTRE</span><span><kbd>D</kbd> STBD ▸</span></div>
       <div class="rudder"><i id="rud"></i></div>
+      <div class="abrow" id="ab"><span>AFTERBURNER <kbd>Shift</kbd></span><div class="bar"><i id="ab-bar"></i></div><b id="ab-st">READY</b></div>
       <div class="readouts">
         <div><small>SPEED M/S</small><b id="h-spd">0</b></div>
         <div><small>TURN °/S</small><b id="h-turn">0.0</b></div>
@@ -333,6 +339,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
           <div><kbd>W</kbd><kbd>S</kbd> engine telegraph</div>
           <div><kbd>A</kbd><kbd>D</kbd> rudder (stays set) · <kbd>X</kbd> centre</div>
           <div><kbd>R</kbd><kbd>F</kbd> climb / dive</div>
+          <div><kbd>Shift</kbd> afterburner (hold)</div>
           <div><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> reinforce a shield facing</div>
           <div><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> power to engines, shields, weapons</div>
           <div><kbd>4</kbd> even power split</div>
@@ -1116,7 +1123,8 @@ function makeShip(key, team) {
     rudder: 0, step: 3, climb: 0, hull: C.hull, sh: [C.shield, C.shield, C.shield, C.shield], cap: [C.shield, C.shield, C.shield, C.shield],
     focus: -1, pips: { eng: 4, shd: 4, wpn: 4 }, avail: 12, sub: Object.fromEntries(SUBS.map(k => [k, 100])), repair: null,
     alive: true, dying: 0, fires: [], hitT: [-9, -9, -9, -9], hitIdx: 0, autofire: false, inv: new THREE.Matrix4(), tumble: new V3(),
-    stats: { shots: 0, hits: 0, dealt: 0, taken: 0, torpHits: 0, lanceDmg: 0 }, ai: null, target: null, fireQ: [], isWinner: false
+    stats: { shots: 0, hits: 0, dealt: 0, taken: 0, torpHits: 0, lanceDmg: 0 }, ai: null, target: null, fireQ: [], isWinner: false,
+    burn: false, abWant: false, abFuel: 1, abLock: false
   };
   ships.push(s);
   return s;
@@ -1315,7 +1323,7 @@ function startGame() {
 }
 function endGame(outcome) { if (game.ending) return; game.ending = true; game.outcome = outcome; game.endT = 7; }
 function showOver() {
-  state = 'over';
+  state = 'over'; for (const s of ships) s.burn = false;
   const win = game.outcome === 'win';
   const w = $('over-word'); w.textContent = win ? enemy.name + ' destroyed' : player.name + ' lost'; w.className = 'bigword ' + (win ? 'win' : 'lose');
   $('over-sub').textContent = win ? 'The enemy ' + enemy.C.cls.toLowerCase() + ' is a drifting wreck.' :
@@ -1393,13 +1401,33 @@ function killShip(s) {
 function subName(s, k) { return k === 'fore' ? s.C.fore : SUBNAME[k]; }
 
 // ---------------- ship update ----------------
+// afterburner: a short burst well past full speed, paid for with fuel, a wider turn and slower shield regeneration
+const AB = { boost: 1.7, accel: 2.6, turn: 0.75, burnT: 7, rechargeT: 22, relight: 0.3 };
+function afterburnerUpdate(s, dt) {
+  const ok = s.alive && s.abWant && !s.abLock && s.abFuel > 0 && s.sub.engines >= 25;
+  if (ok && !s.burn) {
+    Sfx.play('torplaunch', (s === player ? 0.7 : volAt(s.pos)), 0.5, { max: 2, gap: 0.3 });
+    if (s === player) cam.shake = Math.max(cam.shake, 0.35);
+  } else if (s === player && s.abWant && !ok && !s.burn && !s._abWarned) {
+    showMsg(s.sub.engines < 25 ? 'Engines too damaged to burn' : 'Afterburner recharging', 1.2, true); s._abWarned = true;
+  }
+  if (!s.abWant) s._abWarned = false;
+  s.burn = ok;
+  if (s.burn) {
+    s.abFuel = Math.max(0, s.abFuel - dt / AB.burnT);
+    if (s.abFuel <= 0) { s.abLock = true; s.burn = false; s._abWarned = true; if (s === player) showMsg('Afterburner burnt out', 1.6, true); }
+  } else {
+    s.abFuel = Math.min(1, s.abFuel + dt / AB.rechargeT);
+    if (s.abLock && s.abFuel >= AB.relight) s.abLock = false;
+  }
+}
 function helm(s, dt) {
   const C = s.C, e = fx(s);
-  const tgtV = s.alive ? C.vmax * e.eng * STEPS[s.step] : 0;
-  const acc = C.accel * (0.6 + 0.4 * e.eng) * (s.alive ? 1 : 0.1);
+  const tgtV = !s.alive ? 0 : s.burn ? C.vmax * AB.boost * e.eng : C.vmax * e.eng * STEPS[s.step];
+  const acc = C.accel * (0.6 + 0.4 * e.eng) * (s.alive ? 1 : 0.1) * (s.burn ? AB.accel : 1);
   s.speed += clamp(tgtV - s.speed, -acc * 1.3 * dt, acc * dt);
   const spF = 0.3 + 0.7 * clamp(Math.abs(s.speed) / (0.55 * C.vmax), 0, 1);
-  const wMax = C.turn * e.turn * spF;
+  const wMax = C.turn * e.turn * spF * (s.burn ? AB.turn : 1);
   const wT = s.alive ? -s.rudder * wMax : 0;
   s.yawRate += clamp(wT - s.yawRate, -C.angAcc * dt, C.angAcc * dt);
   s.yaw += s.yawRate * dt;
@@ -1413,8 +1441,12 @@ function helm(s, dt) {
   s.vel.lerp(_v1, 1 - Math.exp(-C.grip * dt));
   s.pos.addScaledVector(s.vel, dt);
   s.obj.updateMatrixWorld(true); s.inv.copy(s.obj.matrixWorld).invert();
-  const gs = C.glow * (0.6 + 0.8 * clamp(s.speed / C.vmax, 0, 1.4)) * (s.alive ? 1 : 0.1);
+  const gs = C.glow * (0.6 + 0.8 * clamp(s.speed / C.vmax, 0, 1.4)) * (s.alive ? 1 : 0.1) * (s.burn ? 1.9 : 1);
   for (const g of s.glows) g.scale.setScalar(gs * rand(0.94, 1.06));
+  if (s.burn) for (const g of s.glows) {   // a flame plume streaming back from each nozzle
+    g.getWorldPosition(_v2); _v3.copy(s.fwd).multiplyScalar(-rand(60, 120)).add(_v4.randomDirection().multiplyScalar(8)).add(_v5.copy(s.vel).multiplyScalar(0.8));
+    const c = g.material.color; fire.emit(_v2, _v3, c.r * 1.2 + 0.6, c.g * 1.1 + 0.5, c.b + 0.3, 1, C.glow * 0.35, C.glow * 0.5, rand(0.25, 0.45), 1.5);
+  }
 }
 const PATH = Array.from({ length: 101 }, () => new V3());
 const _pp = new V3(), _pv = new V3(), _pf = new V3(), _pq = new THREE.Quaternion(), _pe = new THREE.Euler();
@@ -1448,7 +1480,7 @@ function shieldsUpdate(s, dt) {
       if (s.focus >= 0 && s.focus !== i) s.sh[s.focus] = Math.min(s.cap[s.focus], s.sh[s.focus] + ex * 0.85);
     }
     const pause = t - s.hitT[i] < 1.5 ? 0.35 : 1;
-    s.sh[i] = Math.min(s.cap[i], s.sh[i] + C.regen * e.shd * w[i] * pause * dt);
+    s.sh[i] = Math.min(s.cap[i], s.sh[i] + C.regen * e.shd * w[i] * pause * (s.burn ? 0.5 : 1) * dt);
   }
   u.uStr.value.set(s.sh[0] / C.shield, s.sh[1] / C.shield, s.sh[2] / C.shield, s.sh[3] / C.shield); u.uFocus.value = s.focus; u.uT.value = t;
 }
@@ -1914,6 +1946,7 @@ function playerHelm(dt) {
   if (keys.has('KeyA')) P.rudder = Math.max(-1, P.rudder - dt * 0.9);
   if (keys.has('KeyD')) P.rudder = Math.min(1, P.rudder + dt * 0.9);
   P.climb = keys.has('KeyR') ? 1 : keys.has('KeyF') ? -1 : 0;
+  P.abWant = keys.has('ShiftLeft') || keys.has('ShiftRight');
   if (P.autofire) for (const g of P.groups) if (g.type === 'battery' && g.charge >= 1 && P.target.alive && inArc(P, g, P.target.pos)) fireGroup(P, g);
 }
 
@@ -1982,7 +2015,7 @@ function updateCamera(dt) {
   if (cam.mode === 'target' && enemy) camera.lookAt(_v2.copy(P.pos).lerp(enemy.pos, 0.35));
   else camera.lookAt(_v2.copy(P.pos).addScaledVector(P.fwd, dist * 0.15).add(_v3.set(0, dist * 0.06, 0)));
   if (cam.shake > 0) { camera.position.x += rand(-1, 1) * cam.shake * 4; camera.position.y += rand(-1, 1) * cam.shake * 4; cam.shake = Math.max(0, cam.shake - dt * 1.5); }
-  camera.fov += (55 - camera.fov) * (1 - Math.exp(-3 * dt)); camera.updateProjectionMatrix();
+  camera.fov += ((P.burn ? 62 : 55) - camera.fov) * (1 - Math.exp(-3 * dt)); camera.updateProjectionMatrix();
 }
 
 // ---------------- menu display ----------------
@@ -2030,6 +2063,7 @@ function buildHud() {
     'Your guns fire on <b>Q</b> (port) and <b>E</b> (starboard). On the tactical plot an arc turns <b>green</b> when the enemy is inside it and that battery is loaded.',
     'Arrow keys pull shield strength toward one facing: <b>↑</b> fore, <b>↓</b> aft, <b>←</b> port, <b>→</b> starboard. Press the same arrow again to balance.',
     'Reactor power is limited. <b>1 2 3</b> move a unit to engines, shields or weapons. Engines also tighten your turn.',
+    'Hold <b>Shift</b> for the afterburner: about seven seconds well past full speed to close on a target or escape, but it widens your turn and halves shield regeneration while it burns.',
     'The rudder stays where you leave it, and a big hull takes seconds to start or stop a turn. Watch the dashed course line on the plot. <b>X</b> centres the rudder.',
     player.C.tip,
     'Torpedoes (<b>T</b>) are slow and weak against shields. Wait until a facing is down, then launch at that side.'
@@ -2180,6 +2214,8 @@ function updateHud(dt) {
   const tele = $c('tele').children; for (let i = 0; i < 5; i++) setC(tele[i], i === P.step ? 'on' : '');
   const rl = (50 + P.rudder * 46).toFixed(1) + '%'; const rud = $c('rud'); if (rud._l !== rl) { rud.style.left = rl; rud._l = rl; }
   setT($c('h-spd'), Math.round(P.speed));
+  setX($c('ab-bar'), P.abFuel); setC($c('ab'), 'abrow' + (P.burn ? ' on' : P.abLock ? ' lock' : ''));
+  setT($c('ab-st'), P.burn ? 'BURNING' : P.abLock ? 'COOLING ' + Math.round(P.abFuel / AB.relight * 100) + '%' : P.sub.engines < 25 ? 'ENGINES DOWN' : P.abFuel >= 1 ? 'READY' : Math.round(P.abFuel * 100) + '%');
   setT($c('h-turn'), Math.abs(r2d(P.yawRate)).toFixed(1));
   setT($c('h-rad'), Math.abs(P.yawRate) > deg(0.3) ? String(Math.round(Math.abs(P.speed / P.yawRate))) : '—');
   setT($c('h-hdg'), String(Math.round(((-r2d(P.yaw)) % 360 + 360) % 360)).padStart(3, '0'));
@@ -2234,7 +2270,7 @@ function updateGame(dt) {
   if (player.alive) playerHelm(dt);
   for (const s of ships) {
     if (s.ai) aiUpdate(s, dt);
-    powerUpdate(s); helm(s, dt); shieldsUpdate(s, dt); repairsUpdate(s, dt);
+    powerUpdate(s); afterburnerUpdate(s, dt); helm(s, dt); shieldsUpdate(s, dt); repairsUpdate(s, dt);
     if (s.alive) weaponsUpdate(s, dt); else hideBeams(s);
     pointDefence(s, dt); firesUpdate(s, dt);
     if (s.alive && s.pos.length() > ARENA + 600) damage(s, 12 * dt, 'shell', _v1.set(0, 0, 0), null);
@@ -2323,7 +2359,7 @@ function frame(now) {
   updateCamera(state === 'paused' ? 0 : dt);
   skyGroup.position.copy(camera.position);
   dust.material.uniforms.uCam.value.copy(camera.position);
-  if (player && state === 'playing') Sfx.engine(STEPS[player.step], player.alive);
+  if (player && state === 'playing') Sfx.engine(player.burn ? 1.8 : STEPS[player.step], player.alive);
   drawShells();
   if (!(state === 'loading' || (state === 'menu' && menuPage !== 'ship'))) composer.render();
   updateHud(dt); hudFast(dt); Music.tick(Math.min(ms / 1000, 0.1));

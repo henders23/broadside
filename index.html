@@ -859,7 +859,15 @@ function explode(p, scale = 1, vel = null, snd = null) {
 // sound files from the supplied pack, fetched at boot and decoded once audio is allowed to start
 const SFX_FILES = ['cannon', 'lasercannon', 'turret', 'lance', 'pd1', 'pd2', 'torplaunch', 'shieldhit', 'hit', 'boom', 'torphit', 'chain1', 'chain2', 'death', 'death2', 'engine', 'sighted'];
 const sfxRaw = {};
-function prefetchSfx() { for (const n of SFX_FILES) sfxRaw[n] = fetch('sfx/' + n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).catch(() => null); }
+// spoken bridge alerts, voiced with ElevenLabs. Only lines listed here are fetched; every other line the game asks for
+// is skipped quietly, so a new line needs just its file in voice/ and its name added below.
+// Wanted, not yet recorded: enemy-shields-down, hull-critical, torpedoes-inbound, mines-detected, torpedo-away,
+// afterburners, brace, battle-stations, enemy-destroyed, ship-lost
+const VOICE_LINES = ['shields-down', 'missiles-inbound'];
+function prefetchSfx() {
+  for (const n of SFX_FILES) sfxRaw[n] = fetch('sfx/' + n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).catch(() => null);
+  for (const n of VOICE_LINES) sfxRaw['v:' + n] = fetch('voice/' + n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).catch(() => null);
+}
 const Sfx = {
   ctx: null, out: null, muted: false, noise: null, eng: null, buf: {}, voices: {}, lastT: {}, engLoop: null,
   init() {
@@ -874,7 +882,7 @@ const Sfx = {
     this.loadSamples();
   },
   async loadSamples() {
-    for (const n of SFX_FILES) {
+    for (const n of Object.keys(sfxRaw)) {
       const ab = await sfxRaw[n]; if (!ab) continue;
       try { this.buf[n] = await this.ctx.decodeAudioData(ab.slice(0)); } catch (e) {}
     }
@@ -953,6 +961,19 @@ const Sfx = {
       this.engLoop.src.playbackRate.setTargetAtTime(0.8 + Math.abs(thr) * 0.3, t, 0.8);
       this.engLoop.f.frequency.setTargetAtTime(500 + Math.abs(thr) * 900, t, 0.5);
     }
+  }
+};
+// one voice at a time, each line rested for a while after it plays so alerts never nag
+const Voice = {
+  busyUntil: 0, last: {},
+  say(name, rest = 10, urgent = false) {
+    const c = Sfx.ctx, b = Sfx.buf['v:' + name];
+    if (!c || !b || state !== 'playing') return false;
+    const now = c.currentTime;
+    if ((!urgent && now < this.busyUntil) || now - (this.last[name] ?? -99) < rest) return false;
+    Sfx.play('v:' + name, 1.1, 1, { max: 1, gap: 0 });
+    this.busyUntil = now + b.duration + 0.4; this.last[name] = now;
+    return true;
   }
 };
 // ---------------- music ----------------
@@ -1230,7 +1251,7 @@ function launchTorp(s, g, target) {
   t.glow.material.color.copy(s.team === 'p' ? new THREE.Color(0.8, 2, 4) : new THREE.Color(4, 1.4, 0.6));
   flash(t.pos, 50, 2, 2, 2, 0.3);
   Sfx.whoosh(volAt(t.pos));
-  if (s === player) showMsg('Torpedo away', 1.2);
+  if (s === player) { showMsg('Torpedo away', 1.2); Voice.say('torpedo-away', 5); }
   return true;
 }
 function launchMissile(s, g, mount, target, first) {
@@ -1320,8 +1341,9 @@ function startGame() {
   renderer.compile(scene, camera);
   showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[choice.diff].label, 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
+  setTimeout(() => Voice.say('battle-stations', 0), 2000);
 }
-function endGame(outcome) { if (game.ending) return; game.ending = true; game.outcome = outcome; game.endT = 7; }
+function endGame(outcome) { if (game.ending) return; game.ending = true; game.outcome = outcome; game.endT = 7; Voice.say(outcome === 'win' ? 'enemy-destroyed' : 'ship-lost', 0, true); }
 function showOver() {
   state = 'over'; for (const s of ships) s.burn = false;
   const win = game.outcome === 'win';
@@ -1372,6 +1394,7 @@ function damage(s, dmg, kind, local, src) {
     if (!steady) Sfx.shield(volAt(s.pos));
   }
   if (hullD > 0) {
+    if (s === player && s.hull >= s.C.hull * 0.25 && s.hull - hullD < s.C.hull * 0.25) Voice.say('hull-critical', 30, true);
     s.hull -= hullD;
     if (Math.random() < clamp(hullD / 70, 0.12, 0.9)) {
       const list = FACING_SUBS[f], k = list[Math.random() < 0.6 ? 0 : Math.random() < 0.6 ? 1 : 2];
@@ -1387,8 +1410,8 @@ function damage(s, dmg, kind, local, src) {
   if (s.hull <= 0) killShip(s);
 }
 function facingDown(s, f) {
-  if (s === player) { showMsg(FACINGS[f] + ' shield down', 2.2, true); Sfx.alarm(); }
-  else showMsg('Enemy ' + FACINGS[f].toLowerCase() + ' shield down', 2);
+  if (s === player) { showMsg(FACINGS[f] + ' shield down', 2.2, true); Sfx.alarm(); Voice.say('shields-down', 8); }
+  else { showMsg('Enemy ' + FACINGS[f].toLowerCase() + ' shield down', 2); Voice.say('enemy-shields-down', 8); }
 }
 function killShip(s) {
   s.alive = false; s.hull = 0; s.dying = 5; s.shieldMesh.visible = false; s.speed *= 0.5;
@@ -1407,7 +1430,7 @@ function afterburnerUpdate(s, dt) {
   const ok = s.alive && s.abWant && !s.abLock && s.abFuel > 0 && s.sub.engines >= 25;
   if (ok && !s.burn) {
     Sfx.play('torplaunch', (s === player ? 0.7 : volAt(s.pos)), 0.5, { max: 2, gap: 0.3 });
-    if (s === player) cam.shake = Math.max(cam.shake, 0.35);
+    if (s === player) { cam.shake = Math.max(cam.shake, 0.35); Voice.say('afterburners', 8); }
   } else if (s === player && s.abWant && !ok && !s.burn && !s._abWarned) {
     showMsg(s.sub.engines < 25 ? 'Engines too damaged to burn' : 'Afterburner recharging', 1.2, true); s._abWarned = true;
   }
@@ -1818,7 +1841,7 @@ function collisions() {
           explode(mid, 2);
           damage(player, dmg * (enemy.C.ramDmg || 1) * (player.C.ram || 1), 'shell', _v1.applyMatrix4(player.inv), enemy);
           damage(enemy, dmg * (player.C.ramDmg || 1) * (enemy.C.ram || 1), 'shell', _v2.applyMatrix4(enemy.inv), player);
-          showMsg('Ramming', 1.5, true);
+          showMsg('Ramming', 1.5, true); Voice.say('brace', 8, true);
         }
         return;
       }
@@ -2242,6 +2265,10 @@ function updateHud(dt) {
   }
   let incoming = null; for (const t of torps) if (t.active && t.target === P) { incoming = t.kind; if (t.kind === 'torp') break; }
   let mineNear = false; for (const m of mines) if (m.active && m.team !== P.team && m.armT <= 0 && m.pos.distanceTo(P.pos) < 700) { mineNear = true; break; }
+  if (!incoming) game.saidIncoming = null;
+  else if (incoming !== game.saidIncoming && P.alive && Voice.say(incoming === 'torp' ? 'torpedoes-inbound' : 'missiles-inbound', 12)) game.saidIncoming = incoming;
+  if (!mineNear) game.saidMine = false;
+  else if (!game.saidMine && P.alive && Voice.say('mines-detected', 20)) game.saidMine = true;
   setT($c('pd'), incoming ? 'Point defence · engaging ' + (incoming === 'torp' ? 'torpedoes' : 'missiles') : 'Point defence · automatic');
   let warn = '';
   if (incoming && P.alive) warn = incoming === 'torp' ? 'TORPEDOES INBOUND' : 'MISSILES INBOUND';
@@ -2366,8 +2393,8 @@ function frame(now) {
 }
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
-  get state() { return state; }, get game() { return game; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES,
-  start: startGame, setPips, fireGroup, inArc, Sfx,
+  get state() { return state; }, get game() { return game; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
+  start: startGame, setPips, fireGroup, inArc, Sfx, damage,
   step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } }
 };
 boot();

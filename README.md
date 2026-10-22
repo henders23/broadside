@@ -1,6 +1,6 @@
 # Broadside
 
-A tactical capital-ship duel that runs in the browser. Pick one of four ships under **Select ship** on the title screen. An AI captain flies one of the other three, or one of four hostile ships you can only meet in battle.
+A tactical capital-ship duel that runs in the browser. Pick one of four ships under **Your ship** on the title screen. An AI captain flies one of the other three, or one of four hostile ships you can only meet in battle.
 
 Ships you can command:
 

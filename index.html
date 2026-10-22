@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;800&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="crew/personnel.css">
 <style>
 [hidden]{display:none!important}
 *,*::before,*::after{box-sizing:border-box}
@@ -225,6 +226,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
   <canvas id="gl" aria-label="Broadside 3D battle view"></canvas>
 
   <div id="hud" hidden>
+    <div id="bridge-orders" hidden aria-label="Bridge officer commands"></div>
+    <div id="bridge-comms" hidden role="status" aria-live="polite"></div>
     <div id="vignette"></div>
     <div id="mk" hidden><span id="mk-l"></span></div>
     <div id="offarrow" hidden></div>
@@ -400,6 +403,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
   "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 }}
 </script>
+<script src="crew/personnel.js"></script>
+<script src="crew/bridge-controller.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -593,6 +598,7 @@ const CAMPAIGN_OPERATIONS = {
 };
 const campaignMissionId = Number(new URLSearchParams(location.search).get('campaign')) || 0;
 const campaignMission = CAMPAIGN_OPERATIONS[campaignMissionId] || null;
+let bridge = null;
 function readCampaignSave() { try { const v = JSON.parse(localStorage.getItem(CAMPAIGN_KEY) || 'null'); return v && v.version === 1 ? v : null; } catch(e) { return null; } }
 try { const s = JSON.parse(localStorage.getItem('broadside') || '{}'); if (CLASSES[s.ship] && !CLASSES[s.ship].enemyOnly) choice.ship = s.ship; if (DIFF[s.diff]) choice.diff = s.diff; } catch (e) {}
 function saveChoice() { try { localStorage.setItem('broadside', JSON.stringify(choice)); } catch (e) {} }
@@ -1361,6 +1367,8 @@ function startGame() {
   placeShip(enemy, new V3(-off, rand(-120, 120), -2700), Math.PI);
   enemy.ai = { diff: DIFF[choice.diff], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
   game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [] };
+  bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,showMsg,facings:FACINGS}) : null;
+  bridge?.mount();
   cam.yaw = 0.55; cam.pitch = 0.3; cam.dist = player.C.camDist; cam.mode = 'chase'; cam.curYaw = player.yaw + cam.yaw; cam.curPitch = undefined;
   tacFull = false; $('tacfull').hidden = true;
   buildHud();
@@ -1370,13 +1378,14 @@ function startGame() {
   renderer.compile(scene, camera);
   $('campaign-objective').hidden = !campaignMission;
   if (campaignMission) $('campaign-objective').textContent = 'OPERATION 0' + campaignMissionId + ' // ' + campaignMission.objective;
+  bridge?.incomingHail(campaignMissionId);
   showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[choice.diff].label, 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
   setTimeout(() => Voice.say('battle-stations', 0), 2000);
 }
 function endGame(outcome) {
   if (game.ending) return;
-  game.ending = true; game.outcome = outcome; game.endT = 7;
+  game.ending = true; game.outcome = outcome; game.endT = 7; bridge?.onEnd();
   // Mission 3 can end in surrender and mission 5 by transmitting/escaping.
   // Neither should trigger the destroyed-enemy VO.
   if (!(outcome === 'win' && (game.campaignOutcome === 'surrender' || game.campaignOutcome === 'extracted')))
@@ -1442,6 +1451,8 @@ function shieldFlash(s, u) {
 const SHIELD_MULT = { lance: 1.4, beam: 1.2, plasma: 1.5, torp: 0.6, mine: 0.6, missile: 0.8, rail: 0.7 };
 function damage(s, dmg, kind, local, src) {
   if (!s.alive || (game && game.ending && s.isWinner)) return;
+  if (bridge && s === enemy && src === player) dmg *= bridge.attackMultiplier();
+  if (bridge && s === player && src === enemy) dmg *= bridge.defenseMultiplier();
   const u = localUnit(s, local, _du); const f = facingOfUnit(u);
   const mult = SHIELD_MULT[kind] || 1;
   let hullD = dmg; const t = game.time;
@@ -1457,6 +1468,9 @@ function damage(s, dmg, kind, local, src) {
   if (hullD > 0) {
     if (s === player && s.hull >= s.C.hull * 0.25 && s.hull - hullD < s.C.hull * 0.25) Voice.say('hull-critical', 30, true);
     s.hull -= hullD;
+    if (bridge && s === enemy && !game.enemyHalfReported && s.hull <= s.C.hull * 0.5) {
+      game.enemyHalfReported = true; bridge.report('okoye', 'Enemy hull below fifty percent. Their formation is breaking.');
+    }
     if (Math.random() < clamp(hullD / 70, 0.12, 0.9)) {
       const list = FACING_SUBS[f], k = list[Math.random() < 0.6 ? 0 : Math.random() < 0.6 ? 1 : 2];
       const before = s.sub[k];
@@ -1995,6 +2009,7 @@ window.addEventListener('keydown', e => {
   if (e.repeat) return;
   if (k === 'KeyP' || k === 'Escape') { pause(state === 'playing'); return; }
   if (state !== 'playing') return;
+  if (bridge && bridge.activateByKey(k)) return;
   if (k === 'KeyC') cam.mode = cam.mode === 'chase' ? 'target' : 'chase';
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
   if (k === 'KeyM') Sfx.toggle();
@@ -2355,6 +2370,7 @@ function hudFast(dt) {
 // ---------------- main update ----------------
 function updateGame(dt) {
   game.time += dt;
+  bridge?.tick(dt);
   if (campaignMission && !game.ending) {
     if (campaignMissionId === 3 && enemy?.alive && player?.alive && enemy.hull <= enemy.C.hull * .28) {
       game.campaignOutcome = 'surrender';
@@ -2482,7 +2498,7 @@ function frame(now) {
 }
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
-  get state() { return state; }, get game() { return game; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
+  get state() { return state; }, get game() { return game; }, get bridge() { return bridge; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
   start: startGame, setPips, fireGroup, inArc, Sfx, damage,
   step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } }
 };

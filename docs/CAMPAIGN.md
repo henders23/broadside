@@ -61,7 +61,7 @@ Five named senior officers appear in an interactive personnel dossier:
 - Lieutenant Nara Sato — Helm officer and evasive manoeuvring.
 - Ensign Idris Renn — Intelligence officer and signals analysis.
 
-These are narrative dossiers at present. **Portraits and active officer abilities remain to build.** A first implementation should add high-resolution individual portraits, voice/personality briefs and exactly one mechanically legible passive bonus or cooldown per officer, balanced against the ship's base stats.
+These officers now have active battle commands (5–9): Varro shields, Okoye target solution, Vale damage control, Sato evasive patterns and Renn enemy scans. Each has a cooldown, bridge transmission and mission briefing introduction. **Dedicated command portrait atlas, command ability controller, and campaign battle commands are implemented. Enemy human portraits remain classified placeholder medallions until their separate art pass.** A first implementation should add high-resolution individual portraits, voice/personality briefs and exactly one mechanically legible passive bonus or cooldown per officer, balanced against the ship's base stats.
 
 ## Architecture
 
@@ -78,10 +78,24 @@ The strategic screen was exercised in a headless browser at 1600×900 and 1280×
 ## Recommended next milestones
 
 1. **Battle QA and balancing** — Play every operation on all four hulls. Confirm damage persistence, loss recovery, mission 3's surrender, mission 5's extraction, torpedo scarcity and navigation.
-2. **Officer portraits and command bridge** — Create dedicated portraits (not a contact sheet in the shipping game), individual bios, briefing reaction panels and combat VO, then one passive specialty per officer.
+2. **Officer portraits and command bridge** — Initial playable stage complete: five individual portraits drawn from one compressed atlas, officer dossiers, briefing reactions, keyboard/button commands and cooldowns. Next: distinct human enemy portraits and recorded bridge VO; currently dialogue is on-screen text.
 3. **Real alternate objectives** — Protect a moving transport, disable an enemy without killing, defend a relay, reach an extraction point. Introduce reusable objective/event logic rather than per-mission conditionals.
 4. **Multiple ships** — Refactor target selection, AI, collision, munition pools and health state to support escorts and fleet elements without breaking the duel.
 5. **Dynamic galaxy** — Add ownership changes, faction movement, reputation, intel unlocks, optional operations and consequences that affect the next mission.
 6. **Art pass** — Replace baked-label atlas with separated high-resolution astronomical artwork and vector/natively rendered routes, labels and markers. Add dedicated cinematic ship/world/commander artwork and smooth transitions.
 
 Every milestone should preserve the intentional slow, dangerous, naval feel of Broadside.
+
+
+## Officer command implementation (October 2026)
+
+- Keys **5–9** or the on-screen bridge deck activate abilities during campaign operations only. Skirmish balance is unchanged.
+- Varro — Brace: instantly restores 16% of the ship class's baseline shield value to each bank, capped by the current bank capacity; cooldown 100s.
+- Okoye — Target Solution: +12% damage from the player for 14s; cooldown 110s.
+- Vale — Damage Control: +24 subsystem integrity to the most damaged subsystem and extinguishes one fire; cooldown 125s; refuses to expend when nothing needs repair.
+- Sato — Evasive Pattern: -22% incoming enemy damage for 12s; cooldown 105s.
+- Renn — Threat Scan: reports the enemy's weakest shield facing and least intact subsystem; cooldown 80s.
+- All ability cooldowns are **battle-local**, reset at mission deployment, and do not alter campaign save format.
+- `crew/personnel.js` holds character descriptions, mission lines, commander identities, and portrait positions. `crew/bridge-controller.js` is decoupled from Three.js and takes battle objects via dependency injection.
+- `img/command-portraits.webp` is a compressed six-frame portrait atlas containing five Meridian officer portraits plus ORACLE-9's armoured synthetic portrait. Human enemy commanders and the Wraith's Cantor use deliberate classified-identification medallions until commissioned artwork is complete.
+- Automated testing covered the five command effects/cooldowns and the personnel and briefing UI, but **full live WebGL combat playthroughs remain unverified**.

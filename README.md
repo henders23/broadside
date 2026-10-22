@@ -94,3 +94,8 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 - Spoken alerts were generated with ElevenLabs (voice: Philippa). To add a line, put its .mp3 in `voice/` and add its name to `VOICE_LINES` in `index.html`; the game already asks for these lines at the right moments: `enemy-shields-down`, `hull-critical`, `torpedoes-inbound`, `mines-detected`, `torpedo-away`, `afterburners`, `brace`, `battle-stations`, `enemy-destroyed`, `ship-lost`.
 - The title screen art and both music tracks ("Weightless Descent" on the title screen, "Untitled" in battle) were supplied by the project owner. The music was re-encoded at 128 kbps.
 - Every weapon's sound comes from the supplied pack, pitched differently per weapon. Sound effects come from a sci-fi weapon sound pack supplied by the project owner. The original file names credit universfield, rescopicsound, magiazzz, soundreality and freesound_community; check those creators' licence terms before publishing the game widely.
+
+
+### Bridge officer commands (campaign)
+
+During story battles only, open the bridge deck to activate five named officer abilities with mouse or keys **5–9**: Brace (restore directional shields), Target Solution (+12% outgoing damage for 14 seconds), Damage Control (repair the worst subsystem and suppress one fire), Evasive Pattern (reduce incoming damage for 12 seconds), or Threat Scan (reveal enemy weaknesses). Cooldowns and transmissions are displayed in combat. The campaign map offers portrait dossiers and commander-to-commander mission briefings.

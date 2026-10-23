@@ -7,8 +7,11 @@ const X=ctx.BroadsideExperience,P=ctx.BroadsidePersonnel;
 
 assert.equal(X.levelOf(0),1);assert.equal(X.levelOf(99),1);assert.equal(X.levelOf(100),2);assert.equal(X.levelOf(699),4);assert.equal(X.levelOf(5000),5);
 const p=X.progress({xp:175,battles:2,uses:3});
-assert.equal(p.rank,'Seasoned');assert.equal(p.next,'Veteran');assert.equal(p.toNext,75);assert.equal(p.fraction,0.5);
-assert.equal(X.progress(undefined).level,1,'officers without a record start as Regulars');
+assert.equal(p.rank,'Lieutenant');assert.equal(p.next,'Lt. Commander');assert.equal(p.toNext,75);assert.equal(p.fraction,0.5);
+assert.equal(X.progress(undefined,'varro').rank,'Ensign','officers start as ensigns');assert.equal(X.progress(undefined,'vale').rank,'Petty Officer','the engineer starts as a petty officer');
+assert.equal(X.progress({xp:450},'vale').rank,'Master Chief');assert.equal(X.progress({xp:900},'sato').rank,'Captain');
+for(const c of P.crew)assert.equal(c.name,X.displayName(c,1),c.id+' starts at the bottom of the track');
+assert.equal(X.displayName(P.crew.find(c=>c.id==='okoye'),3),'Lt. Commander Imani Okoye');
 assert.equal(X.progress({xp:800}).max,true);
 
 // One engagement: a win with two Brace orders and five Target Solutions (uses count up to three).
@@ -16,8 +19,8 @@ const r=X.award(undefined,'win',{varro:2,okoye:5});
 const g=Object.fromEntries(r.gains.map(x=>[x.id,x]));
 assert.equal(g.varro.gained,90);assert.equal(g.okoye.gained,105);assert.equal(g.vale.gained,60);
 assert.equal(r.officers.okoye.uses,5);assert.equal(r.officers.renn.battles,1);
-assert.equal(g.okoye.promoted,true,'105 XP after one engagement is Seasoned');assert.equal(g.varro.promoted,false);
-assert.equal(X.award(r.officers,'loss',{}).gains.find(x=>x.id==='varro').promoted,true,'90 + 30 XP crosses into Seasoned');
+assert.equal(g.okoye.promoted,true,'105 XP after one engagement makes her a lieutenant');assert.equal(g.okoye.rank,'Lieutenant');assert.equal(g.vale.rank,'Petty Officer');assert.equal(g.varro.promoted,false);
+assert.equal(X.award(r.officers,'loss',{}).gains.find(x=>x.id==='varro').promoted,true,'90 + 30 XP earns promotion');
 assert.equal(X.award(undefined,'loss',null).gains[0].gained,30);
 
 // Rank scales strength and cooldown, and the text matches.

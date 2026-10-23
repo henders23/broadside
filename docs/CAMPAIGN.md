@@ -68,15 +68,17 @@ Post-battle choices set named flags for future narrative use; they currently do 
 
 Five named senior officers appear on the **Officers** screen (the Officers tab): a list of the bridge crew, and for the selected officer a large portrait, bio, battle command with its key, cooldown and duration, voice line, and the briefing lines they have given for unlocked operations. A **Service record** card shows the officer's rank, XP toward the next rank, engagements and commands given.
 
-**Officer experience** (`crew/experience.js`, tested by `tests/experience.test.js`): after every campaign engagement each officer earns 60 XP for a victory or 30 for a defeat, plus 15 XP for each time their command was used (up to three). The battle page saves the use counts with the result (`pendingResult.officerUses`); the campaign awards XP once when the after-action report opens (stored on the result so a reload cannot repeat it), saves it in `state.officers`, and lists the gains and promotions in the report. Ranks are Regular, Seasoned, Veteran, Elite and Ace at 0, 100, 250, 450 and 700 XP. Each rank above Regular makes the officer's command 8% stronger and its cooldown 5% shorter; the bridge controller applies this in battle (Brace shield restore, Target Solution damage bonus, Damage Control repair, Evasive Pattern damage reduction, and every cooldown). Renn's Threat Scan gains only the shorter cooldown. A new campaign resets the crew to Regular. Values are first-pass and need playtesting: with only five operations, officers reach Seasoned after two engagements and Veteran or Elite by the end of Act I.
+**Officer experience** (`crew/experience.js`, tested by `tests/experience.test.js`): after every campaign engagement each officer earns 60 XP for a victory or 30 for a defeat, plus 15 XP for each time their command was used (up to three). The battle page saves the use counts with the result (`pendingResult.officerUses`); the campaign awards XP once when the after-action report opens (stored on the result so a reload cannot repeat it), saves it in `state.officers`, and lists the gains and promotions in the report. Promotions come at 100, 250, 450 and 700 XP (five ranks per track, defined in `TRACKS`). Each promotion makes the officer's command 8% stronger and its cooldown 5% shorter; the bridge controller applies this in battle (Brace shield restore, Target Solution damage bonus, Damage Control repair, Evasive Pattern damage reduction, and every cooldown). Renn's Threat Scan gains only the shorter cooldown. A new campaign returns the crew to their starting ranks. Values are first-pass and need playtesting: with only five operations, officers earn their first promotion after two engagements and reach rank three or four by the end of Act I.
 
 Below, **Known adversaries** shows the enemy commanders of unlocked or completed operations; the rest stay unidentified.
 
-- Commander Elise Varro — First officer and crisis coordination.
-- Lt. Commander Imani Okoye — Tactical officer and target assessment.
-- Chief Tomas Vale — Chief engineer and reactor/damage control.
-- Lieutenant Nara Sato — Helm officer and evasive manoeuvring.
-- Ensign Idris Renn — Intelligence officer and signals analysis.
+- Elise Varro — First officer and crisis coordination.
+- Imani Okoye — Tactical officer and target assessment.
+- Tomas Vale — Chief engineer and reactor/damage control.
+- Nara Sato — Helm officer and evasive manoeuvring.
+- Idris Renn — Intelligence officer and signals analysis.
+
+All five begin the campaign at the bottom of their career track and are promoted with experience (below): Varro, Okoye, Sato and Renn rise from Ensign through Lieutenant, Lt. Commander and Commander to Captain; Vale, an engineer from the enlisted rates, rises from Petty Officer through Chief Petty Officer, Senior Chief and Master Chief to Chief Warrant Officer. Their names show their current rank everywhere in the campaign and on the battle bridge buttons.
 
 These officers now have active battle commands (5–9): Varro shields, Okoye target solution, Vale damage control, Sato evasive patterns and Renn enemy scans. Each has a cooldown, bridge transmission and mission briefing introduction. **Dedicated command portrait atlas, command ability controller, and campaign battle commands are implemented. The four previously classified enemy commanders now have individually drawn SVG portraits (Vex, Sable, Thorne, Cantor); these are illustrated rather than photorealistic.** Future work should replace illustrated enemy portraits with cohesive photorealistic art, add recorded officer VO, and test combat balance across all ship classes.
 

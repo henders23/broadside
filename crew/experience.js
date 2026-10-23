@@ -2,21 +2,29 @@
 // Loaded by the campaign map, the battle page (via the bridge controller) and the Node tests.
 (function (root) {
   'use strict';
-  const RANKS = ['Regular', 'Seasoned', 'Veteran', 'Elite', 'Ace'];
+  // Officers start at the bottom of their career track and are promoted as they gain experience.
+  const TRACKS = {
+    officer: ['Ensign', 'Lieutenant', 'Lt. Commander', 'Commander', 'Captain'],
+    enlisted: ['Petty Officer', 'Chief Petty Officer', 'Senior Chief', 'Master Chief', 'Chief Warrant Officer']
+  };
+  const TRACK_OF = { vale: 'enlisted' };   // the chief engineer rose through the enlisted rates
+  const ranks = id => TRACKS[TRACK_OF[id] || 'officer'];
   const LEVEL_XP = [0, 100, 250, 450, 700];   // XP needed to reach each rank
   const XP = { win: 60, loss: 30, perUse: 15, maxUses: 3 };
   const IDS = ['varro', 'okoye', 'vale', 'sato', 'renn'];
 
   const levelOf = xp => { let n = 1; for (let i = 1; i < LEVEL_XP.length; i++) if ((xp || 0) >= LEVEL_XP[i]) n = i + 1; return n; };
-  function progress(rec) {
+  function progress(rec, id) {
+    const R = ranks(id);
     const xp = Math.max(0, Math.round((rec && rec.xp) || 0)), level = levelOf(xp), max = level === LEVEL_XP.length;
     const from = LEVEL_XP[level - 1], to = max ? from : LEVEL_XP[level];
-    return { xp, level, rank: RANKS[level - 1], max, next: max ? null : RANKS[level], toNext: max ? 0 : to - xp, fraction: max ? 1 : (xp - from) / (to - from),
+    return { xp, level, rank: R[level - 1], max, next: max ? null : R[level], toNext: max ? 0 : to - xp, fraction: max ? 1 : (xp - from) / (to - from),
       battles: (rec && rec.battles) || 0, uses: (rec && rec.uses) || 0 };
   }
-  // Each rank above Regular: cooldown 5% shorter, command 8% stronger.
+  // Each promotion: cooldown 5% shorter, command 8% stronger.
   const scale = level => ({ cooldown: 1 - 0.05 * (level - 1), strength: 1 + 0.08 * (level - 1) });
-  const levels = officers => Object.fromEntries(IDS.map(id => [id, progress(officers && officers[id]).level]));
+  const levels = officers => Object.fromEntries(IDS.map(id => [id, progress(officers && officers[id], id).level]));
+  const displayName = (officer, level) => `${ranks(officer.id)[level - 1]} ${officer.given || officer.name}`;
 
   // Command text at a given rank, matching what the bridge controller applies in battle.
   function effect(officer, level) {
@@ -39,10 +47,10 @@
       const gained = (outcome === 'win' ? XP.win : XP.loss) + XP.perUse * Math.min(used, XP.maxUses);
       const rec = { xp: (before.xp || 0) + gained, battles: (before.battles || 0) + 1, uses: (before.uses || 0) + used };
       const was = levelOf(before.xp), now = levelOf(rec.xp);
-      out[id] = rec; gains.push({ id, gained, used, promoted: now > was, rank: RANKS[now - 1] });
+      out[id] = rec; gains.push({ id, gained, used, promoted: now > was, rank: ranks(id)[now - 1] });
     }
     return { officers: out, gains };
   }
 
-  root.BroadsideExperience = Object.freeze({ RANKS, LEVEL_XP, XP, levelOf, progress, scale, levels, effect, cooldown, award });
+  root.BroadsideExperience = Object.freeze({ TRACKS, ranks, displayName, LEVEL_XP, XP, levelOf, progress, scale, levels, effect, cooldown, award });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -142,6 +142,18 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #menu,#loading{align-items:center;text-align:center}
 .screen.bgimg{background:linear-gradient(180deg,rgba(4,6,11,.3),rgba(4,6,11,.1) 45%,rgba(4,6,11,.75)),url(img/title.webp) center/cover no-repeat,var(--ink)}
 #menu.left{align-items:flex-start}
+/* live title screen: the 3D fight replaces the title art; the menu sits bottom-left over a soft vignette */
+#attract-fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .7s ease}#attract-fade.on{opacity:1}
+#menu.live{background:linear-gradient(90deg,rgba(4,6,11,.88) 0%,rgba(4,6,11,.5) 30%,rgba(4,6,11,0) 58%),linear-gradient(0deg,rgba(4,6,11,.8) 0%,rgba(4,6,11,0) 34%),linear-gradient(180deg,rgba(4,6,11,.55) 0%,rgba(4,6,11,0) 18%);align-items:flex-start;text-align:left}
+#menu.live #m-main{align-items:flex-start;margin-block:auto 0}
+#menu.live .titlebox{background:none;border:0;box-shadow:none;padding:0;align-items:flex-start}
+#menu.live .titlebox .tag{text-align:left;max-width:46ch}
+#menu.live .title{font-size:clamp(64px,min(12vw,17vh),176px);text-shadow:0 6px 40px rgba(0,0,0,.6)}
+#menu.live .mbtn{background:rgba(0,0,0,.5);backdrop-filter:blur(6px)}#menu.live .mbtn.primary{background:rgba(44,31,9,.8)}
+#attract-cap{display:none;position:absolute;right:max(16px,env(safe-area-inset-right,0px),5vw);bottom:calc(26px + env(safe-area-inset-bottom,0px));margin:0;font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);text-align:right;max-width:44ch}
+#attract-cap::before{content:"";display:inline-block;width:7px;height:7px;margin-right:10px;border-radius:50%;background:#ff5a4a;box-shadow:0 0 8px #ff5a4a;vertical-align:1px}
+#menu.live.main #attract-cap{display:block}
+@media (max-width:760px){#menu.live #attract-cap{display:none}}
 .mpage{display:flex;flex-direction:column;align-items:center;gap:22px;width:100%;margin-block:auto}
 #menu.left .mpage{align-items:flex-start}
 .titlebox{background:#000;border:1px solid var(--line);padding:clamp(18px,3vw,30px) clamp(20px,4vw,48px);display:flex;flex-direction:column;align-items:center;gap:14px;max-width:100%;box-shadow:0 24px 70px rgba(0,0,0,.65)}
@@ -224,6 +236,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <body>
 <div id="stage">
   <canvas id="gl" aria-label="Broadside 3D battle view"></canvas>
+  <div id="attract-fade" aria-hidden="true"></div>
 
   <div id="hud" hidden>
     <div id="bridge-orders" hidden aria-label="Bridge officer commands"></div>
@@ -283,6 +296,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 
   <div id="fps" hidden></div>
   <section class="screen bgimg" id="menu" hidden>
+    <p id="attract-cap" aria-hidden="true"></p>
     <div class="mpage" id="m-main">
       <div class="titlebox">
         <h1 class="title">Broad<span>side</span></h1>
@@ -1043,7 +1057,7 @@ function musicLabels() {
 function toggleMusic() { const on = Music.toggle(); if (state === 'playing' || state === 'paused') showMsg(on ? 'Music on' : 'Music off', 1.2); }
 $('music1').addEventListener('click', toggleMusic); $('music2').addEventListener('click', toggleMusic);
 
-function volAt(p) { const d = camera.position.distanceTo(p); return clamp(1 - d / 6000, 0, 1) ** 1.6; }
+function volAt(p) { const d = camera.position.distanceTo(p); return clamp(1 - d / 6000, 0, 1) ** 1.6 * (attract.on ? 0.3 : 1); }   // the title-screen fight stays under the music
 
 // ---------------- model loading ----------------
 const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
@@ -1352,6 +1366,7 @@ function clearWorld() {
   fire.clear(); smoke.clear();
 }
 function startGame() {
+  attractStop();
   Sfx.init(); Music.play('battle', true);
   clearWorld(); battleEnvironment.configure(campaignMissionId); display.visible = false;
   const campaignSave = campaignMission ? readCampaignSave() : null;
@@ -1458,6 +1473,7 @@ function showOver() {
   }
 }
 function toMenu(page = 'main') {
+  attractStop();
   state = 'menu'; game = null; fleet = null; bridge = null; clearWorld(); battleEnvironment.configure(0); player = enemy = null; Music.play('title');
   display.visible = true; updateDisplay();
   $('hud').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('menu').hidden = false;
@@ -1523,6 +1539,7 @@ function killShip(s) {
   s.tumble.set(rand(-0.02, 0.02), rand(-0.03, 0.03), rand(-0.04, 0.04));
   hideBeams(s);
   if (s.lanceGlow) s.lanceGlow.visible = false;
+  if (game && game.demo) { if (attract.downT <= 0) attract.downT = 7; return; }   // title-screen fight: no result, just the next matchup
   if(fleet)fleet.onDestroyed(s);
   else {endGame(s===player?'lose':'win'); if(s===player)enemy.isWinner=true;else player.isWinner=true;}
   if(s===player){for(const opponent of ships)if(opponent.team==='e')opponent.isWinner=true;}
@@ -2116,7 +2133,7 @@ function showPage(pg) {
   const from = menuPage; menuPage = pg;
   document.querySelectorAll('#menu .mpage').forEach(el => { el.hidden = el.id !== 'm-' + pg; });
   // the ship page drops the title art so the turning 3D model shows through
-  $('menu').classList.toggle('bgimg', pg !== 'ship'); $('menu').classList.toggle('left', pg === 'ship');
+  $('menu').classList.toggle('bgimg', pg !== 'ship'); $('menu').classList.toggle('left', pg === 'ship'); $('menu').classList.toggle('main', pg === 'main');
   menuValues();
   const f = pg === 'main' ? document.querySelector(`[data-page="${from}"]`) || document.querySelector('#m-main .go') : $('m-' + pg).querySelector('[aria-pressed="true"]') || $('m-' + pg).querySelector('.back');
   if (f && !$('menu').hidden) f.focus({ preventScroll: true });
@@ -2130,6 +2147,7 @@ window.addEventListener('keydown', e => { if (state === 'menu' && e.code === 'Es
 
 // ---------------- camera ----------------
 function updateCamera(dt) {
+  if (state === 'menu' && attract.on) { attractCamera(); return; }
   if (state === 'menu' || state === 'loading') {
     menuT += dt;
     const sel = displayShips[choice.ship];
@@ -2158,6 +2176,89 @@ function updateCamera(dt) {
   else camera.lookAt(_v2.copy(P.pos).addScaledVector(P.fwd, dist * 0.15).add(_v3.set(0, dist * 0.06, 0)));
   if (cam.shake > 0) { camera.position.x += rand(-1, 1) * cam.shake * 4; camera.position.y += rand(-1, 1) * cam.shake * 4; cam.shake = Math.max(0, cam.shake - dt * 1.5); }
   camera.fov += ((P.burn ? 62 : 55) - camera.fov) * (1 - Math.exp(-3 * dt)); camera.updateProjectionMatrix();
+}
+
+// ---------------- title-screen fight ----------------
+// Behind the main menu two AI captains fight a real engagement with the battle simulation, filmed by a cinematic camera
+// that cuts between close shots. When a ship is destroyed (or after ATTRACT_MAX seconds) it fades to the next matchup.
+// Each matchup: [player-side hull, enemy hull, mission scenery preset from crew/battle-environments.js].
+const ATTRACT_PAIRS = [['bastion', 'scrapjaw', 1], ['halberd', 'wraith', 5], ['warden', 'seraph', 4], ['sabre', 'revenant', 2], ['bastion', 'wraith', 3], ['warden', 'scrapjaw', 1]];
+const ATTRACT_SHOTS = ['broadside', 'chase', 'flyby', 'reverse', 'orbit'], ATTRACT_SHOT_T = 6.5, ATTRACT_MAX = 80, ATTRACT_RANGE = 850;
+const attract = { on: false, pair: -1, a: null, b: null, t: 0, shot: 0, shotT: 0, side: 1, downT: 0, fadeT: 0, fly: new V3(), focus: null, rocks: [] };
+const hullLen = s => s.C.len || s.C.hullE.r[2] * 2;
+function attractStart() {
+  attract.pair = (attract.pair + 1) % ATTRACT_PAIRS.length;
+  const [ka, kb, scenery] = ATTRACT_PAIRS[attract.pair];
+  game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [], demo: true };
+  battleEnvironment.configure(scenery);
+  // the skirmish rock field crowds close-up shots, so it is lifted out (and out of collisions) for the title fight
+  if (!attract.rocks.length) { attract.rocks = asteroids.splice(0); for (const r of attract.rocks) r.mesh.visible = false; }
+  // demo captains want a much shorter range than in battle so the camera can film both ships together
+  const close = k => ({ ...CLASSES[k], pref: Math.min(CLASSES[k].pref, ATTRACT_RANGE) });
+  const a = makeShip(ka, 'p', close(ka)), b = makeShip(kb, 'e', close(kb));
+  a.target = b; b.target = a;
+  placeShip(a, new V3(-200, 0, 430), 0);
+  placeShip(b, new V3(200, rand(-40, 40), -430), Math.PI);
+  for (const s of [a, b]) s.ai = { diff: DIFF.captain, side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
+  Object.assign(attract, { on: true, a, b, t: 0, downT: 0, fadeT: 0, shot: Math.floor(Math.random() * ATTRACT_SHOTS.length) });
+  display.visible = false; $('menu').classList.add('live');
+  $('attract-cap').textContent = `Live engagement · ${CLASSES[ka].name} ${CLASSES[ka].cls.toLowerCase()} vs ${CLASSES[kb].name} ${CLASSES[kb].cls.toLowerCase()}`;
+  attractShot();
+}
+function attractStop(next = false) {
+  if (!attract.on) return;
+  attract.on = false;
+  if (!next) { for (const r of attract.rocks) { r.mesh.visible = true; asteroids.push(r); } attract.rocks = []; battleEnvironment.configure(0); }
+  for (const s of [attract.a, attract.b]) if (s && ships.includes(s)) removeShip(s);
+  for (const b of shells) b.active = false;
+  for (const t of torps) { t.active = false; t.obj.visible = false; }
+  for (const m of mines) { m.active = false; m.obj.visible = false; }
+  fire.clear(); smoke.clear();
+  attract.a = attract.b = attract.focus = null; game = null;
+  display.visible = true; updateDisplay();
+  $('menu').classList.remove('live'); $('attract-fade').classList.remove('on');
+}
+function attractUpdate(dt) {
+  if (!attract.on) return;
+  if (attract.fadeT > 0) { attract.fadeT -= dt; if (attract.fadeT <= 0) { attractStop(true); attractStart(); return; } }
+  game.time += dt; attract.t += dt; attract.shotT += dt;
+  for (const s of ships) {
+    if (s.ai) aiUpdate(s, dt);
+    powerUpdate(s); afterburnerUpdate(s, dt); helm(s, dt); shieldsUpdate(s, dt); repairsUpdate(s, dt);
+    if (s.alive) weaponsUpdate(s, dt); else hideBeams(s);
+    pointDefence(s, dt); firesUpdate(s, dt);
+    if (s.alive && s.pos.length() > ARENA + 600) damage(s, 12 * dt, 'shell', _v1.set(0, 0, 0), null);
+  }
+  shellsUpdate(dt); torpsUpdate(dt); minesUpdate(dt); collisions();
+  if (attract.shotT > ATTRACT_SHOT_T) attractShot();
+  if (attract.downT > 0) attract.downT -= dt;
+  if (attract.fadeT <= 0 && ((attract.downT < 0) || attract.t > ATTRACT_MAX)) { attract.fadeT = 0.8; $('attract-fade').classList.add('on'); }
+}
+function attractShot() {
+  attract.shotT = 0; attract.shot = (attract.shot + 1) % ATTRACT_SHOTS.length; attract.side = Math.random() < 0.5 ? 1 : -1;
+  if (ATTRACT_SHOTS[attract.shot] === 'flyby') {   // a fixed camera just off one ship's bow, which sails past it
+    const s = attract.focus = Math.random() < 0.5 ? attract.a : attract.b, L = hullLen(s);
+    attract.fly.copy(s.pos).addScaledVector(s.fwd, L * 0.75).addScaledVector(_v1.set(1, 0, 0).applyQuaternion(s.q), attract.side * L * 0.45).add(_v2.set(0, L * 0.12, 0));
+  }
+}
+function attractCamera() {
+  const A = attract.a, B = attract.b, k = attract.shotT, shot = ATTRACT_SHOTS[attract.shot];
+  const near = shot === 'reverse' ? B : A, far = near === A ? B : A, L = hullLen(near);
+  const right = _v3.set(1, 0, 0).applyQuaternion(near.q);
+  if (shot === 'broadside') {   // low along the flank, looking past the guns at the enemy
+    camera.position.copy(near.pos).addScaledVector(right, attract.side * L * 0.55).addScaledVector(near.fwd, -L * (0.35 - k * 0.04)).add(_v4.set(0, L * 0.06 + k * 3, 0));
+    camera.lookAt(_v5.copy(near.pos).lerp(far.pos, 0.55));
+  } else if (shot === 'chase' || shot === 'reverse') {   // over the shoulder of one ship toward the other
+    camera.position.copy(near.pos).addScaledVector(near.fwd, -L * 1.1).add(_v4.set(0, L * 0.32, 0)).addScaledVector(right, attract.side * L * 0.25);
+    camera.lookAt(_v5.copy(near.pos).lerp(far.pos, 0.45));
+  } else if (shot === 'flyby') {
+    camera.position.copy(attract.fly); camera.lookAt(attract.focus.pos);
+  } else {   // slow wide orbit around both ships
+    const mid = _v5.copy(A.pos).lerp(B.pos, 0.5), R = Math.max(700, A.pos.distanceTo(B.pos) * 0.75), ang = attract.t * 0.12 + attract.side;
+    camera.position.set(mid.x + Math.sin(ang) * R, mid.y + R * 0.28, mid.z + Math.cos(ang) * R); camera.lookAt(mid);
+  }
+  if (W > 760) camera.rotateY(0.27);   // put the action right of the menu
+  camera.fov = 48; camera.updateProjectionMatrix();
 }
 
 // ---------------- menu display ----------------
@@ -2545,6 +2646,10 @@ function frame(now) {
   const ms = now - last; trackFrame(ms);
   const dt = Math.min(ms / 1000, 0.05); last = now;
   if (state === 'playing') updateGame(dt);
+  else if (state === 'menu') {
+    if (menuPage === 'ship') { if (attract.on) attractStop(); }
+    else { if (!attract.on) attractStart(); attractUpdate(dt); }
+  }
   else if (state === 'over') { for (const s of ships) { helm(s, dt); firesUpdate(s, dt); } shellsUpdate(dt); torpsUpdate(dt); minesUpdate(dt); }
   if (state !== 'paused') { fire.update(dt); smoke.update(dt); updateFlashes(dt); }
   updateCamera(state === 'paused' ? 0 : dt);
@@ -2552,7 +2657,7 @@ function frame(now) {
   dust.material.uniforms.uCam.value.copy(camera.position);
   if (player && state === 'playing') Sfx.engine(player.burn ? 1.8 : STEPS[player.step], player.alive);
   drawShells();
-  if (!(state === 'loading' || (state === 'menu' && menuPage !== 'ship'))) composer.render();
+  if (!(state === 'loading' || (state === 'menu' && menuPage !== 'ship' && !attract.on))) composer.render();
   updateHud(dt); hudFast(dt); Music.tick(Math.min(ms / 1000, 0.1));
 }
 // test hook: open with ?sim to drive the game from automated tests

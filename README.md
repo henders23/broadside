@@ -18,6 +18,8 @@ Enemy-only ships:
 
 The game is about shield facings, reactor power, firing arcs and turning circles rather than twitch flying.
 
+The title screen is a live engagement: two AI captains fight a real battle behind the menu, filmed by a cinematic camera that cuts between close shots and moves on to a new matchup and setting when one ship is destroyed.
+
 ## Campaign: The Shattered Reach
 
 Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use **Campaign** from the title menu). The existing skirmish mode remains available.

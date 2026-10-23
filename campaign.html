@@ -62,6 +62,20 @@
 .command{margin-top:22px;padding:20px 22px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04)}.command .head{display:flex;align-items:center;gap:14px}.command kbd{font:600 15px 'JetBrains Mono',monospace;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--amber);color:var(--amber);border-radius:8px}.command .head b{font-size:22px;font-weight:400}.command p{margin:10px 0 0;font-size:16px;line-height:1.45;color:rgba(255,255,255,.8)}.command .stats{display:flex;gap:40px;margin-top:14px}.command .stats .k{font-size:10px}.command .stats b{display:block;margin-top:4px;font-size:17px;font-weight:400}
 #dosvoice{margin:16px 0 0;font-size:15px;font-style:italic;font-weight:300;color:rgba(255,255,255,.7)}
 #foes{position:absolute;left:480px;top:712px;width:1056px}#foelist{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:10px}.foe{display:flex;gap:12px;align-items:center;min-height:96px;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03)}.foe .crew-portrait{width:56px;height:64px;border-radius:8px}.foe b{display:block;font-size:15px;font-weight:500}.foe small{display:block;margin:2px 0 6px;font-size:12px;color:var(--dim)}.foe .k{font-size:10px}.foe.unknown{justify-content:center;text-align:center;font-size:13px;color:var(--faint);border-style:dashed}
+/* opening briefing */
+#intro{position:absolute;inset:0;z-index:35;background:#000;overflow:hidden}#intro[hidden]{display:none}
+#introportrait{position:absolute;left:0;top:0;width:675px;height:900px;background:url('img/admiral-harlan.webp') center top/cover no-repeat}
+#introportrait::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0) 55%,#000 100%),linear-gradient(0deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,0) 30%)}
+#introname{position:absolute;left:48px;bottom:44px;z-index:1}#introname b{display:block;font-size:30px;font-weight:300;letter-spacing:-.01em}#introname .k{margin-top:6px}
+#introtext{position:absolute;left:700px;top:84px;width:836px;display:flex;flex-direction:column}
+#introtext h1{margin:12px 0 0 -3px;font-size:64px;line-height:1;font-weight:200;letter-spacing:-.025em}
+#introtext .sub{margin-top:10px;font-size:16px;font-weight:500;letter-spacing:.04em;color:var(--amber)}
+#introbody{margin-top:26px;display:flex;flex-direction:column;gap:14px}#introbody p{margin:0;font-size:18px;font-weight:300;line-height:1.55;color:rgba(255,255,255,.86)}#introbody .salute{font-size:16px;color:var(--dim)}
+#introorders{margin:22px 0 0;padding:16px 20px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);list-style:none;display:flex;flex-direction:column;gap:8px}#introorders li{display:flex;gap:14px;font-size:15px;line-height:1.45}#introorders li span{font:11px 'JetBrains Mono',monospace;color:var(--amber);padding-top:3px}
+#introgo{margin-top:24px;align-self:flex-start;height:52px;padding:0 32px;border-radius:26px}
+#intro .reveal{opacity:0;transform:translateY(6px);animation:introIn .7s ease forwards}
+@keyframes introIn{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#intro .reveal{animation:none;opacity:1;transform:none}}
 /* modal */
 #veil{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:22px}#veil[hidden]{display:none}#modal{width:min(650px,100%);max-height:min(90vh,800px);overflow:auto;background:#07090d;border:1px solid rgba(255,255,255,.18);border-radius:20px;box-shadow:0 25px 90px #000;padding:28px 33px 26px}#modalheader{font:11px 'JetBrains Mono',monospace;color:var(--amber);letter-spacing:.2em;margin-bottom:12px}#modaltitle{font-weight:300;letter-spacing:-.01em;font-size:40px;margin:0 0 15px;line-height:1.05}#modalbody{color:rgba(255,255,255,.8);font-size:15px;line-height:1.6}#modalbody p{margin:0 0 12px}#modalbody b{color:#fff;font-weight:600}#modalbody .choice{margin:6px 0 12px;display:block;border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:10px 14px;background:none;text-align:left;width:100%}#modalbody .choice:hover{background:rgba(255,255,255,.08)}#modalbody select{width:100%;background:#0d1118;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:12px;margin-top:10px}#modalactions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:22px}#modalactions button{min-height:44px;background:transparent;border:1px solid rgba(255,255,255,.35);border-radius:22px;padding:0 20px;letter-spacing:.12em;text-transform:uppercase;font-size:12px;font-weight:500}#modalactions .primary{background:#fff;border-color:#fff;color:#000;font-weight:600}#modalactions button:hover:not(:disabled){filter:brightness(1.2)}
 @media(max-width:700px){body{font-size:15px}}
@@ -110,6 +124,26 @@
 </section>
 <header id="top"><span id="brand">BROADSIDE</span><nav class="nav" aria-label="Campaign commands"><button class="current" id="tabMap">Map</button><button id="tabShip">Shipyard</button><button id="tabCrew">Officers</button><button id="tabIntel">Intel</button><button id="tabNew">New game</button><button id="tabDuel">Skirmish ↗</button></nav><span id="fleetstatus" aria-live="polite"></span></header>
 <div id="notice" role="status" aria-live="polite"></div>
+<section id="intro" hidden role="dialog" aria-modal="true" aria-labelledby="introtitle">
+<div id="introportrait" role="img" aria-label="Portrait of Fleet Admiral Gideon Harlan"><div id="introname"><b>Gideon Harlan</b><span class="k">Fleet Admiral · Frontier Fleet</span></div></div>
+<div id="introtext">
+<span class="k reveal" style="color:var(--amber)">Meridian Naval Command · Priority orders · Eyes only</span>
+<h1 id="introtitle" class="reveal" style="animation-delay:.15s">Act I · The Long Watch</h1>
+<div class="sub reveal" style="animation-delay:.3s">From Fleet Admiral Gideon Harlan, to the captain of <span class="introship"></span></div>
+<div id="introbody">
+<p class="salute reveal" style="animation-delay:.6s">Captain,</p>
+<p class="reveal" style="animation-delay:1s">For fourteen years the Shattered Reach has been quiet. That quiet is over. Three merchant ships have vanished on the Kestrel lanes in six days, and the last signal out of Kestrel was not a distress call. It was a warning.</p>
+<p class="reveal" style="animation-delay:1.8s">Command calls it piracy. I am not convinced. Corsairs do not fly with Navy transponders, and they do not vanish without wreckage. Someone is arming them, and someone wants this frontier empty.</p>
+<p class="reveal" style="animation-delay:2.6s">You will take <span class="introship"></span> out of Meridian and answer that warning. She is the only capital ship I can spare, so bring her home. Every plate of hull you lose comes out of the fleet’s requisition, and the frontier cannot afford to lose you.</p>
+</div>
+<ol id="introorders" class="reveal" style="animation-delay:3.4s">
+<li><span>01</span>Answer the call at Kestrel and protect the civilian traffic there.</li>
+<li><span>02</span>Trace the stolen Navy hardware to whoever is supplying it.</li>
+<li><span>03</span>Report anything you cannot explain. Anything at all.</li>
+</ol>
+<button class="pill solid reveal" id="introgo" style="animation-delay:3.8s">Take command →</button>
+</div>
+</section>
 </div></div></div>
 <div id="veil" hidden><section id="modal" role="dialog" aria-modal="true" aria-labelledby="modaltitle"><div id="modalheader"></div><h2 id="modaltitle"></h2><div id="modalbody"></div><div id="modalactions"></div></section></div>
 <script src="crew/personnel.js"></script>
@@ -176,7 +210,7 @@ const TORPEDO_CAP={bastion:8,halberd:6,sabre:6,warden:16};
 const CREW=Personnel.crew;
 function crewById(id){return CREW.find(c=>c.id===id)||CREW[0]}
 function commanderByMission(n){return Personnel.commanders[n]}
-function initial(){let pick='bastion';try{const v=JSON.parse(localStorage.getItem('broadside')||'{}');if(shipChoices.includes(v.ship))pick=v.ship;}catch(e){}return {version:1,ship:pick,shipName:'MNS Resolute',system:'meridian',completed:[],flags:{},credits:850,hull:1,sub:null,torps:null,attempts:0,pendingResult:null,upgrades:[]};}
+function initial(){let pick='bastion';try{const v=JSON.parse(localStorage.getItem('broadside')||'{}');if(shipChoices.includes(v.ship))pick=v.ship;}catch(e){}return {version:1,ship:pick,shipName:'MNS Resolute',system:'meridian',completed:[],flags:{},credits:850,hull:1,sub:null,torps:null,attempts:0,pendingResult:null,upgrades:[],introSeen:false};}
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&v.version===1&&shipChoices.includes(v.ship)&&Array.isArray(v.completed))return v;}catch(e){}return initial();}
 let state=load(),selected='kestrel';
 function persist(){localStorage.setItem(KEY,JSON.stringify(state));}
@@ -354,10 +388,10 @@ function renderCrew(){const list=$('crewlist'),o=crewById(crewFocus);list.replac
  const foes=$('foelist');foes.replaceChildren();
  for(const m of MISSIONS){if(!isUnlocked(m.id)&&!state.completed.includes(m.id))continue;const c=commanderByMission(m.id);if(!c)continue;const done=state.completed.includes(m.id),d=el('article','foe'),t=el('div');d.insertAdjacentHTML('afterbegin',Personnel.portrait(c));t.append(el('b',null,c.name),el('small',null,c.title||c.faction),el('span','k',done?`Op ${opNo(m)} · complete`:`Op ${opNo(m)} · at large`));d.append(t);foes.append(d);}
  const hidden=MISSIONS.length-foes.children.length;if(hidden>0)foes.append(el('div','foe unknown',`${hidden} more ${hidden===1?'commander':'commanders'} not yet identified`));}
-function intelligence(){const done=state.completed;openModal('Campaign intelligence','SECTOR INTELLIGENCE / RESTRICTED',`<p><b>Meridian Core:</b> Navy territory remains secure, but frontier shipping has suffered unexplained losses.</p><p><b>Kestrel Verge:</b> ${done.includes(1)?'Pirate action disrupted. Captain Vex’s intelligence is being analysed.':'Distress calls report a fast pirate raider attacking merchant traffic.'}</p><p><b>Ash Marches:</b> ${done.includes(2)?'Evidence indicates that renegade human military hardware has been deployed.':'Renegade naval contacts remain unverified.'}</p><p><b>Halcyon Belt and Harrow Expanse:</b> Deep-space signals are classified pending additional missions.</p><p><b>Your decisions:</b> ${Object.keys(state.flags||{}).filter(k=>state.flags[k]).map(k=>k.replaceAll('_',' ')).join(' · ')||'No major campaign decisions recorded.'}</p>`,[{label:'Close intelligence',run:close}]);}
+function intelligence(){const done=state.completed;openModal('Campaign intelligence','SECTOR INTELLIGENCE / RESTRICTED',`<p><b>Meridian Core:</b> Navy territory remains secure, but frontier shipping has suffered unexplained losses.</p><p><b>Kestrel Verge:</b> ${done.includes(1)?'Pirate action disrupted. Captain Vex’s intelligence is being analysed.':'Distress calls report a fast pirate raider attacking merchant traffic.'}</p><p><b>Ash Marches:</b> ${done.includes(2)?'Evidence indicates that renegade human military hardware has been deployed.':'Renegade naval contacts remain unverified.'}</p><p><b>Halcyon Belt and Harrow Expanse:</b> Deep-space signals are classified pending additional missions.</p><p><b>Your decisions:</b> ${Object.keys(state.flags||{}).filter(k=>state.flags[k]).map(k=>k.replaceAll('_',' ')).join(' · ')||'No major campaign decisions recorded.'}</p>`,[{label:'Replay admiral’s briefing',run:()=>{close();showIntro();}},{label:'Close intelligence',primary:true,run:close}]);}
 function newCampaign(){openModal('Commission a flagship','NEW CAMPAIGN / THE LONG WATCH',`<p>The Meridian frontier has been quiet for fourteen years. Three merchant ships have vanished in six days. Navy command calls it piracy. The last transmission from Kestrel was not a distress call. It was a warning.</p><p>Choose the hull of <b>MNS Resolute</b>. This resets existing campaign progress.</p><label for="pickShip">FLAGSHIP CLASS</label><select id="pickShip"><option value="bastion">Bastion · Heavy battleship</option><option value="halberd">Halberd · Lance cruiser</option><option value="sabre">Sabre · Battlecruiser</option><option value="warden">Warden · Siege dreadnought</option></select>`,[
  {label:'Cancel',run:close},
- {label:'Begin new campaign',primary:true,run:()=>{let ship=$('pickShip').value;state=initial();state.ship=ship;persist();close();updateFleet();selectSystem('kestrel');toast('Captain commissioned. Proceed to Distress at Kestrel.');}}
+ {label:'Begin new campaign',primary:true,run:()=>{let ship=$('pickShip').value;state=initial();state.ship=ship;persist();close();updateFleet();selectSystem('kestrel');showIntro();}}
 ]);$('pickShip').value=state.ship;}
 function afterAction(){const r=state.pendingResult;if(!r)return;const m=MISSIONS.find(x=>x.id===r.id);if(!m){state.pendingResult=null;persist();return;}if(r.outcome==='win'){
    const choices=(m.choice||['Report directly to command','Hold position and gather intelligence']).map((name,i)=>({label:name,run:()=>{if(m.flags)state.flags[m.flags[i]]=true;state.completed=[...new Set([...state.completed,m.id])].sort((a,b)=>a-b);state.credits+=m.reward;state.pendingResult=null;state.system=m.system;persist();close();updateFleet();selectSystem(m.system);toast('Mission complete. '+m.reward+' requisition awarded.')}}));
@@ -365,10 +399,14 @@ function afterAction(){const r=state.pendingResult;if(!r)return;const m=MISSIONS
  }else{
    openModal('Ship recovered','AFTER-ACTION REPORT / OPERATION FAILED',`<p>The ${state.shipName} has suffered catastrophic damage. Navy recovery teams returned the surviving crew to Meridian-controlled space.</p><p>Hull restored to ${Math.round(state.hull*100)}% by emergency repairs. The operation remains available to attempt again. <b>100 requisition</b> has been withheld for recovery services (where affordable).</p>`,[{label:'Return to map',primary:true,run:()=>{state.pendingResult=null;state.system='meridian';persist();close();updateFleet()}}]);
  }}
+// Opening briefing from Fleet Admiral Harlan: shown once when a campaign begins, and from Intel on request.
+function showIntro(){for(const e of document.querySelectorAll('.introship'))e.textContent=state.shipName;const box=$('intro');box.hidden=false;for(const e of box.querySelectorAll('.reveal')){e.style.animation='none';void e.offsetWidth;e.style.animation='';}$('introgo').focus();}
+function closeIntro(){$('intro').hidden=true;if(!state.introSeen){state.introSeen=true;persist();toast('Captain, the Kestrel distress call is waiting. Hover Kestrel to set course.');}setView('map');}
+$('introgo').addEventListener('click',closeIntro);
 $('arrback').addEventListener('click',()=>setView('map'));
 $('tabShip').addEventListener('click',()=>{close();setView('yard')});$('tabCrew').addEventListener('click',()=>officerRoster());$('tabIntel').addEventListener('click',intelligence);$('tabNew').addEventListener('click',newCampaign);$('tabDuel').addEventListener('click',()=>location.href='index.html');$('tabMap').addEventListener('click',()=>{close();setView('map')});$('veil').addEventListener('click',e=>{if(e.target===$('veil'))close()});
-window.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('veil').hidden)close();else if(view!=='map')setView('map');});window.addEventListener('resize',frameSize);window.addEventListener('shipviewready',startShipView);
-buildMap();drawSky($('sky2'),11);drawSky($('sky3'),5);drawSky($('sky4'),3);frameSize();selected=(availableOps()[0]||{}).system||(byId[state.system]?state.system:'kestrel');refresh();if(!localStorage.getItem(KEY))persist();if(state.pendingResult)afterAction();
+window.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('intro').hidden)closeIntro();else if(!$('veil').hidden)close();else if(view!=='map')setView('map');});window.addEventListener('resize',frameSize);window.addEventListener('shipviewready',startShipView);
+buildMap();drawSky($('sky2'),11);drawSky($('sky3'),5);drawSky($('sky4'),3);frameSize();selected=(availableOps()[0]||{}).system||(byId[state.system]?state.system:'kestrel');refresh();if(!localStorage.getItem(KEY))persist();if(state.pendingResult)afterAction();else if(!state.introSeen&&!state.completed.length)showIntro();
 </script>
 <script type="importmap">
 {"imports":{

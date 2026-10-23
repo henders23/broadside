@@ -25,6 +25,7 @@ The title screen is a live engagement: two AI captains fight a real battle behin
 Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use **Campaign** from the title menu). The existing skirmish mode remains available.
 
 - Code-drawn star chart with **33 clickable systems**, jump lanes and faint borders around each of the six regions. Hover a system to **set course**; the flagship jumps there and a **system arrival** screen shows its details and any operation you can take on. Only operations you can launch now are listed.
+- An opening briefing from **Fleet Admiral Gideon Harlan** (full-screen portrait, Act I orders) when a campaign begins; replay it from **Intel**.
 - **Five linked operations** with named enemies: Captain Kora Vex (Scrapjaw), Commander Orren Sable (Revenant), Captain Garrick Thorne (Scrapjaw), ORACLE-9 (Seraph) and the alien Cantor (Wraith).
 - Persistent campaign save in browser localStorage (key `broadside-campaign-v1`): selected flagship, progress, decisions, hull condition, critical subsystem damage, surviving torpedoes and requisition.
 - Mission three can end in a pirate surrender. The fifth operation can be won by surviving **100 seconds** or destroying the bioship.

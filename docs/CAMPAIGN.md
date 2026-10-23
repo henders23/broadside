@@ -28,6 +28,11 @@ The prototype currently has five consecutive story engagements. **Status matters
 - Prices and effect sizes are first-pass values, chosen so a campaign's rewards (3,130 requisition plus the starting 850) buy roughly a third of the catalogue alongside repairs. They need playtesting.
 - If WebGL or the three.js CDN is unavailable the slots and services still work, and the ship area shows a short notice.
 
+## Opening briefing
+
+- **Act I · The Long Watch**: a full-screen briefing from Fleet Admiral Gideon Harlan, Commander of the Frontier Fleet, with his portrait (`img/admiral-harlan.webp`). It sets up the act (the missing merchant ships, the Kestrel warning, stolen Navy hardware) and gives three standing orders.
+- Shown once when a campaign begins (first visit with no progress, or after commissioning a new campaign), recorded as `state.introSeen`; it can be replayed from Intel. Take command or Escape closes it.
+
 ## Core loop
 
 1. Inspect reachable systems and review mission intelligence.

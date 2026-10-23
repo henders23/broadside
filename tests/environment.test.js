@@ -14,7 +14,7 @@ class Color{
  setHex(hex){this.hex=hex;return this}
 }
 class Obj{
- constructor(){this.position=new Vector3();this.rotation={x:0,y:0,z:0};this.children=[];this.parent=null;this.visible=true}
+ constructor(){this.position=new Vector3();this.rotation={x:0,y:0,z:0,set(x,y,z){this.x=x;this.y=y;this.z=z}};this.children=[];this.parent=null;this.visible=true}
  add(o){this.children.push(o);o.parent=this;return this}
  remove(o){this.children=this.children.filter(c=>c!==o);o.parent=null;return this}
  removeFromParent(){this.parent?.remove(this)}

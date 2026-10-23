@@ -1909,7 +1909,7 @@ function collisions() {
           const vn = s.vel.dot(_v2);
           if (vn < 0) {
             s.vel.addScaledVector(_v2, -1.5 * vn);
-            if (s.alive && -vn > 3) { damage(s, -vn * 6, 'shell', _v1.applyMatrix4(s.inv), null); if (s === pa) showMsg('Collision', 1.2, true); explode(_v3.copy(a.pos).addScaledVector(_v2, a.r), 0.8); }
+            if (s.alive && -vn > 3) { damage(s, -vn * 6, 'shell', _v1.applyMatrix4(s.inv), null); if (s === player) showMsg('Collision', 1.2, true); explode(_v3.copy(a.pos).addScaledVector(_v2, a.r), 0.8); }
             s.speed *= 0.6;
           }
           break;
@@ -1932,9 +1932,9 @@ function collisions() {
           pa.vel.addScaledVector(_v3, -rel * 0.7); foe.vel.addScaledVector(_v3, rel * 0.7);
           const dmg = Math.min(220, -rel * 3.5), mid = _v5.copy(_v1).lerp(_v2, 0.5);
           explode(mid, 2);
-          damage(pa, dmg * (foe.C.ramDmg || 1) * (pa.C.ram || 1), 'shell', _v1.applyMatrix4(pa.inv), foe);
-          damage(foe, dmg * (pa.C.ramDmg || 1) * (foe.C.ram || 1), 'shell', _v2.applyMatrix4(foe.inv), pa);
-          showMsg('Ramming', 1.5, true); Voice.say('brace', 8, true);
+          damage(pa, dmg * (foe.C.ramDmg || 1) * (pa.C.ram || 1) * (pa.team===foe.team?.12:1), 'shell', _v1.applyMatrix4(pa.inv), foe);
+          damage(foe, dmg * (pa.C.ramDmg || 1) * (foe.C.ram || 1) * (pa.team===foe.team?.12:1), 'shell', _v2.applyMatrix4(foe.inv), pa);
+          if(pa===player||foe===player){showMsg('Ramming', 1.5, true); Voice.say('brace', 8, true);}
         }
         break;
       }

@@ -236,6 +236,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div id="msg"></div>
     <div id="warn" hidden></div>
     <div id="tip"></div>
+    <div id="fleet-objective" hidden aria-live="polite" style="position:absolute;top:143px;left:50%;transform:translateX(-50%);z-index:5;background:#041320dc;border:1px solid #5b8ba3;padding:6px 13px;text-align:center;font-size:10px;letter-spacing:.12em;color:#b1e8ee;max-width:55%;pointer-events:none"></div>
     <div id="campaign-objective" hidden style="position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:5;background:#061523e8;border:1px solid #d4a269;padding:8px 15px;text-align:center;font-size:11px;letter-spacing:.1em;color:#ffda9e;max-width:55%;pointer-events:none"></div>
 
     <div class="panel" id="own">
@@ -405,6 +406,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 </script>
 <script src="crew/personnel.js"></script>
 <script src="crew/bridge-controller.js"></script>
+<script src="crew/fleet-controller.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -599,6 +601,7 @@ const CAMPAIGN_OPERATIONS = {
 const campaignMissionId = Number(new URLSearchParams(location.search).get('campaign')) || 0;
 const campaignMission = CAMPAIGN_OPERATIONS[campaignMissionId] || null;
 let bridge = null;
+let fleet = null;
 function readCampaignSave() { try { const v = JSON.parse(localStorage.getItem(CAMPAIGN_KEY) || 'null'); return v && v.version === 1 ? v : null; } catch(e) { return null; } }
 try { const s = JSON.parse(localStorage.getItem('broadside') || '{}'); if (CLASSES[s.ship] && !CLASSES[s.ship].enemyOnly) choice.ship = s.ship; if (DIFF[s.diff]) choice.diff = s.diff; } catch (e) {}
 function saveChoice() { try { localStorage.setItem('broadside', JSON.stringify(choice)); } catch (e) {} }
@@ -1367,6 +1370,12 @@ function startGame() {
   placeShip(enemy, new V3(-off, rand(-120, 120), -2700), Math.PI);
   enemy.ai = { diff: DIFF[choice.diff], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
   game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [] };
+  fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
+    missionId:campaignMissionId,makeShip,placeShip,ships,player,primaryEnemy:enemy,
+    getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
+    DIFF,endGame,showMsg,game,V3
+  }):null;
+  fleet?.setup();
   bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,showMsg,facings:FACINGS}) : null;
   bridge?.mount();
   cam.yaw = 0.55; cam.pitch = 0.3; cam.dist = player.C.camDist; cam.mode = 'chase'; cam.curYaw = player.yaw + cam.yaw; cam.curPitch = undefined;
@@ -1377,8 +1386,10 @@ function startGame() {
   sizeCanvases();
   renderer.compile(scene, camera);
   $('campaign-objective').hidden = !campaignMission;
+  $('fleet-objective').hidden = !fleet;
   if (campaignMission) $('campaign-objective').textContent = 'OPERATION 0' + campaignMissionId + ' // ' + campaignMission.objective;
   bridge?.incomingHail(campaignMissionId);
+  if(fleet)$('fleet-objective').textContent=fleet.status();
   showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[choice.diff].label, 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
   setTimeout(() => Voice.say('battle-stations', 0), 2000);
@@ -1424,12 +1435,15 @@ function showOver() {
     }
     $('again').hidden = true;
     $('tomenu').textContent = 'Return to campaign';
-    if (!win) $('over-sub').textContent = 'Rescue teams are bringing surviving crew back to Meridian space. Return to the campaign map to regroup.';
+    if(!win&&game.campaignOutcome==='convoy_lost')$('over-sub').textContent='The MV Peregrine has been lost. Return to Meridian, refit, and attempt the escort again.';
+    else if(!win)$('over-sub').textContent='Rescue teams are bringing surviving crew back to Meridian space. Return to the campaign map to regroup.';
+    else if(game.campaignOutcome==='escort_saved')$('over-sub').textContent='The MV Peregrine survived. All hostile vessels have been disabled.';
+    else if(game.campaignOutcome==='fleet_destroyed')$('over-sub').textContent='The minelayer and raider escort are both disabled.';
     else if (!game.campaignOutcome) $('over-sub').textContent = 'Operation secured. Ship damage, subsystem condition and remaining torpedoes have been recorded.';
   }
 }
 function toMenu(page = 'main') {
-  state = 'menu'; game = null; clearWorld(); player = enemy = null; Music.play('title');
+  state = 'menu'; game = null; fleet = null; bridge = null; clearWorld(); player = enemy = null; Music.play('title');
   display.visible = true; updateDisplay();
   $('hud').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('menu').hidden = false;
   showPage(page);
@@ -1493,8 +1507,10 @@ function killShip(s) {
   s.tumble.set(rand(-0.02, 0.02), rand(-0.03, 0.03), rand(-0.04, 0.04));
   hideBeams(s);
   if (s.lanceGlow) s.lanceGlow.visible = false;
-  endGame(s === player ? 'lose' : 'win');
-  if (s === player) enemy.isWinner = true; else player.isWinner = true;
+  if(fleet)fleet.onDestroyed(s);
+  else {endGame(s===player?'lose':'win'); if(s===player)enemy.isWinner=true;else player.isWinner=true;}
+  if(s===player)for(const opponent of ships)if(opponent.team==='e')opponent.isWinner=true;
+  else if(game.ending&&game.outcome==='win')player.isWinner=true;
 }
 function subName(s, k) { return k === 'fore' ? s.C.fore : SUBNAME[k]; }
 
@@ -1880,6 +1896,7 @@ function firesUpdate(s, dt) {
 }
 function collisions() {
   for (const s of ships) {
+    if(!s.alive)continue;
     const E = s.C.hullE;
     for (const a of asteroids) {
       if (a.pos.distanceToSquared(s.pos) > (a.r + E.r[2]) ** 2) continue;
@@ -1892,7 +1909,7 @@ function collisions() {
           const vn = s.vel.dot(_v2);
           if (vn < 0) {
             s.vel.addScaledVector(_v2, -1.5 * vn);
-            if (s.alive && -vn > 3) { damage(s, -vn * 6, 'shell', _v1.applyMatrix4(s.inv), null); if (s === player) showMsg('Collision', 1.2, true); explode(_v3.copy(a.pos).addScaledVector(_v2, a.r), 0.8); }
+            if (s.alive && -vn > 3) { damage(s, -vn * 6, 'shell', _v1.applyMatrix4(s.inv), null); if (s === pa) showMsg('Collision', 1.2, true); explode(_v3.copy(a.pos).addScaledVector(_v2, a.r), 0.8); }
             s.speed *= 0.6;
           }
           break;
@@ -1900,25 +1917,26 @@ function collisions() {
       }
     }
   }
-  if (player && enemy) {
-    const d = player.pos.distanceTo(enemy.pos), min = (player.C.hullE.r[0] + enemy.C.hullE.r[0]) * 1.3;
-    if (d > min + player.C.hullE.r[2] + enemy.C.hullE.r[2]) return;
+  for(let i=0;i<ships.length;i++)for(let j=i+1;j<ships.length;j++){
+    const pa=ships[i],foe=ships[j];if(!pa.alive||!foe.alive)continue;
+    const d = pa.pos.distanceTo(foe.pos), min = (pa.C.hullE.r[0] + foe.C.hullE.r[0]) * 1.3;
+    if (d > min + pa.C.hullE.r[2] + foe.C.hullE.r[2]) continue;
     for (const z of [-0.8, 0, 0.8]) for (const z2 of [-0.8, 0, 0.8]) {
-      _v1.set(0, 0, z * player.C.hullE.r[2]).applyMatrix4(player.obj.matrixWorld);
-      _v2.set(0, 0, z2 * enemy.C.hullE.r[2]).applyMatrix4(enemy.obj.matrixWorld);
+      _v1.set(0, 0, z * pa.C.hullE.r[2]).applyMatrix4(pa.obj.matrixWorld);
+      _v2.set(0, 0, z2 * foe.C.hullE.r[2]).applyMatrix4(foe.obj.matrixWorld);
       const dd = _v1.distanceTo(_v2);
       if (dd < min) {
-        _v3.subVectors(_v1, _v2).normalize(); player.pos.addScaledVector(_v3, (min - dd) / 2); enemy.pos.addScaledVector(_v3, -(min - dd) / 2);
-        const rel = _v4.subVectors(player.vel, enemy.vel).dot(_v3);
+        _v3.subVectors(_v1, _v2).normalize(); pa.pos.addScaledVector(_v3, (min - dd) / 2); foe.pos.addScaledVector(_v3, -(min - dd) / 2);
+        const rel = _v4.subVectors(pa.vel, foe.vel).dot(_v3);
         if (rel < -2) {
-          player.vel.addScaledVector(_v3, -rel * 0.7); enemy.vel.addScaledVector(_v3, rel * 0.7);
+          pa.vel.addScaledVector(_v3, -rel * 0.7); foe.vel.addScaledVector(_v3, rel * 0.7);
           const dmg = Math.min(220, -rel * 3.5), mid = _v5.copy(_v1).lerp(_v2, 0.5);
           explode(mid, 2);
-          damage(player, dmg * (enemy.C.ramDmg || 1) * (player.C.ram || 1), 'shell', _v1.applyMatrix4(player.inv), enemy);
-          damage(enemy, dmg * (player.C.ramDmg || 1) * (enemy.C.ram || 1), 'shell', _v2.applyMatrix4(enemy.inv), player);
+          damage(pa, dmg * (foe.C.ramDmg || 1) * (pa.C.ram || 1), 'shell', _v1.applyMatrix4(pa.inv), foe);
+          damage(foe, dmg * (pa.C.ramDmg || 1) * (foe.C.ram || 1), 'shell', _v2.applyMatrix4(foe.inv), pa);
           showMsg('Ramming', 1.5, true); Voice.say('brace', 8, true);
         }
-        return;
+        break;
       }
     }
   }
@@ -2012,6 +2030,7 @@ window.addEventListener('keydown', e => {
   if (bridge && bridge.activateByKey(k)) return;
   if (k === 'KeyC') cam.mode = cam.mode === 'chase' ? 'target' : 'chase';
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
+  if(k==='KeyJ'&&fleet){fleet.cycle();return;}
   if (k === 'KeyM') Sfx.toggle();
   if (k === 'KeyN') toggleMusic();
   const P = player; if (!P.alive) return;
@@ -2241,6 +2260,13 @@ function drawTac(cv, full) {
   g.strokeStyle = 'rgba(255,91,79,.55)'; g.setLineDash([3 * pr, 3 * pr]); g.beginPath(); g.moveTo(ep.x, ep.y); g.lineTo(vp.x, vp.y); g.stroke(); g.setLineDash([]);
   drawShip2D(g, ep.x, ep.y, rel, E, Math.max(sc, 6 * pr / E.C.hullE.r[2]), E.alive ? '#ff5b4f' : '#7a4a44', 'rgba(255,91,79,.25)');
   g.fillStyle = '#ffb3aa'; g.fillText((dist / 1000).toFixed(2) + ' km' + (Math.abs(ep.alt) > 60 ? (ep.alt > 0 ? ' ▲' : ' ▼') + Math.round(Math.abs(ep.alt)) + ' m' : ''), ep.x + 10 * pr, ep.y - 8 * pr);
+  for(const ship of ships){
+    if(ship===P||ship===E)continue;
+    const q=toMap(ship.pos,_mp);
+    const friendly=ship.team===P.team;
+    drawShip2D(g,q.x,q.y,-(ship.yaw-P.yaw),ship,Math.max(sc,5*pr/ship.C.hullE.r[2]),friendly?'#81e7ab':'#ff836b',friendly?'rgba(90,230,164,.22)':'rgba(255,90,70,.22)');
+    g.fillStyle=friendly?'#9fe9c5':'#ffb39d';g.fillText(ship.name.slice(0,22),q.x+8*pr,q.y-8*pr);
+  }
   // predicted own course
   if (P.alive) {
     const n = predictPath(P, 50, 0.5); g.strokeStyle = 'rgba(255,215,150,.75)'; g.setLineDash([4 * pr, 4 * pr]); g.beginPath();
@@ -2271,6 +2297,7 @@ const _brE = {}, _brP = {};
 function updateHud(dt) {
   if ((state !== 'playing' && state !== 'paused') || !player) return;
   const P = player, E = enemy;
+  setT($c('foe-name'),E.name);setT($c('foe-cls'),E.C.cls);
   camera.updateMatrixWorld();
   project(E.pos, _sc);
   const mk = $c('mk'), oa = $c('offarrow');
@@ -2371,6 +2398,8 @@ function hudFast(dt) {
 function updateGame(dt) {
   game.time += dt;
   bridge?.tick(dt);
+  fleet?.tick(dt);
+  if(fleet&&Math.floor(game.time*4)!==Math.floor((game.time-dt)*4))$('fleet-objective').textContent=fleet.status();
   if (campaignMission && !game.ending) {
     if (campaignMissionId === 3 && enemy?.alive && player?.alive && enemy.hull <= enemy.C.hull * .28) {
       game.campaignOutcome = 'surrender';
@@ -2498,7 +2527,7 @@ function frame(now) {
 }
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
-  get state() { return state; }, get game() { return game; }, get bridge() { return bridge; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
+  get state() { return state; }, get game() { return game; }, get bridge() { return bridge; }, get fleet() {return fleet;}, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
   start: startGame, setPips, fireGroup, inArc, Sfx, damage,
   step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } }
 };

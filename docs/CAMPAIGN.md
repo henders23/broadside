@@ -12,13 +12,18 @@ The prototype currently has five consecutive story engagements. **Status matters
 
 - Six visual regions: Meridian Core, Kestrel Verge, Red Narrows, Ash Marches, Halcyon Belt and Harrow Expanse.
 - 33 selectable, individually named systems, with stored 2D canvas coordinates relative to the original 1672 × 941 pixel illustration.
-- Navigation routes form a connected graph. Selecting a star updates its name, threat, regional context and intelligence; the Set Course control reveals the shortest hop path.
-- Art: `img/campaign-atlas.webp` is the original concept image, with functional HTML controls overlaying the painted stars and routes. Canvas scaling keeps illustration coordinates aligned with hotspots; the map allows scrolling at narrower viewports.
+- Navigation routes form a connected graph. Selecting a star shows its name, description, control and threat, and draws the shortest jump path from the flagship. Hovering (or focusing) a system shows **Set course**; choosing it moves the flagship there at once (`state.system`) and opens the **system arrival** screen with the system's details, onward lanes and any operation that can be launched there.
+- Only operations that can be launched now are listed under the map and marked on it; locked and completed operations are not shown.
+- Art: the map is drawn in code on a 1600 × 900 stage (canvas star field, CSS nebulae, SVG lanes) that scales to the window and scrolls at narrow widths. Faint faction borders are clipped Voronoi cells around each system, drawn only where one region meets another or open space. `img/campaign-atlas.webp` is no longer displayed; its coordinate space is still the source for system positions.
 - Planned: ownership changes, event-driven invasion, animated rival ship icons, fog of war, discovered star systems and cinematic transitions.
 
-### Map implementation caveat
+### Shipyard
 
-The illustration has baked lettering and mission panels. Native HTML panels deliberately mask the original UI where possible, but future art should be generated as **layered background art without labels**, keeping star navigation, titles, mission cards and UI overlays as separate semantic elements. The current approach is expedient and preserves the generated design, but will limit localisation and responsive layouts.
+- The shipyard shows the flagship's own GLB model side-on (orthographic camera from starboard, bow to the right) using the same three.js build, scale and rotation as the battle engine.
+- Seven slots (engines, hull and armour, reactor, broadsides, the class's forward weapon, shields, torpedo bay) are joined by leader lines to hardpoints projected from the model every frame. Gun, torpedo-tube and engine positions come from `CLASSES` in `index.html`; reactor, hull and shield markers are placed from the hull and shield ellipsoids. The `HULLS` table in `campaign.html` copies those stats and positions, so keep it in step with `CLASSES`.
+- Slot condition comes from the saved hull fraction and per-subsystem health (`state.sub`).
+- Hull overhaul, emergency repairs and torpedo resupply are live. Each slot lists three planned upgrades, shown as "in development"; there is no upgrade purchase or battle effect yet.
+- If WebGL or the three.js CDN is unavailable the slots and services still work, and the ship area shows a short notice.
 
 ## Core loop
 
@@ -67,13 +72,13 @@ These officers now have active battle commands (5–9): Varro shields, Okoye tar
 
 - `index.html`: Three.js renderer and the original battle engine; a new `?campaign=1` ... `?campaign=5` query launches preselected enemies and applies ship state. It writes the pending battle result and returns to `campaign.html` after the result screen.
 - `campaign.html`: Strategic map, route graph, accessible star hotspots, mission briefings, officer dossiers, shipyard, state persistence, after-action choices and return to skirmish.
-- `img/campaign-atlas.webp`: Compressed cinematic image asset underlying the real interactive UI.
+- `img/campaign-atlas.webp`: The original concept image. No longer displayed; system coordinates are still stored in its 1672 × 941 space.
 
 The original monolithic game script still contains direct player/enemy assumptions. The first fleet extension now permits multiple vessels, retargeting, fleet HUD markers, collision-pair processing and per-mission survival conditions. Remaining code still contains duel-era assumptions; **extend incrementally** and test targeting, projectile collision, AI behaviour and victory conditions before adding larger fleets.
 
 ## Technical QA and limitations
 
-The strategic screen was exercised in a headless browser at 1600×900 and 1280×720. Tests covered the creation of 33 system buttons, five mission cards, officer dossiers, changing the flagship, sequential mission unlocking, post-battle choices, post-battle changes in requisition and ordnance resupply. All UI tests completed without JavaScript page errors. **These were simulated mission-result tests, not full browser playthroughs of the WebGL battle engine.** The true battle-to-save-to-map integration and combat balance still need direct playtesting on the deployed game, especially the 100-second Wraith survival operation.
+The rebuilt strategic screen was exercised in headless Chromium (SwiftShader WebGL) at 1600×900, 1280×720 and 390×844: 33 systems, faction borders and 53 lanes drawn; hover set course, the jump saved to `state.system`, the arrival screen with and without an operation, the briefing, the shipyard's 3D view for Bastion and Warden with slot selection, overhaul and torpedo resupply costs, and an after-action report unlocking the next operation, with no page errors. Earlier tests covered officer dossiers, changing the flagship, sequential mission unlocking, post-battle choices, post-battle changes in requisition and ordnance resupply. All UI tests completed without JavaScript page errors. **These were simulated mission-result tests, not full browser playthroughs of the WebGL battle engine.** The true battle-to-save-to-map integration and combat balance still need direct playtesting on the deployed game, especially the 100-second Wraith survival operation.
 
 ## Recommended next milestones
 
@@ -82,7 +87,7 @@ The strategic screen was exercised in a headless browser at 1600×900 and 1280×
 3. **Real alternate objectives** — Protect a moving transport, disable an enemy without killing, defend a relay, reach an extraction point. Introduce reusable objective/event logic rather than per-mission conditionals.
 4. **Multiple ships** — Refactor target selection, AI, collision, munition pools and health state to support escorts and fleet elements without breaking the duel.
 5. **Dynamic galaxy** — Add ownership changes, faction movement, reputation, intel unlocks, optional operations and consequences that affect the next mission.
-6. **Art pass** — Replace baked-label atlas with separated high-resolution astronomical artwork and vector/natively rendered routes, labels and markers. Add dedicated cinematic ship/world/commander artwork and smooth transitions.
+6. **Art pass** — The map is now natively rendered. Next: dedicated cinematic world/commander artwork, an arrival transition, and the purchasable upgrade system the shipyard slots are laid out for.
 
 Every milestone should preserve the intentional slow, dangerous, naval feel of Broadside.
 

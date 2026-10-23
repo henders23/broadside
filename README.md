@@ -22,11 +22,12 @@ The game is about shield facings, reactor power, firing arcs and turning circles
 
 Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use **Campaign** from the title menu). The existing skirmish mode remains available.
 
-- Cinematic interactive star chart built on `img/campaign-atlas.webp`, with **33 clickable systems**, navigation routes and six regions.
+- Code-drawn star chart with **33 clickable systems**, jump lanes and faint borders around each of the six regions. Hover a system to **set course**; the flagship jumps there and a **system arrival** screen shows its details and any operation you can take on. Only operations you can launch now are listed.
 - **Five linked operations** with named enemies: Captain Kora Vex (Scrapjaw), Commander Orren Sable (Revenant), Captain Garrick Thorne (Scrapjaw), ORACLE-9 (Seraph) and the alien Cantor (Wraith).
 - Persistent campaign save in browser localStorage (key `broadside-campaign-v1`): selected flagship, progress, decisions, hull condition, critical subsystem damage, surviving torpedoes and requisition.
 - Mission three can end in a pirate surrender. The fifth operation can be won by surviving **100 seconds** or destroying the bioship.
-- **Shipyard** for hull repairs and torpedo resupply, **Officers** for bridge-character dossiers, and **Intel** for campaign clues and branching narrative decisions.
+- **Shipyard** showing your flagship's 3D model side-on, with its seven systems (engines, hull, reactor, broadsides, forward weapon, shields, torpedo bay) as slots tied to their hardpoints and battle condition. Hull overhaul, emergency repairs and torpedo resupply work now; upgrades are shown as planned but cannot be bought yet.
+- **Officers** for bridge-character dossiers, and **Intel** for campaign clues and branching narrative decisions.
 - Completing a mission unlocks the next operation. A mission loss returns you to the sector campaign with a damaged but recoverable flagship rather than deleting the save.
 
 The first five operations remain a **campaign vertical slice**, not a finished grand-strategy game. Operation 1 offers a choice between protecting the civilian MV Peregrine until it jumps or destroying the pirate first; Operation 2 includes a two-hostile encounter with coordinated flanking attacks. Every operation has a distinct generated 3D battle environment and themed nebula lighting. Named officer combat abilities (keys 5–9), cycling hostile targets (J), and multiple-contact tactical plots are playable. Full WebGL campaign QA and tuning are still required. `campaign.html` supplies the strategic UI while `index.html?campaign=N` launches the tactical encounters.

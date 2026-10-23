@@ -4,33 +4,92 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Broadside: The Shattered Reach. A tactical naval space campaign across six contested regions.">
 <title>BROADSIDE // The Shattered Reach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@200;300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="crew/personnel.css">
 <style>
-:root{color-scheme:dark;--gold:#eaba75;--muted:#9db6ce;--line:#5e809d;--bg:#060a11;--white:#edf4fb}
-*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#030609;color:var(--white);font:13px 'Segoe UI',Arial,sans-serif}button,select{font:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:2px solid #fff0ad;outline-offset:3px}button:disabled{cursor:not-allowed;opacity:.45}
-#viewport{position:fixed;inset:0;overflow:auto;background:radial-gradient(ellipse,#0b192e,#020408)}#holder{position:relative;margin:auto;flex-shrink:0}#map{width:1672px;height:941px;position:absolute;left:0;top:0;transform-origin:top left;background:#07101c;overflow:hidden;box-shadow:0 20px 90px #000}#atlas{position:absolute;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}#fader{position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,#02060b44,transparent 22%),linear-gradient(90deg,#01050a33,transparent 25%)}
-#links{position:absolute;inset:0;pointer-events:none}#links path{fill:none;stroke:#ffda94;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px #ff9300)}#links path.anim{stroke-dasharray:8 9;animation:dash 1.2s linear infinite}@keyframes dash{to{stroke-dashoffset:-34}}#links .nodelink{stroke-width:1.7;stroke:#c1d8ec;opacity:.25}
-.node{position:absolute;z-index:4;width:38px;height:38px;transform:translate(-50%,-50%);border:1px solid transparent;border-radius:50%;background:transparent;color:#fff;display:flex;align-items:center;justify-content:center}.node:hover,.node:focus-visible{background:#e7e4c423;border-color:#fff6bc;box-shadow:0 0 22px #ffd88a99}.node.selected{border:2px solid #ffe5a9;box-shadow:0 0 10px #ffb75c,0 0 25px #f6ba6a99, inset 0 0 10px #ffda9299}.node .r{position:absolute;inset:-10px;border:1px dashed #e8c087;opacity:0;border-radius:50%;animation:spin 23s linear infinite}.node.selected .r{opacity:.9}.node .tooltip{display:none;position:absolute;left:35px;top:-32px;white-space:nowrap;background:#061322f5;border:1px solid #7c9ebb;padding:8px 11px;letter-spacing:.08em;font-size:12px;pointer-events:none;box-shadow:0 5px 22px #000}.node:hover .tooltip,.node:focus-visible .tooltip{display:block}@keyframes spin{to{transform:rotate(360deg)}}
-.nav{position:absolute;right:40px;top:5px;z-index:8;display:flex;gap:3px;align-items:center;background:#030811f5;border:1px solid #52708d75;padding:3px;box-shadow:0 5px 20px #000a;backdrop-filter:blur(8px)}.nav::before{content:"";position:absolute;z-index:-1;inset:-8px -10px -8px -78px;background:linear-gradient(90deg,transparent,#030810 35%,#030810 100%);pointer-events:none}.nav button{background:linear-gradient(#05101cdd,#040810dd);border:1px solid #6586a75e;color:#b6c7d8;padding:10px 12px;letter-spacing:.11em;font-size:10px;text-transform:uppercase}.nav button:hover,.nav .current{border-color:#d7a967;color:#ffdaa2}.nav .current{background:#36261399}
-#sidebar{position:absolute;top:209px;left:14px;width:305px;height:552px;z-index:10;background:linear-gradient(135deg,#081c2c,#05101e);border:1px solid #6185a2;box-shadow:0 15px 35px #000d,0 0 25px #3d8abd19;padding:12px 15px;display:flex;flex-direction:column;gap:7px;clip-path:polygon(0 0,96% 0,100% 3%,100% 98%,96% 100%,4% 100%,0 97%)}#sysimage{height:137px;flex-shrink:0;border:1px solid #566c7c;background-image:url('img/campaign-atlas.webp');background-size:1672px 941px;background-repeat:no-repeat;box-shadow:inset 0 0 35px #0009}#sidetitle{font-size:25px;letter-spacing:.16em;font-weight:750;text-transform:uppercase;line-height:1.1;margin:5px 0 0}#sideregion{font-size:10px;color:#86b9d8;letter-spacing:.19em;text-transform:uppercase}.divider{height:1px;background:linear-gradient(90deg,#6f96a4,transparent);margin:5px 0}.meta{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;gap:8px}.meta span:first-child{color:#9bb3c9}.meta strong{font-weight:500;text-align:right;color:#e6c28d}#description{color:#b7c9d9;font-size:11.5px;line-height:1.52;margin:2px 0;min-height:40px}#intelbox{margin-top:auto;color:#a7c7d6;font-size:10.5px;line-height:1.45;border-top:1px solid #416179;padding-top:7px}#intelbox b{color:#e1b87b;display:block;letter-spacing:.1em;margin-bottom:5px}#routeinfo{font-size:10px;color:#9fbacf;min-height:28px;line-height:1.4}#course{width:100%;height:43px;background:linear-gradient(180deg,#805028,#312014);color:#ffe1ac;border:1px solid #d3a86c;letter-spacing:.16em;font-weight:700;font-size:12px;box-shadow:0 0 18px #c98a4a66}#course:hover{filter:brightness(1.23)}
-#briefstrip{position:absolute;top:783px;left:250px;width:1120px;z-index:8;display:flex;gap:10px;height:142px}.mission-card{width:214px;flex:none;text-align:left;color:#dfe9f1;padding:4px 7px 9px;position:relative;overflow:hidden;border:1px solid #657f8f;background:#07121b;box-shadow:0 12px 20px #000b}.mission-card:hover,.mission-card:focus-visible,.mission-card.active{border-color:#ffc176;box-shadow:0 0 18px #eca44b77}.mission-card .photo{display:block;height:69px;background-image:linear-gradient(0deg,#05101b55,transparent),url('img/campaign-atlas.webp');background-size:1672px 941px;background-repeat:no-repeat;margin:-4px -7px 7px;filter:saturate(1.2)}.mission-card .n{position:absolute;top:5px;left:7px;border:1px solid #edb970;background:#08121ce5;width:26px;height:26px;text-align:center;line-height:24px;border-radius:50%;color:#f8c786;font-weight:750}.mission-card strong{font-size:11.5px;letter-spacing:.07em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}.mission-card small{font-size:10px;color:#a4c4d7;display:block;margin-top:4px}.mission-card .status{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#d6ae76;margin-top:5px;display:block}.mission-card.locked{filter:saturate(.5);opacity:.78}
-#fleetstatus{position:absolute;right:38px;bottom:9px;color:#aad0e6;font-size:10px;text-align:right;letter-spacing:.12em;z-index:9;background:#050c15dc;padding:8px 13px;border:1px solid #55768b}#fleetstatus b{color:#f3d297}#notice{position:absolute;left:342px;top:66px;z-index:8;background:#041321df;color:#d8edff;border:1px solid #447393;padding:8px 13px;font-size:11px;letter-spacing:.11em;opacity:0;transition:opacity .3s;pointer-events:none}#notice.show{opacity:1}
-#veil{position:fixed;inset:0;z-index:100;background:#01040be9;display:flex;align-items:center;justify-content:center;padding:22px}#veil[hidden]{display:none}#modal{width:min(650px,100%);max-height:min(90vh,800px);overflow:auto;background:linear-gradient(135deg,#0c2034,#07111e);border:1px solid #86a6b9;box-shadow:0 0 70px #001829,0 25px 90px #000;padding:28px 33px 26px}#modalheader{color:#d6ac6e;font-size:10px;letter-spacing:.24em;margin-bottom:12px}#modaltitle{font-weight:800;letter-spacing:.065em;text-transform:uppercase;font-size:33px;margin:0 0 15px;line-height:1.05}#modalbody{color:#bdd0e2;font-size:13px;line-height:1.7}#modalbody p{margin:0 0 12px}#modalbody b{color:#f2d9aa}#modalbody .choice{margin:6px 0 12px;display:block;border:1px solid #557895;padding:10px 14px;background:#10263a;color:#e2ebf7;text-align:left;width:100%}#modalbody .choice:hover{background:#224360}#modalbody select{width:100%;background:#071522;color:#f3d6a5;border:1px solid #667f90;padding:12px;margin-top:10px}#modalactions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:22px}#modalactions button{background:transparent;border:1px solid #62839a;color:#deedfc;padding:11px 16px;letter-spacing:.1em;text-transform:uppercase;font-size:11px}#modalactions .primary{background:linear-gradient(180deg,#664725,#37220e);border-color:#edb66f;color:#ffe3b6}#modalactions button:hover{filter:brightness(1.25)}#modalactions button:disabled{opacity:.42}
-@media(max-width:700px){#viewport{background:#03070d}body{font-size:14px}}
+:root{color-scheme:dark;--amber:#ffd696;--dim:rgba(255,255,255,.6);--faint:rgba(255,255,255,.5);--rule:rgba(255,255,255,.16)}
+*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#000;color:#fff;font:14px 'Inter Tight','Segoe UI',Arial,sans-serif}button,select{font:inherit;color:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:1px solid #fff;outline-offset:3px}button:disabled{cursor:not-allowed;opacity:.45}
+.k{display:block;font:500 11px 'JetBrains Mono',monospace;letter-spacing:.18em;color:var(--faint);text-transform:uppercase}.mono{font-family:'JetBrains Mono',monospace}
+#viewport{position:fixed;inset:0;overflow:auto;background:#000}#holder{position:relative;margin:auto;flex-shrink:0}#stage{width:1600px;height:900px;position:absolute;left:0;top:0;transform-origin:top left;overflow:hidden;background:#000}
+.view{position:absolute;inset:0;background:#000;z-index:1}#arrival,#yard{z-index:2}.view[hidden]{display:none}canvas.sky{position:absolute;left:0;top:0;width:1600px;height:900px;pointer-events:none}
+/* header */
+#top{position:absolute;left:64px;top:30px;width:1472px;height:44px;display:flex;align-items:center;justify-content:space-between;z-index:30}#brand{font-size:13px;font-weight:600;letter-spacing:.55em}
+.nav{display:flex;gap:6px}.nav button{height:44px;padding:0 15px;border:0;border-radius:22px;background:none;color:var(--dim);font-size:13px;font-weight:500;letter-spacing:.14em;text-transform:uppercase}.nav button:hover{background:rgba(255,255,255,.08);color:#fff}.nav .current{background:rgba(255,255,255,.1);color:#fff}
+#fleetstatus{font:11px 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--dim)}#fleetstatus b{color:var(--amber);font-weight:400}
+#notice{position:absolute;left:50%;top:92px;transform:translateX(-50%);z-index:40;padding:10px 18px;border-radius:20px;background:rgba(10,13,20,.9);border:1px solid rgba(255,255,255,.2);font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}#notice.show{opacity:1}
+/* sector map */
+.neb{position:absolute;width:460px;height:300px;border-radius:50%;filter:blur(40px);pointer-events:none}
+.overlay{position:absolute;left:0;top:0;width:1600px;height:900px;pointer-events:none;overflow:visible}
+#borders line{stroke-width:1;stroke-opacity:.2}#borders[data-sel="0"] .r0,#borders[data-sel="1"] .r1,#borders[data-sel="2"] .r2,#borders[data-sel="3"] .r3,#borders[data-sel="4"] .r4,#borders[data-sel="5"] .r5{stroke-opacity:.42}
+#lanebase line{stroke:#fff;stroke-opacity:.11;stroke-width:1}#lanehot polyline{fill:none;stroke:#fff;stroke-opacity:.95;stroke-width:1.5;stroke-linejoin:round;filter:drop-shadow(0 0 4px rgba(255,255,255,.8))}
+#cross i{position:absolute;display:block;pointer-events:none}#cross .h{left:0;width:1600px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14) 20%,rgba(255,255,255,.14) 80%,transparent)}#cross .v{top:0;height:900px;width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.14) 15%,rgba(255,255,255,.14) 60%,transparent)}
+.sys{position:absolute;width:0;height:0}.sys:hover,.sys:focus-within{z-index:6}
+.sys .halo{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;pointer-events:none}
+.sys .spk{display:none;position:absolute;left:0;top:0;pointer-events:none}.sys.avail .spk,.sys.sel .spk{display:block}.sys .spk::before{content:"";position:absolute;left:-18px;top:0;width:36px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent)}.sys .spk::after{content:"";position:absolute;left:0;top:-18px;width:1px;height:36px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.85),transparent)}
+.sys .rings{display:none;position:absolute;left:-18px;top:-18px;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.9);pointer-events:none}.sys .rings::after{content:"";position:absolute;left:-17px;top:-17px;width:68px;height:68px;border-radius:50%;border:1px solid rgba(255,255,255,.18)}.sys.sel .rings{display:block}
+.sys .dot{position:absolute;left:-22px;top:-22px;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:none;display:flex;align-items:center;justify-content:center}.sys .dot span{display:block;width:3px;height:3px;border-radius:50%;background:#fff}.sys.avail .dot span{width:5px;height:5px}.sys.sel .dot span{width:6px;height:6px}
+.sys .lbl{position:absolute;left:14px;top:8px;white-space:nowrap;font-size:10px;font-weight:500;letter-spacing:.24em;color:rgba(255,255,255,.5);text-transform:uppercase;pointer-events:none}.sys.path .lbl{color:rgba(255,255,255,.85)}.sys.sel .lbl{color:#fff;font-size:12px}
+.sys .op{display:none;position:absolute;left:14px;top:-16px;white-space:nowrap;font:10px 'JetBrains Mono',monospace;letter-spacing:.1em;color:rgba(255,214,150,.9);pointer-events:none}.sys.avail .op{display:block}
+.sys .ship{display:none;position:absolute;left:14px;top:24px;white-space:nowrap;font:9px 'JetBrains Mono',monospace;letter-spacing:.14em;color:#9fd0ff;pointer-events:none}.sys.home .ship{display:block}
+.course{position:absolute;left:4px;top:16px;padding:8px 0 0 6px;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .15s,transform .15s}.sys.home .course{top:30px}.sys:hover .course,.sys:focus-within .course{opacity:1;pointer-events:auto;transform:none}
+.course button,.pill{height:44px;padding:0 18px;border-radius:22px;border:1px solid #fff;background:rgba(0,0,0,.8);font-size:12px;font-weight:500;letter-spacing:.16em;white-space:nowrap;text-transform:uppercase}.course button:hover,.pill:hover{background:rgba(255,255,255,.12)}.pill.solid{background:#fff;color:#000;font-weight:600}.pill.solid:hover{background:#e6e9ef}.pill.quiet{border-color:rgba(255,255,255,.35)}
+#fade{position:absolute;left:0;top:600px;width:1600px;height:300px;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(0,0,0,.88) 45%,#000)}
+#selinfo{position:absolute;left:64px;top:656px;width:880px}#selname{margin:0 0 0 -3px;font-size:68px;line-height:1;font-weight:200;letter-spacing:-.025em;white-space:nowrap}#seldesc{margin:10px 0 0;max-width:640px;font-size:17px;font-weight:300;line-height:1.45;color:rgba(255,255,255,.78)}
+.facts{display:flex;gap:48px;margin-top:18px}.facts .k{font-size:10px}.facts b{display:flex;align-items:center;margin-top:5px;font-size:17px;font-weight:400}.bars{display:inline-flex;gap:4px;margin-right:8px}.bars i{display:block;width:22px;height:2px;background:rgba(255,255,255,.18)}.bars i.on{background:#fff}
+#avail{position:absolute;left:980px;top:700px;width:556px}#availlist{margin-top:10px}.opitem{display:flex;align-items:center;gap:18px;width:100%;min-height:64px;padding:10px 4px;border:0;border-top:1px solid rgba(255,255,255,.22);background:none;text-align:left}.opitem:hover{background:rgba(255,255,255,.05)}.opitem.active{border-top-color:#fff}.opitem .n{font:11px 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--amber)}.opitem .t{flex:1;min-width:0}.opitem .t b{display:block;font-size:18px;font-weight:400}.opitem .t small{display:block;margin-top:2px;font-size:13px;color:var(--dim)}.opitem .d{font:11px 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--dim)}.empty{padding:14px 4px;border-top:1px solid rgba(255,255,255,.22);color:var(--dim);font-size:15px}
+/* system arrival */
+#planet{position:absolute;left:1060px;top:-300px;width:820px;height:820px;border-radius:50%}#arrfade{position:absolute;inset:0;background:linear-gradient(90deg,#000 0%,rgba(0,0,0,.92) 45%,rgba(0,0,0,.2) 75%,transparent 100%)}
+#arrdetails{position:absolute;left:64px;top:118px;width:720px}#arrname{margin:14px 0 0 -5px;font-size:112px;line-height:.95;font-weight:200;letter-spacing:-.035em;white-space:nowrap}#arrregion{margin-top:14px;font-size:16px;font-weight:500;letter-spacing:.04em}#arrdesc{margin:22px 0 0;max-width:640px;font-size:22px;font-weight:300;line-height:1.45;color:rgba(255,255,255,.85)}
+.facts3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14)}.facts3 .k{font-size:10px}.facts3 b{display:flex;align-items:center;margin-top:6px;font-size:19px;font-weight:400}
+#arronward{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.lane{display:flex;align-items:center;gap:10px;height:44px;padding:0 16px;border-radius:22px;border:1px solid rgba(255,255,255,.2);background:none;font-size:14px}.lane:hover{background:rgba(255,255,255,.08)}.lane i{display:block;width:6px;height:6px;border-radius:50%}.lane small{font:10px 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--dim)}
+#arrback{position:absolute;left:64px;top:806px}#arrops{position:absolute;left:880px;top:150px;width:656px;display:flex;flex-direction:column;gap:14px}
+.opcard{padding:28px 32px;border-radius:20px;background:rgba(6,8,12,.84);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(14px);display:flex;flex-direction:column;gap:14px}.opcard .row{display:flex;justify-content:space-between;font:11px 'JetBrains Mono',monospace;letter-spacing:.16em}.opcard h2{margin:0;font-size:42px;line-height:1;font-weight:300;letter-spacing:-.02em}.opcard .who{display:flex;gap:14px;align-items:baseline}.opcard .who b{font-size:16px;font-weight:500}.opcard .who span{font-size:14px;color:var(--dim)}.opcard .taunt{margin:0;font-size:16px;font-style:italic;font-weight:300;color:rgba(255,255,255,.75)}.opcard .rule{height:1px;background:rgba(255,255,255,.12)}.opcard p{margin:0;font-size:16px;font-weight:300;line-height:1.5;color:rgba(255,255,255,.85)}.opcard .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.opcard .two div{font-size:14px;line-height:1.45}.opcard .two .k{font-size:10px;margin-bottom:6px}.opcard .officer{padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.05);font-size:14px;line-height:1.45;color:rgba(255,255,255,.8)}.opcard .officer span{font:10px 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--dim)}.opcard .pill{align-self:flex-start;height:52px;padding:0 32px;border-radius:26px}.opcard.small{padding:24px 28px;gap:10px}.opcard.small div{font-size:15px;line-height:1.5;color:rgba(255,255,255,.7)}.opcard.small strong{font-size:24px;font-weight:300}
+/* shipyard */
+#shipbox{position:absolute;left:250px;top:60px;width:1100px;height:412px}#shipgl{position:absolute;inset:0;width:1100px;height:412px}#shipwait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:11px 'JetBrains Mono',monospace;letter-spacing:.18em;color:var(--faint)}#shipwait[hidden]{display:none}
+#yardlines line{stroke-width:1}#yardlines ellipse{fill:none;stroke:rgba(160,205,255,.22);stroke-dasharray:6 6}#yardlines ellipse.on{stroke:rgba(160,205,255,.7);stroke-dasharray:none;fill:rgba(120,170,255,.05)}
+#yardmarks i{position:absolute;display:block;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:rgba(255,255,255,.7);box-shadow:0 0 8px rgba(255,255,255,.7);pointer-events:none}#yardmarks i.on{background:var(--amber);box-shadow:0 0 10px var(--amber)}#plume{position:absolute;width:190px;height:28px;margin:-14px 0 0 -190px;border-radius:14px;background:linear-gradient(270deg,rgba(150,200,255,.85),rgba(120,170,255,0));filter:blur(5px);pointer-events:none}
+#slots{position:absolute;left:78px;top:430px;width:1444px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px}.slot{height:96px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.03);text-align:left;display:flex;flex-direction:column;gap:6px}.slot:hover{background:rgba(255,255,255,.07)}.slot.on{border-color:var(--amber);background:rgba(255,214,150,.08)}.slot .top{display:flex;justify-content:space-between;align-items:center}.slot svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.slot.on svg{stroke:var(--amber)}.slot .tier{font:10px 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--faint)}.slot b{font-size:15px;font-weight:500}.slot small{font-size:11px;color:var(--faint)}.slot small.warn{color:#ffb35c}.slot small.bad{color:#ff7a6b}
+#market{position:absolute;left:78px;top:566px;width:1036px}#market .mh{display:flex;justify-content:space-between;align-items:baseline;gap:20px}#markspec{font-size:13px;color:var(--dim);text-align:right}#markcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}.upcard{height:200px;padding:18px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);display:flex;flex-direction:column;gap:8px}.upcard .k{font-size:10px;color:var(--amber)}.upcard b{font-size:21px;font-weight:400}.upcard span{font-size:14px;line-height:1.4;color:rgba(255,255,255,.7)}.upcard button{margin-top:auto;align-self:flex-end;height:44px;padding:0 18px;border-radius:22px;border:1px solid rgba(255,255,255,.3);background:none;font-size:12px;font-weight:600;letter-spacing:.12em}#market .note{margin:12px 0 0;font-size:13px;color:var(--faint)}
+#services{position:absolute;left:1140px;top:566px;width:382px;padding:18px 20px;border-radius:16px;background:rgba(255,255,255,.06);display:flex;flex-direction:column;gap:12px}.svc{display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)}.svc div{flex:1;min-width:0}.svc b{display:block;font-size:15px;font-weight:500}.svc small{display:block;margin-top:2px;font-size:12px;color:var(--dim)}.svc button{height:44px;padding:0 16px;border-radius:22px;border:1px solid rgba(255,255,255,.45);background:none;font-size:12px;font-weight:600;letter-spacing:.1em;white-space:nowrap}.svc button:hover:not(:disabled){background:rgba(255,255,255,.1)}.svc button.solid{background:#fff;color:#000;border-color:#fff}
+/* modal */
+#veil{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:22px}#veil[hidden]{display:none}#modal{width:min(650px,100%);max-height:min(90vh,800px);overflow:auto;background:#07090d;border:1px solid rgba(255,255,255,.18);border-radius:20px;box-shadow:0 25px 90px #000;padding:28px 33px 26px}#modalheader{font:11px 'JetBrains Mono',monospace;color:var(--amber);letter-spacing:.2em;margin-bottom:12px}#modaltitle{font-weight:300;letter-spacing:-.01em;font-size:40px;margin:0 0 15px;line-height:1.05}#modalbody{color:rgba(255,255,255,.8);font-size:15px;line-height:1.6}#modalbody p{margin:0 0 12px}#modalbody b{color:#fff;font-weight:600}#modalbody .choice{margin:6px 0 12px;display:block;border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:10px 14px;background:none;text-align:left;width:100%}#modalbody .choice:hover{background:rgba(255,255,255,.08)}#modalbody select{width:100%;background:#0d1118;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:12px;margin-top:10px}#modalactions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:22px}#modalactions button{min-height:44px;background:transparent;border:1px solid rgba(255,255,255,.35);border-radius:22px;padding:0 20px;letter-spacing:.12em;text-transform:uppercase;font-size:12px;font-weight:500}#modalactions .primary{background:#fff;border-color:#fff;color:#000;font-weight:600}#modalactions button:hover:not(:disabled){filter:brightness(1.2)}
+@media(max-width:700px){body{font-size:15px}}
 </style>
 </head>
 <body>
-<div id="viewport"><div id="holder"><div id="map">
-<img id="atlas" alt="" src="img/campaign-atlas.webp">
-<div id="fader"></div>
-<svg id="links" viewBox="0 0 1672 941" preserveAspectRatio="none" aria-hidden="true"><g id="route-layers"></g></svg>
+<div id="viewport"><div id="holder"><div id="stage">
+<main id="mapview" class="view" aria-label="Sector map">
+<canvas class="sky" id="sky" width="1600" height="900" aria-hidden="true"></canvas>
+<div id="nebulae" aria-hidden="true"></div>
+<svg id="borders" class="overlay" viewBox="0 0 1600 900" aria-hidden="true"></svg>
+<svg id="lanes" class="overlay" viewBox="0 0 1600 900" aria-hidden="true"><g id="lanebase"></g><g id="lanehot"><polyline points=""></polyline></g></svg>
+<div id="cross" aria-hidden="true"><i class="h"></i><i class="v"></i></div>
 <div id="nodes"></div>
-<nav class="nav" aria-label="Campaign commands"><button class="current" id="tabMap">Campaign</button><button id="tabShip">Shipyard</button><button id="tabCrew">Officers</button><button id="tabIntel">Intel</button><button id="tabNew">New game</button><button id="tabDuel">Skirmish ↗</button></nav>
-<section id="sidebar" aria-label="Selected system information"><div id="sysimage"></div><h2 id="sidetitle">KESTREL</h2><div id="sideregion">KESTREL VERGE</div><div class="divider"></div><div class="meta"><span>FACTION CONTROL</span><strong id="sysfaction">Contested</strong></div><div class="meta"><span>THREAT LEVEL</span><strong id="systhreat">ELEVATED</strong></div><div class="meta"><span>STRATEGIC VALUE</span><strong id="sysvalue">HIGH</strong></div><div class="divider"></div><p id="description"></p><div id="intelbox"><b>STRATEGIC INTELLIGENCE</b><span id="systemintel"></span></div><div id="routeinfo"></div><button id="course">SET COURSE ›</button></section>
-<div id="briefstrip" role="group" aria-label="Campaign operations"></div>
-<section id="commandrail" aria-label="Bridge officer quick access"><div class="rail-title">MNS RESOLUTE · BRIDGE</div><div class="crew-row" id="crewmini"></div><div class="rail-caption">SELECT AN OFFICER FOR THEIR DOSSIER</div></section>
+<div id="fade" aria-hidden="true"></div>
+<section id="selinfo" aria-label="Selected system" aria-live="polite"><h1 id="selname"></h1><p id="seldesc"></p><div class="facts"><div><span class="k">Control</span><b id="selfaction"></b></div><div><span class="k">Threat</span><b><span class="bars" id="selbars"></span><span id="selthreat"></span></b></div></div></section>
+<section id="avail" aria-label="Available operations"><span class="k">Available operations</span><div id="availlist"></div></section>
+</main>
+<section id="arrival" class="view" hidden aria-label="System arrival">
+<canvas class="sky" id="sky2" width="1600" height="900" aria-hidden="true"></canvas>
+<div id="planet" aria-hidden="true"></div><div id="arrfade" aria-hidden="true"></div>
+<div id="arrdetails"><span class="k" id="arrkicker"></span><h1 id="arrname"></h1><div id="arrregion"></div><p id="arrdesc"></p>
+<div class="facts3"><div><span class="k">Control</span><b id="arrfaction"></b></div><div><span class="k">Threat</span><b><span class="bars" id="arrbars"></span><span id="arrthreat"></span></b></div><div><span class="k">Jump lanes</span><b id="arrlanes"></b></div></div>
+<span class="k" style="margin-top:30px">Onward from here</span><div id="arronward"></div></div>
+<button class="pill quiet" id="arrback">← Sector map</button>
+<section id="arrops" aria-label="Operations in this system"><span class="k" id="arropsk"></span><div id="arropslist" style="display:flex;flex-direction:column;gap:14px"></div></section>
+</section>
+<section id="yard" class="view" hidden aria-label="Shipyard">
+<canvas class="sky" id="sky3" width="1600" height="900" aria-hidden="true"></canvas>
+<div id="shipbox"><canvas id="shipgl" aria-label="Side view of your flagship" role="img"></canvas><div id="shipwait">Bringing the ship into the floodlights…</div></div>
+<svg id="yardlines" class="overlay" viewBox="0 0 1600 900" aria-hidden="true"><ellipse id="shieldline" cx="0" cy="0" rx="0" ry="0"></ellipse><g id="leaders"></g></svg>
+<div id="yardmarks" aria-hidden="true"><div id="plume"></div></div>
+<div id="slots" role="group" aria-label="Ship systems"></div>
+<section id="market" aria-label="Upgrades"><div class="mh"><span class="k" id="markk"></span><span id="markspec"></span></div><div id="markcards"></div><p class="note">Upgrades arrive in a later refit. Repairs and torpedo resupply are available now.</p></section>
+<aside id="services" aria-label="Dockyard services"><span class="k">Dockyard services</span><div id="svclist" style="display:flex;flex-direction:column;gap:12px"></div></aside>
+</section>
+<header id="top"><span id="brand">BROADSIDE</span><nav class="nav" aria-label="Campaign commands"><button class="current" id="tabMap">Map</button><button id="tabShip">Shipyard</button><button id="tabCrew">Officers</button><button id="tabIntel">Intel</button><button id="tabNew">New game</button><button id="tabDuel">Skirmish ↗</button></nav><span id="fleetstatus" aria-live="polite"></span></header>
 <div id="notice" role="status" aria-live="polite"></div>
-<div id="fleetstatus" aria-live="polite"></div>
 </div></div></div>
 <div id="veil" hidden><section id="modal" role="dialog" aria-modal="true" aria-labelledby="modaltitle"><div id="modalheader"></div><h2 id="modaltitle"></h2><div id="modalbody"></div><div id="modalactions"></div></section></div>
 <script src="crew/personnel.js"></script>
@@ -45,7 +104,7 @@ const MISSIONS=[
  {id:4,system:'halcyon',name:'Ghost Frequency',enemy:'seraph',captain:'ORACLE-9',kind:'Autonomous warship',objective:'Disable ORACLE-9 and recover the anomalous signal archive.',brief:'A deserted relay broadcasts coordinates with impossible precision. A machine warship called ORACLE-9 guards the transmission. Disable it and download the surviving data core.',intel:'The Seraph fights at long range with tracking beams and a devastating railgun. Close distance while controlling your shield facings.',reward:700,choice:['Transmit the archive to Fleet Command','Seal the archive pending investigation'],flags:['oracle_transmitted','oracle_sealed']},
  {id:5,system:'harrow',name:'The First Bloom',enemy:'wraith',captain:'The Cantor',kind:'Alien bioship',objective:'Survive contact for 100 seconds and transmit your sensor archive, or defeat the bioship.',brief:'The colonial guard at Harrow has vanished. A vessel that appears to be alive enters sensor range. Stay intact long enough for the automatic hundred-second sensor transmission to complete.',intel:'Its plasma eats shields. Spore salvos track your course. Its hull regenerates, so the safest objective is survival, not destruction.',reward:900,choice:['Warn every frontier colony immediately','Classify the encounter while the navy prepares'],flags:['harrow_warning','harrow_classified']}
 ];
-// All coordinates are registered against the original 1672 × 941 campaign-atlas artwork.
+// Coordinates come from the original 1672 × 941 concept atlas; proj() maps them onto the star field.
 const SYSTEMS=[
  ['aurelian','Aurelian',517,136,'Meridian Core','Navy','Low','Homeworld relay and secure defensive anchor.'],
  ['meridian','Meridian',532,237,'Meridian Core','Navy','Low','Regional command hub; repairs and requisition are available here.'],
@@ -96,36 +155,161 @@ const TORPEDO_CAP={bastion:8,halberd:6,sabre:6,warden:16};
 const CREW=Personnel.crew;
 function crewById(id){return CREW.find(c=>c.id===id)||CREW[0]}
 function commanderByMission(n){return Personnel.commanders[n]}
-function renderBridgeRail(){const el=$('crewmini');if(!el)return;el.replaceChildren();for(const c of CREW){const b=document.createElement('button');b.type='button';b.title=c.name+' — '+c.ability;b.style.cssText='background:none;border:0;padding:0';b.innerHTML=Personnel.portrait(c);b.addEventListener('click',()=>officerRoster(c.id));el.append(b)}}
 function initial(){let pick='bastion';try{const v=JSON.parse(localStorage.getItem('broadside')||'{}');if(shipChoices.includes(v.ship))pick=v.ship;}catch(e){}return {version:1,ship:pick,shipName:'MNS Resolute',system:'meridian',completed:[],flags:{},credits:850,hull:1,sub:null,torps:null,attempts:0,pendingResult:null};}
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&v.version===1&&shipChoices.includes(v.ship)&&Array.isArray(v.completed))return v;}catch(e){}return initial();}
-let state=load(),selected='kestrel',currentRoute=[];
+let state=load(),selected='kestrel';
 function persist(){localStorage.setItem(KEY,JSON.stringify(state));}
 function isUnlocked(n){return n>=1&&n<=MISSIONS.length&&(n===1||state.completed.includes(n-1));}
 function missionFor(system){return MISSIONS.find(m=>m.system===system);}
 function displayName(s){return s?s.name:'Unknown';}
 let toastTimer=0;function toast(t){$('notice').textContent=t;$('notice').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('notice').classList.remove('show'),3000);}
-function frameSize(){const w=innerWidth,h=innerHeight;const s=Math.max(.61,Math.min(w/1672,h/941));$('holder').style.width=(1672*s)+'px';$('holder').style.height=(941*s)+'px';$('map').style.transform=`scale(${s})`;$('viewport').style.display=w>=1672*s?'flex':'block';$('viewport').style.alignItems='center';$('viewport').style.justifyContent='center';}
+const STAGE_W=1600,STAGE_H=900,HOME='meridian';
+const REGIONS=['Meridian Core','Kestrel Verge','Red Narrows','Ash Marches','Halcyon Belt','Harrow Expanse'];
+const REGION_SUB=['Human Navy territory','Contested space','Pirate influence','Renegade fleet activity','Trade & research','Alien bioship threat'];
+const REGION_HUE=[[70,120,255],[255,150,60],[255,60,80],[255,80,160],[120,95,255],[50,230,155]];
+const THREATS=['Low','Moderate','High','Severe','Extreme'];
+const hue=(k,a)=>`rgba(${REGION_HUE[k].join(',')},${a})`;
+const regionOf=s=>REGIONS.indexOf(s.region);
+const threatLevel=s=>THREATS.indexOf(s.threat)+1;
+// Maps the stored atlas coordinates onto the 1600 × 900 star field.
+function proj(s){return [150+(s.x-380)/1120*1300,96+(s.y-110)/510*520];}
+let view='map';
+function frameSize(){const w=innerWidth,h=innerHeight;const s=Math.max(.5,Math.min(w/STAGE_W,h/STAGE_H));$('holder').style.width=(STAGE_W*s)+'px';$('holder').style.height=(STAGE_H*s)+'px';$('stage').style.transform=`scale(${s})`;$('viewport').style.display=w>=STAGE_W*s?'flex':'block';$('viewport').style.alignItems='center';$('viewport').style.justifyContent='center';}
 function neighbors(id){return ROUTES.flatMap(([a,b])=>a===id?[b]:b===id?[a]:[])}
 function getPath(from,to){const q=[from],prev={[from]:null};for(let i=0;i<q.length;i++){const node=q[i];if(node===to)break;for(const next of neighbors(node)){if(!(next in prev)){prev[next]=node;q.push(next)}}}if(!(to in prev))return [];let path=[];for(let s=to;s!==null;s=prev[s])path.unshift(s);return path;}
-function paintRoute(){const g=$('route-layers');g.replaceChildren();if(currentRoute.length<2)return;const el=document.createElementNS('http://www.w3.org/2000/svg','path');el.setAttribute('d',currentRoute.map((id,i)=>`${i?'L':'M'} ${byId[id].x} ${byId[id].y}`).join(' '));el.setAttribute('class','anim');g.append(el);}
-function renderNodes(){const dest=$('nodes');dest.replaceChildren();for(const s of SYSTEMS){const b=document.createElement('button');b.type='button';b.className='node';b.dataset.id=s.id;b.style.left=s.x+'px';b.style.top=s.y+'px';b.setAttribute('aria-label',`Inspect ${s.name}, ${s.region}`);b.innerHTML='<span class="r"></span><span class="tooltip"></span>';b.querySelector('.tooltip').textContent=s.name;b.addEventListener('click',()=>selectSystem(s.id));dest.append(b)}}
-function selectSystem(id){const s=byId[id];if(!s)return;selected=id;for(const b of document.querySelectorAll('.node'))b.classList.toggle('selected',b.dataset.id===id);$('sidetitle').textContent=s.name;$('sideregion').textContent=s.region;$('sysfaction').textContent=s.faction;$('systhreat').textContent=s.threat.toUpperCase();$('sysvalue').textContent=missionFor(id)?'CRITICAL':'REGIONAL';$('description').textContent=s.description;const focused=missionFor(id);const sx=focused ? 31 : Math.min(1672-300,Math.max(0,s.x-150)),sy=focused ? 221 : Math.min(941-136,Math.max(0,s.y-69));$('sysimage').style.backgroundPosition=`-${sx}px -${sy}px`;const m=missionFor(id);const n=m?.id||0;let status=m?(state.completed.includes(n)?'OPERATION COMPLETE':isUnlocked(n)?'DEPLOYMENT AUTHORISED':'INTEL LOCKED'):'UNASSIGNED SYSTEM';$('systemintel').textContent=m?`${m.captain} • ${m.kind}. ${status}. ${m.intel}`:`Jump network: ${neighbors(id).map(v=>byId[v].name).join(' · ')}.`;$('course').textContent=m&&isUnlocked(n)&&!state.completed.includes(n)?'OPEN MISSION BRIEFING ›':'PLOT NAVIGATION ROUTE ›';$('routeinfo').textContent=`Location: ${s.name}  /  ${neighbors(id).length} linked systems`;for(const b of document.querySelectorAll('.mission-card'))b.classList.toggle('active',Number(b.dataset.mission)===n);currentRoute=[];paintRoute();}
-function renderMissions(){const dest=$('briefstrip');dest.replaceChildren();for(const m of MISSIONS){const s=byId[m.system],b=document.createElement('button');b.type='button';b.className='mission-card'+(!isUnlocked(m.id)&&!state.completed.includes(m.id)?' locked':'');b.dataset.mission=m.id;const left=290+(m.id-1)*219,top=790;const completed=state.completed.includes(m.id);b.setAttribute('aria-label',m.name+' — '+(completed?'completed':isUnlocked(m.id)?'ready':'locked'));b.innerHTML=`<span class="photo"></span><span class="n">${m.id}</span><strong></strong><small></small><span class="status"></span>`;b.querySelector('strong').textContent=m.name.toUpperCase();b.querySelector('small').textContent=s.region.toUpperCase();b.querySelector('.status').textContent=completed?'✓ COMPLETED':isUnlocked(m.id)?'● READY FOR DEPLOYMENT':'◇ CLASSIFIED';b.querySelector('.photo').style.backgroundPosition=`-${left}px -${top}px`;b.addEventListener('click',()=>{selectSystem(m.system);plot();if(isUnlocked(m.id)&&!completed)briefing(m);else if(!isUnlocked(m.id))toast('Complete prior operations to unlock this mission.');else toast('Operation already completed.')});dest.append(b)}}
-function updateFleet(){const pct=Math.round((state.hull??1)*100);$('fleetstatus').innerHTML=`<b>${state.shipName}</b>  /  ${state.ship.toUpperCase()} &nbsp; · &nbsp; HULL ${pct}% &nbsp; · &nbsp; REQUISITION ${state.credits.toLocaleString()} &nbsp; · &nbsp; ${state.completed.length}/5 OPERATIONS`;renderMissions()}
-function plot(){currentRoute=getPath(state.system||'meridian',selected);paintRoute();$('routeinfo').textContent=currentRoute.length?`${currentRoute.length-1} jump${currentRoute.length===2?'':'s'} plotted: ${currentRoute.map(id=>byId[id].name).join(' → ')}`:'No established jump route.';}
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+function svgEl(tag,attrs){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+function rng(seed){return ()=>(seed=(seed*16807)%2147483647)/2147483647;}
+function drawSky(canvas,seed){const g=canvas.getContext('2d'),r=rng(seed);g.clearRect(0,0,STAGE_W,STAGE_H);
+ for(let i=0;i<620;i++){g.fillStyle=`rgba(255,255,255,${(.15+r()*.45).toFixed(2)})`;g.fillRect(Math.round(r()*STAGE_W),Math.round(r()*STAGE_H),1,1);}
+ for(let i=0;i<110;i++){const t=r();g.fillStyle=`rgba(${t<.3?'190,210,255':t<.5?'255,225,190':'255,255,255'},${(.35+r()*.4).toFixed(2)})`;g.fillRect(Math.round(r()*STAGE_W),Math.round(r()*STAGE_H),2,2);}
+ for(let i=0;i<26;i++){const x=r()*STAGE_W,y=r()*STAGE_H,gr=g.createRadialGradient(x,y,0,x,y,4);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(x-4,y-4,8,8);}}
+// Faction influence: each system claims the part of a 125 px disc nearer to it than to any other system (a clipped Voronoi cell).
+// Only edges facing another region, or open space, are drawn, pulled 3 px inside so neighbouring regions show side-by-side lines.
+function clipHalf(poly,nx,ny,k,lab){const out=[];for(let i=0;i<poly.length;i++){const A=poly[i],B=poly[(i+1)%poly.length],da=nx*A.p[0]+ny*A.p[1]-k,db=nx*B.p[0]+ny*B.p[1]-k,ain=da<=0;if(ain)out.push(A);if(ain!==(db<=0)){const t=da/(da-db);out.push({p:[A.p[0]+(B.p[0]-A.p[0])*t,A.p[1]+(B.p[1]-A.p[1])*t],e:ain?lab:A.e});}}return out;}
+function cellEdges(i,pts,regs,R,gap){const p=pts[i];let poly=[];for(let k=0;k<36;k++){const a=k/36*Math.PI*2;poly.push({p:[p[0]+Math.cos(a)*R,p[1]+Math.sin(a)*R],e:-1});}
+ for(let j=0;j<pts.length&&poly.length;j++){if(j===i)continue;const q=pts[j],dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy);if(L>R*2.2)continue;const nx=dx/L,ny=dy/L;poly=clipHalf(poly,nx,ny,nx*(p[0]+q[0])/2+ny*(p[1]+q[1])/2-(regs[i]===regs[j]?0:gap),j);}
+ const out=[];for(let k=0;k<poly.length;k++){const A=poly[k],B=poly[(k+1)%poly.length];if(A.e===-1||regs[A.e]!==regs[i])out.push([A.p,B.p]);}return out;}
+function buildMap(){drawSky($('sky'),7);
+ const neb=$('nebulae');REGIONS.forEach((r,k)=>{const ps=SYSTEMS.filter(s=>regionOf(s)===k).map(proj),cx=ps.reduce((a,p)=>a+p[0],0)/ps.length,cy=ps.reduce((a,p)=>a+p[1],0)/ps.length,d=el('div','neb');d.style.left=(cx-230)+'px';d.style.top=(cy-150)+'px';d.style.background=`radial-gradient(closest-side,${hue(k,.16)},${hue(k,0)})`;neb.append(d);});
+ const pts=SYSTEMS.map(proj),regs=SYSTEMS.map(regionOf),b=$('borders');
+ SYSTEMS.forEach((s,i)=>{for(const [p,q] of cellEdges(i,pts,regs,125,3))b.append(svgEl('line',{x1:p[0].toFixed(1),y1:p[1].toFixed(1),x2:q[0].toFixed(1),y2:q[1].toFixed(1),class:'r'+regs[i],stroke:`rgb(${REGION_HUE[regs[i]].join(',')})`}));});
+ const lb=$('lanebase');for(const [a,c] of ROUTES){const p=proj(byId[a]),q=proj(byId[c]);lb.append(svgEl('line',{x1:p[0].toFixed(1),y1:p[1].toFixed(1),x2:q[0].toFixed(1),y2:q[1].toFixed(1)}));}
+ const nodes=$('nodes');
+ for(const s of SYSTEMS){const [x,y]=proj(s),k=regionOf(s),w=el('div','sys');w.dataset.id=s.id;w.style.left=x+'px';w.style.top=y+'px';
+  const halo=el('span','halo');halo.style.background=`radial-gradient(closest-side,${hue(k,.35)},${hue(k,0)})`;
+  const dot=el('button','dot'),core=el('span');dot.type='button';dot.setAttribute('aria-label',`${s.name}, ${s.region}`);core.style.boxShadow=`0 0 6px rgba(255,255,255,.9),0 0 14px ${hue(k,.9)}`;dot.append(core);dot.addEventListener('click',()=>selectSystem(s.id));
+  const course=el('div','course'),go=el('button');go.type='button';go.addEventListener('click',()=>travel(s.id));course.append(go);
+  w.append(halo,el('span','spk'),el('span','rings'),dot,el('span','lbl',s.name),el('span','op'),el('span','ship'),course);nodes.append(w);}}
+function availableOps(){return MISSIONS.filter(m=>isUnlocked(m.id)&&!state.completed.includes(m.id));}
+function jumpsText(n){return n===0?'Here':n+(n===1?' jump':' jumps');}
+function opNo(m){return String(m.id).padStart(2,'0');}
+function fillBars(box,n){box.replaceChildren();for(let i=1;i<=5;i++){const b=el('i');if(i<=n)b.className='on';box.append(b);}}
+function refresh(){const here=state.system&&byId[state.system]?state.system:HOME,path=getPath(here,selected),onPath=new Set(path),avail=availableOps(),availAt=new Map(avail.map(m=>[m.system,m]));
+ for(const w of $('nodes').children){const id=w.dataset.id,s=byId[id],m=availAt.get(id);
+  w.classList.toggle('sel',id===selected);w.classList.toggle('home',id===here);w.classList.toggle('path',onPath.has(id));w.classList.toggle('avail',!!m);
+  w.querySelector('.op').textContent=m?'OP '+opNo(m):'';w.querySelector('.ship').textContent='▲ '+state.shipName.toUpperCase();
+  const go=w.querySelector('.course button');if(id===here){go.textContent='System details →';go.setAttribute('aria-label',`Open system details for ${s.name}`);}else{const n=getPath(here,id).length-1;go.textContent=`Set course · ${jumpsText(n)} →`;go.setAttribute('aria-label',`Set course for ${s.name}, ${jumpsText(n)}`);}}
+ $('lanehot').firstElementChild.setAttribute('points',path.map(id=>proj(byId[id]).map(v=>v.toFixed(1)).join(',')).join(' '));
+ const s=byId[selected],[x,y]=proj(s);$('cross').querySelector('.h').style.top=y+'px';$('cross').querySelector('.v').style.left=x+'px';$('borders').dataset.sel=regionOf(s);
+ $('selname').textContent=s.name;$('seldesc').textContent=s.description;$('selfaction').textContent=s.faction;$('selthreat').textContent=s.threat;fillBars($('selbars'),threatLevel(s));
+ const list=$('availlist');list.replaceChildren();
+ for(const m of avail){const b=el('button','opitem'+(m.system===selected?' active':'')),t=el('span','t');b.type='button';t.append(el('b',null,m.name),el('small',null,`${byId[m.system].name} · ${m.captain}`));b.append(el('span','n','OP '+opNo(m)),t,el('span','d',jumpsText(getPath(here,m.system).length-1).toUpperCase()));b.addEventListener('click',()=>selectSystem(m.system));list.append(b);}
+ if(!avail.length)list.append(el('div','empty','All five operations are complete. Further orders will follow.'));
+ const t=torpStock();$('fleetstatus').innerHTML=`REQ <b>${state.credits.toLocaleString()}</b> · HULL ${Math.round((state.hull??1)*100)}% · TORP ${t.have}/${t.cap}`;
+ if(view==='yard')renderYard();}
+function selectSystem(id){if(!byId[id])return;selected=id;refresh();}
+function updateFleet(){refresh();}
+function setView(v){view=v;$('arrival').hidden=v!=='arrival';$('yard').hidden=v!=='yard';$('tabMap').classList.toggle('current',v!=='yard');$('tabShip').classList.toggle('current',v==='yard');if(v==='yard')openYard();else closeYard();}
+// Jumping moves the flagship at once and opens the arrival screen for the new system.
+function travel(id){const here=state.system&&byId[state.system]?state.system:HOME;if(id===here){showArrival(id,here,0);return;}const path=getPath(here,id);if(path.length<2){toast('No established jump route.');return;}state.system=id;selected=id;persist();refresh();showArrival(id,here,path.length-1);}
+function showArrival(id,from,jumps){const s=byId[id],k=regionOf(s),h=REGION_HUE[k],tone=t=>h.map(v=>Math.round(v*t)).join(','),light=t=>h.map(v=>Math.round(v+(255-v)*t)).join(','),accent=`rgb(${light(.45)})`;
+ $('planet').style.background=`radial-gradient(circle at 26% 80%, rgb(${light(.55)}) 0%, rgb(${tone(1)}) 12%, rgb(${tone(.45)}) 30%, rgb(${tone(.12)}) 52%, #020306 70%)`;$('planet').style.boxShadow=`0 0 160px ${hue(k,.28)}`;
+ $('arrkicker').textContent=jumps?`Arrived · ${jumps} ${jumps===1?'jump':'jumps'} from ${byId[from].name}`:`Current position · ${s.region}`;$('arrkicker').style.color=accent;
+ $('arrname').textContent=s.name;$('arrregion').textContent=`${s.region} · ${REGION_SUB[k]}`;$('arrregion').style.color=accent;$('arrdesc').textContent=s.description;$('arrfaction').textContent=s.faction;$('arrthreat').textContent=s.threat;fillBars($('arrbars'),threatLevel(s));
+ const nb=neighbors(id),on=$('arronward');$('arrlanes').textContent=nb.length+(nb.length===1?' system':' systems');on.replaceChildren();
+ for(const n of nb){const t=byId[n],b=el('button','lane'),d=el('i');b.type='button';d.style.background=`rgb(${REGION_HUE[regionOf(t)].join(',')})`;b.append(d,el('span',null,t.name),el('small',null,t.threat.toUpperCase()));b.setAttribute('aria-label',`Show ${t.name} on the sector map`);b.addEventListener('click',()=>{setView('map');selectSystem(n);});on.append(b);}
+ renderArrivalOps(id);setView('arrival');$('arrback').focus();}
+function renderArrivalOps(id){const list=$('arropslist'),m=missionFor(id),open=m&&isUnlocked(m.id)&&!state.completed.includes(m.id);list.replaceChildren();$('arropsk').textContent=`Available operations · ${open?1:0}`;
+ if(open){const c=commanderByMission(m.id)||{},lead=crewById(Personnel.leads[m.id]),card=el('article','opcard'),row=el('div','row'),num=el('span',null,'OPERATION '+opNo(m));num.style.color='var(--amber)';row.append(num,el('span',null,`REWARD ${m.reward} REQ`));
+  const who=el('div','who'),two=el('div','two'),obj=el('div'),intel=el('div'),off=el('div','officer'),go=el('button','pill solid','Open briefing →');
+  who.append(el('b',null,m.captain),el('span',null,[c.faction,m.kind].filter(Boolean).join(' · ')));obj.append(el('span','k','Objective'),document.createTextNode(m.objective));intel.append(el('span','k','Enemy intel'),document.createTextNode(m.intel));two.append(obj,intel);
+  off.append(el('span',null,lead.name.toUpperCase()+' · '),document.createTextNode(`“${Personnel.briefLines[m.id]}”`));go.type='button';go.addEventListener('click',()=>briefing(m));
+  card.append(row,el('h2',null,m.name),who);if(c.line)card.append(el('p','taunt',`“${c.line}”`));card.append(el('div','rule'),el('p',null,m.brief),two,off,go);list.append(card);return;}
+ const done=m&&state.completed.includes(m.id),card=el('div','opcard small'),next=availableOps().map(x=>({m:x,d:getPath(id,x.system).length-1})).sort((p,q)=>p.d-q.d)[0];
+ card.append(el('strong',null,done?`Operation ${opNo(m)} complete`:`No operations in ${byId[id].name}.`),el('div',null,next?`Nearest open operation: ${next.m.name} at ${byId[next.m.system].name}, ${jumpsText(next.d).toLowerCase()} away.`:'Every operation in the Reach is complete.'));
+ if(next){const b=el('button','pill quiet','Show on map →');b.type='button';b.style.alignSelf='flex-start';b.style.marginTop='6px';b.addEventListener('click',()=>{setView('map');selectSystem(next.m.system);});card.append(b);}
+ list.append(card);}
 function openModal(title,header,html,actions){$('modal').classList.remove('personnel');$('modaltitle').textContent=title;$('modalheader').textContent=header;$('modalbody').innerHTML=html;const d=$('modalactions');d.replaceChildren();for(const action of actions){const b=document.createElement('button');b.textContent=action.label;b.className=action.primary?'primary':'';b.disabled=!!action.disabled;b.addEventListener('click',action.run);d.append(b)}$('veil').hidden=false;}
 function close(){ $('veil').hidden=true; }
-function briefing(m){if(!isUnlocked(m.id)){toast('This operation has not yet been unlocked.');return;}if(state.completed.includes(m.id)){toast('This mission has already been completed.');return;}plot();openModal(m.name,'MERIDIAN NAVAL COMMAND / OPERATION '+String(m.id).padStart(2,'0'),`<div class="brief-lead">${Personnel.portrait(crewById(Personnel.leads[m.id]))}<div><small>${crewById(Personnel.leads[m.id]).name.toUpperCase()} · BRIDGE REPORT</small><p>“${Personnel.briefLines[m.id]}”</p></div></div><p>${m.brief}</p><p><b>Primary objective:</b> ${m.objective}</p><div class="commander-brief">${Personnel.portrait(commanderByMission(m.id))}<div><small>${commanderByMission(m.id).faction}</small><b>${m.captain}</b><blockquote>“${commanderByMission(m.id).line}”</blockquote><p>${m.kind} · ${m.intel}</p><p><b>Commander's tactics:</b> ${commanderByMission(m.id).tactics||'Intelligence incomplete.'}</p></div></div><p><b>Battle controls:</b> Press 5–9 for officer commands; J cycles hostile contacts; H orders the Kestrel convoy to hold or resume (also available as a button). Each bridge ability has its own cooldown.</p><p><b>Flagship:</b> ${state.shipName} (${state.ship}) · Hull ${Math.round(state.hull*100)}% · Requisition ${state.credits}</p><p>Battle damage will carry into subsequent operations. Return to the shipyard if repairs are needed.</p>`,[
+function briefing(m){if(!isUnlocked(m.id)){toast('This operation has not yet been unlocked.');return;}if(state.completed.includes(m.id)){toast('This mission has already been completed.');return;}openModal(m.name,'MERIDIAN NAVAL COMMAND / OPERATION '+String(m.id).padStart(2,'0'),`<div class="brief-lead">${Personnel.portrait(crewById(Personnel.leads[m.id]))}<div><small>${crewById(Personnel.leads[m.id]).name.toUpperCase()} · BRIDGE REPORT</small><p>“${Personnel.briefLines[m.id]}”</p></div></div><p>${m.brief}</p><p><b>Primary objective:</b> ${m.objective}</p><div class="commander-brief">${Personnel.portrait(commanderByMission(m.id))}<div><small>${commanderByMission(m.id).faction}</small><b>${m.captain}</b><blockquote>“${commanderByMission(m.id).line}”</blockquote><p>${m.kind} · ${m.intel}</p><p><b>Commander's tactics:</b> ${commanderByMission(m.id).tactics||'Intelligence incomplete.'}</p></div></div><p><b>Battle controls:</b> Press 5–9 for officer commands; J cycles hostile contacts; H orders the Kestrel convoy to hold or resume (also available as a button). Each bridge ability has its own cooldown.</p><p><b>Flagship:</b> ${state.shipName} (${state.ship}) · Hull ${Math.round(state.hull*100)}% · Requisition ${state.credits}</p><p>Battle damage will carry into subsequent operations. Return to the shipyard if repairs are needed.</p>`,[
  {label:'Return to sector map',run:close},
  {label:'Launch operation',primary:true,run:()=>{state.pendingResult=null;state.attempts++;persist();location.href=`index.html?campaign=${m.id}`;}}
 ]);}
-function shipyard(){const repairPoints=Math.ceil((1-state.hull)*100);const cost=repairPoints*6;const can=repairPoints>0&&state.credits>=cost;const torpFull=TORPEDO_CAP[state.ship]||8;const torpHave=state.torps==null?torpFull:Math.max(0,Math.min(torpFull,state.torps));const torpCost=(torpFull-torpHave)*25;openModal('Flagship shipyard','MERIDIAN FLEET / REFIT DIVISION',`<p><b>${state.shipName}</b> — ${state.ship.toUpperCase()}-class warship</p><p>Hull integrity: <b>${Math.round(state.hull*100)}%</b> / 100%<br>Available requisition: <b>${state.credits}</b></p><p>Complete hull overhaul: <b>${cost} requisition</b>. A dockside overhaul also restores damaged ship subsystems.</p><p>Operational torpedoes: <b>${torpHave} / ${torpFull}</b> · Replenishment cost: <b>${torpCost} requisition</b>.</p>${!can&&repairPoints>0?'<p>Insufficient resources for full repairs. Partial emergency repairs are available.</p>':''}`,[
- {label:'Return',run:close},
- {label:`Emergency repair (100)`,disabled:state.credits<100||state.hull>=1,run:()=>{state.credits-=100;state.hull=Math.min(1,state.hull+.15);persist();updateFleet();shipyard()}},
- {label:torpCost?`Resupply torpedoes · ${torpCost}`:'Torpedoes replenished',disabled:!torpCost||state.credits<torpCost,run:()=>{state.credits-=torpCost;state.torps=torpFull;persist();updateFleet();shipyard()}},
- {label:repairPoints?`Overhaul · ${cost}`:'Hull fully repaired',primary:true,disabled:!can,run:()=>{state.credits-=cost;state.hull=1;state.sub=null;persist();updateFleet();shipyard()}}
- ]);}
+// Shipyard: the flagship side-on, its seven systems as slots, and the dockyard's repair services.
+// Stats, starboard hardpoints and hull/shield ellipsoids per hull are copied from CLASSES in index.html.
+const HULLS={
+ bastion:{cls:'Heavy battleship',hull:3000,shield:620,regen:28,vmax:42,turn:5.5,tubes:4,broad:'Six turrets on each beam · 46 damage × 3 shells · 7.5 s reload · range 2,700',fore:['Dorsal turrets','Two turrets covering almost every bearing · 32 damage × 3 · 5.5 s reload'],
+  stbd:[-100,-60,-20,20,60,100].map(z=>[31,-8,z]),forePts:[[0,17,-62],[0,9,70]],torpPts:[[14,-22,-146]],eng:[[22,-20,143],[0,-18,144]],hullE:{c:[0,-15,0],r:[40,17,146]},shieldE:{c:[0,-10,0],r:[64,40,178]}},
+ halberd:{cls:'Lance cruiser',hull:2500,shield:520,regen:26,vmax:58,turn:9,tubes:2,broad:'Four turrets on each beam · 44 damage × 4 shells · 5 s reload · range 2,500',fore:['Spinal lance','Fires dead ahead · 600 damage a second for 2.4 s · 14 s charge · range 3,600'],
+  stbd:[-60,-20,20,60].map(z=>[30,-4,z]),forePts:[[0,-14,-133]],torpPts:[[8,-30,-124]],eng:[[10,-10,127],[0,-24,125]],hullE:{c:[0,-10,0],r:[30,28,128]},shieldE:{c:[0,-4,0],r:[50,50,154]}},
+ sabre:{cls:'Battlecruiser',hull:2400,shield:500,regen:26,vmax:62,turn:7.5,tubes:2,broad:'Four turrets on each beam · 42 damage × 3 shells · 6 s reload · range 2,600',fore:['Bow battery','Three turrets across the forward quarter · 50 damage × 3 · 6 s reload'],
+  stbd:[[32,-4,-40],[35,-4,-10],[43,-4,30],[43,-4,70]],forePts:[[0,4,-96],[0,7,-78],[0,10,-60]],torpPts:[[8,-28,-128]],eng:[[17,5,139],[0,11,139],[10,-5,139]],hullE:{c:[0,-10,0],r:[36,30,139]},shieldE:{c:[0,0,0],r:[58,64,168]}},
+ warden:{cls:'Siege dreadnought',hull:3600,shield:600,regen:24,vmax:36,turn:4.5,tubes:6,broad:'Five turrets on each beam · 44 damage × 3 shells · 8 s reload · range 2,700',fore:['Siege cannons','Two cannons firing ahead · 150 damage × 2 · 12 s reload · range 4,200'],
+  stbd:[[28,-4,-90],[40,-4,-50],[40,-4,-10],[39,-4,30],[40,-4,70]],forePts:[[0,10,-118],[0,12,-86]],torpPts:[[10,-35,-140],[16,-40,-120],[20,-40,-100]],eng:[[23,13,156],[13,-4,156]],hullE:{c:[0,-12,0],r:[36,32,155]},shieldE:{c:[0,0,0],r:[58,64,188]}}
+};
+// Upgrades are shown for planning only; buying them is not implemented yet.
+const PLANNED={
+ engines:[['Vectored thrusters','A tighter turning circle.'],['Afterburner injectors','Longer afterburner burns.'],['High-yield drive','A higher top speed.']],
+ hull:[['Reinforced plating','More hull points.'],['Ablative belt','Less damage from every hit.'],['Damage-control teams','Faster subsystem repairs in battle.']],
+ reactor:[['Overcharged core','A stronger boost to the powered system.'],['Load balancer','Faster switching between power modes.'],['Emergency capacitors','A short burst of full power to every system.']],
+ broadside:[['Rapid loaders','Shorter broadside reloads.'],['Heavy shells','More damage per shell.'],['Extended barrels','Longer broadside range.']],
+ fore:[['Fire-control computer','Longer range for the forward weapon.'],['Heavier ordnance','More damage per salvo.'],['Faster cycling','A shorter reload or charge time.']],
+ shields:[['Capacitor array','Stronger shields.'],['Regeneration coils','Faster shield recovery.'],['Facing projectors','Quicker reinforcement of a facing.']],
+ torp:[['Expanded magazine','More torpedoes carried.'],['Fast-reload tubes','Shorter torpedo reloads.'],['Heavy warheads','More damage per torpedo.']]};
+const SLOT_ICON={hull:'M3 14 L6 9 L18 9 L21 14 L18 17 L6 17 Z',shields:'M12 3 L20 6 V12 C20 16.5 16.5 19.5 12 21 C7.5 19.5 4 16.5 4 12 V6 Z',reactor:'M13 3 L6 13 H11 L10 21 L18 10 H13 Z',engines:'M4 12 H14 M14 8 L20 12 L14 16 M4 8 H9 M4 16 H9',broadside:'M4 8 H16 M4 12 H20 M4 16 H16',fore:'M5 16 H19 M8 16 V12 H16 V16 M12 12 V6 H19',torp:'M3 12 H17 L21 12 L17 9 M17 15 L21 12 M6 9 V15'};
+const SHIP_BOX=[250,60],SLOT_X=[78,196,12],SLOT_TOP=430;
+let yardFocus='broadside',yardLayout=null,shipViewTimer=0;
+function torpStock(){const cap=TORPEDO_CAP[state.ship]||8;return {cap,have:state.torps==null?cap:Math.max(0,Math.min(cap,state.torps))};}
+function yardSlots(){const H=HULLS[state.ship]||HULLS.bastion,sub=state.sub||{},hc=H.hullE,sc=H.shieldE,t=torpStock(),c=k=>Math.round(typeof sub[k]==='number'?sub[k]:100);
+ const slots=[
+  {id:'engines',name:'Engines',kind:'Propulsion',cond:c('engines'),spec:`Top speed ${H.vmax} · turns ${H.turn}° a second · afterburner 1.7× for about 7 s`,pts:H.eng},
+  {id:'hull',name:'Hull & armour',kind:'Defence',cond:Math.round((state.hull??1)*100),spec:`${H.hull.toLocaleString('en-GB')} hull points · battle damage carries between operations`,pts:[[0,hc.c[1]-hc.r[1]*.7,hc.r[2]*.25]]},
+  {id:'reactor',name:'Reactor',kind:'Power',cond:c('reactor'),spec:'Routes power to engines, shields or weapons (keys 1–4 in battle)',pts:[[0,hc.c[1]+hc.r[1]*.2,hc.r[2]*.05]]},
+  {id:'broadside',name:'Broadsides',kind:'Weapons',cond:Math.min(c('port'),c('stbd')),spec:H.broad,pts:H.stbd,mid:true},
+  {id:'fore',name:H.fore[0],kind:'Weapons',cond:c('fore'),spec:H.fore[1],pts:H.forePts},
+  {id:'shields',name:'Shields',kind:'Defence',cond:c('shields'),spec:`${H.shield} strength · regenerates ${H.regen} per second`,pts:[[0,sc.c[1]+sc.r[1]*.8,-sc.r[2]*.6]]},
+  {id:'torp',name:'Torpedo bay',kind:'Weapons',cond:c('torp'),spec:`${H.tubes} tubes · ${t.have} of ${t.cap} torpedoes · 340 damage · range 5,200`,pts:H.torpPts}];
+ for(const s of slots)s.anchor=s.pts[s.mid?Math.floor(s.pts.length/2):0];
+ // Seen from starboard the stern is on the left, so slots run stern to bow.
+ return slots.sort((a,b)=>b.anchor[2]-a.anchor[2]);}
+function renderYard(){const H=HULLS[state.ship]||HULLS.bastion,slots=yardSlots(),box=$('slots'),cards=$('markcards'),leaders=$('leaders'),marks=$('yardmarks');
+ box.replaceChildren();
+ slots.forEach(s=>{const on=s.id===yardFocus,b=el('button','slot'+(on?' on':'')),top=el('span','top');b.type='button';b.setAttribute('aria-pressed',String(on));
+  top.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${SLOT_ICON[s.id]}"></path></svg>`;top.append(el('span','tier','MK I'));
+  b.append(top,el('b',null,s.name),el('small',s.cond<50?'bad':s.cond<100?'warn':'',`${s.kind} · ${s.cond}%`));b.addEventListener('click',()=>{yardFocus=s.id;renderYard();});box.append(b);});
+ const f=slots.find(s=>s.id===yardFocus);$('markk').textContent='Upgrades for · '+f.name;$('markspec').textContent=f.spec;cards.replaceChildren();
+ for(const [n,d] of PLANNED[f.id]){const c=el('article','upcard'),btn=el('button',null,'In development');btn.type='button';btn.disabled=true;c.append(el('span','k','Mk II · planned'),el('b',null,n),el('span',null,d),btn);cards.append(c);}
+ renderServices();
+ leaders.replaceChildren();for(const m of [...marks.querySelectorAll('i')])m.remove();
+ const points=[],rows=[];
+ slots.forEach((s,i)=>{const on=s.id===yardFocus,x=SLOT_X[0]+SLOT_X[1]/2+i*(SLOT_X[1]+SLOT_X[2]),line=svgEl('line',{x1:x,y1:SLOT_TOP,x2:x,y2:SLOT_TOP,stroke:on?'rgba(255,214,150,.9)':'rgba(255,255,255,.22)'});leaders.append(line);rows.push({line,idx:points.length});points.push(s.anchor);
+  for(const p of s.pts){const m=el('i',on?'on':'');m.style.left='-100px';marks.append(m);rows.push({mark:m,idx:points.length});points.push(p);}});
+ const sc=H.shieldE,si=points.length;points.push(sc.c,[sc.c[0],sc.c[1],sc.c[2]+sc.r[2]],[sc.c[0],sc.c[1]+sc.r[1],sc.c[2]]);const ei=points.length;points.push(H.eng[H.eng.length-1]);
+ $('shieldline').classList.toggle('on',yardFocus==='shields');yardLayout={points,rows,si,ei};startShipView();}
+// Called by the 3D view every frame with each layout point projected into the ship canvas.
+function yardFrame(sc){if(!yardLayout||view!=='yard')return;$('shipwait').hidden=true;const P=i=>[sc[i][0]+SHIP_BOX[0],sc[i][1]+SHIP_BOX[1]];
+ for(const r of yardLayout.rows){const [x,y]=P(r.idx);if(r.line){r.line.setAttribute('x2',x.toFixed(1));r.line.setAttribute('y2',y.toFixed(1));}else{r.mark.style.left=x+'px';r.mark.style.top=y+'px';}}
+ const c=P(yardLayout.si),ez=P(yardLayout.si+1),ey=P(yardLayout.si+2),e=$('shieldline');e.setAttribute('cx',c[0].toFixed(1));e.setAttribute('cy',c[1].toFixed(1));e.setAttribute('rx',Math.hypot(ez[0]-c[0],ez[1]-c[1]).toFixed(1));e.setAttribute('ry',Math.hypot(ey[0]-c[0],ey[1]-c[1]).toFixed(1));
+ const pl=P(yardLayout.ei);$('plume').style.left=pl[0]+'px';$('plume').style.top=pl[1]+'px';}
+function startShipView(){const api=window.BroadsideShipView;if(!api||view!=='yard'||!yardLayout)return;api.show($('shipgl'),state.ship,yardLayout.points,yardFrame).catch(e=>{console.warn('Ship view unavailable',e);$('shipwait').hidden=false;$('shipwait').textContent='The 3D ship view is unavailable in this browser.';});}
+function openYard(){$('shipwait').hidden=false;$('shipwait').textContent='Bringing the ship into the floodlights…';$('plume').style.left='-300px';renderYard();clearTimeout(shipViewTimer);shipViewTimer=setTimeout(()=>{if(!window.BroadsideShipView)$('shipwait').textContent='The 3D ship view could not be loaded.';},12000);}
+function closeYard(){if(window.BroadsideShipView)window.BroadsideShipView.hide();}
+function renderServices(){const list=$('svclist'),hull=state.hull??1,pts=Math.ceil((1-hull)*100),cost=pts*6,t=torpStock(),tc=(t.cap-t.have)*25,status=el('div',null,`Hull ${Math.round(hull*100)}% · requisition ${state.credits.toLocaleString()}`);list.replaceChildren();status.style.cssText='font-size:14px;color:var(--dim)';list.append(status);
+ const row=(title,sub,label,disabled,run,solid)=>{const r=el('div','svc'),d=el('div'),b=el('button',solid?'solid':'',label);d.append(el('b',null,title),el('small',null,sub));b.type='button';b.disabled=disabled;b.addEventListener('click',run);r.append(d,b);list.append(r);};
+ row('Full overhaul',pts?'Restores the hull and every damaged subsystem':'The hull is fully repaired',pts?`Overhaul · ${cost}`:'Not needed',!(pts>0&&state.credits>=cost),()=>{state.credits-=cost;state.hull=1;state.sub=null;persist();refresh();toast('Overhaul complete. Hull and subsystems restored.');},true);
+ row('Emergency repair','Patches up to 15% of the hull','Repair · 100',state.credits<100||hull>=1,()=>{state.credits-=100;state.hull=Math.min(1,hull+.15);persist();refresh();toast('Emergency repairs complete.');});
+ row('Torpedo resupply',`${t.have} of ${t.cap} aboard · 25 each`,tc?`Resupply · ${tc}`:'Full',!tc||state.credits<tc,()=>{state.credits-=tc;state.torps=t.cap;persist();refresh();toast('Torpedo magazine replenished.');});}
 function officerRoster(focus){const roster=focus?[...CREW].sort((a,b)=>(a.id===focus?-1:0)-(b.id===focus?-1:0)):CREW;const sections=roster.map(c=>`<article class="personnel-card">${Personnel.portrait(c)}<div><h3>${c.name}</h3><small>${c.post}</small><p>${c.bio}</p><strong>[${c.key}] ${c.ability} · ${c.cooldown}s cooldown</strong><p>${c.effect}</p></div></article>`).join('');openModal('Officers of the Resolute','MERIDIAN FLEET / PERSONNEL DOSSIER',`<p>Five named officers serve aboard <b>${state.shipName}</b>. Their abilities activate during campaign engagements using keys 5–9 or the bridge-command buttons.</p><div class="personnel-grid">${sections}</div>`,[{label:'Return to campaign',run:close}]);$('modal').classList.add('personnel');}
 function intelligence(){const done=state.completed;openModal('Campaign intelligence','SECTOR INTELLIGENCE / RESTRICTED',`<p><b>Meridian Core:</b> Navy territory remains secure, but frontier shipping has suffered unexplained losses.</p><p><b>Kestrel Verge:</b> ${done.includes(1)?'Pirate action disrupted. Captain Vex’s intelligence is being analysed.':'Distress calls report a fast pirate raider attacking merchant traffic.'}</p><p><b>Ash Marches:</b> ${done.includes(2)?'Evidence indicates that renegade human military hardware has been deployed.':'Renegade naval contacts remain unverified.'}</p><p><b>Halcyon Belt and Harrow Expanse:</b> Deep-space signals are classified pending additional missions.</p><p><b>Your decisions:</b> ${Object.keys(state.flags||{}).filter(k=>state.flags[k]).map(k=>k.replaceAll('_',' ')).join(' · ')||'No major campaign decisions recorded.'}</p>`,[{label:'Close intelligence',run:close}]);}
 function newCampaign(){openModal('Commission a flagship','NEW CAMPAIGN / THE LONG WATCH',`<p>The Meridian frontier has been quiet for fourteen years. Three merchant ships have vanished in six days. Navy command calls it piracy. The last transmission from Kestrel was not a distress call. It was a warning.</p><p>Choose the hull of <b>MNS Resolute</b>. This resets existing campaign progress.</p><label for="pickShip">FLAGSHIP CLASS</label><select id="pickShip"><option value="bastion">Bastion · Heavy battleship</option><option value="halberd">Halberd · Lance cruiser</option><option value="sabre">Sabre · Battlecruiser</option><option value="warden">Warden · Siege dreadnought</option></select>`,[
@@ -138,9 +322,80 @@ function afterAction(){const r=state.pendingResult;if(!r)return;const m=MISSIONS
  }else{
    openModal('Ship recovered','AFTER-ACTION REPORT / OPERATION FAILED',`<p>The ${state.shipName} has suffered catastrophic damage. Navy recovery teams returned the surviving crew to Meridian-controlled space.</p><p>Hull restored to ${Math.round(state.hull*100)}% by emergency repairs. The operation remains available to attempt again. <b>100 requisition</b> has been withheld for recovery services (where affordable).</p>`,[{label:'Return to map',primary:true,run:()=>{state.pendingResult=null;state.system='meridian';persist();close();updateFleet()}}]);
  }}
-$('course').addEventListener('click',()=>{const m=missionFor(selected);if(m&&isUnlocked(m.id)&&!state.completed.includes(m.id)){briefing(m)}else{plot();toast('Jump course plotted. Select an active operation to deploy.')}});
-$('tabShip').addEventListener('click',shipyard);$('tabCrew').addEventListener('click',officerRoster);$('tabIntel').addEventListener('click',intelligence);$('tabNew').addEventListener('click',newCampaign);$('tabDuel').addEventListener('click',()=>location.href='index.html');$('tabMap').addEventListener('click',()=>{close();selectSystem('kestrel')});$('veil').addEventListener('click',e=>{if(e.target===$('veil'))close()});window.addEventListener('keydown',e=>{if(e.key==='Escape')close()});window.addEventListener('resize',frameSize);
-renderNodes();renderBridgeRail();frameSize();selectSystem('kestrel');updateFleet();if(!localStorage.getItem(KEY))persist();if(state.pendingResult)afterAction();
+$('arrback').addEventListener('click',()=>setView('map'));
+$('tabShip').addEventListener('click',()=>{close();setView('yard')});$('tabCrew').addEventListener('click',()=>officerRoster());$('tabIntel').addEventListener('click',intelligence);$('tabNew').addEventListener('click',newCampaign);$('tabDuel').addEventListener('click',()=>location.href='index.html');$('tabMap').addEventListener('click',()=>{close();setView('map')});$('veil').addEventListener('click',e=>{if(e.target===$('veil'))close()});
+window.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('veil').hidden)close();else if(view!=='map')setView('map');});window.addEventListener('resize',frameSize);window.addEventListener('shipviewready',startShipView);
+buildMap();drawSky($('sky2'),11);drawSky($('sky3'),5);frameSize();selected=(availableOps()[0]||{}).system||(byId[state.system]?state.system:'kestrel');refresh();if(!localStorage.getItem(KEY))persist();if(state.pendingResult)afterAction();
+</script>
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+// Side-on view of the flagship for the shipyard. Scale, rotation and finish match CLASSES and lookMaterial in index.html.
+const LOOK = { bastion: { scale: 300, rotY: Math.PI, rough: 0.45, metal: 0.55 }, halberd: { scale: 265, rotY: Math.PI / 2 }, sabre: { scale: 286, rotY: Math.PI }, warden: { scale: 320, rotY: Math.PI } };
+const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
+const V3 = THREE.Vector3, models = {}, v = new V3();
+let renderer = null, scene, cam, hold, canvas, current = null, points = [], onFrame = null, raf = 0, size = [0, 0, 0], active = false;
+
+function init(c) {
+  canvas = c;
+  renderer = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true });
+  renderer.setClearColor(0x000000, 0); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.outputColorSpace = THREE.SRGBColorSpace;
+  scene = new THREE.Scene();
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.35;
+  const key = new THREE.DirectionalLight(0xfff1dc, 3.2); key.position.set(600, 700, -500);
+  const rim = new THREE.DirectionalLight(0x7fb6ff, 2.4); rim.position.set(-500, 250, 700);
+  const fill = new THREE.DirectionalLight(0x9aa8c0, 0.5); fill.position.set(300, -500, 200);
+  hold = new THREE.Group(); scene.add(key, rim, fill, hold);
+  cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 5000);
+}
+function model(k) {
+  const L = LOOK[k] || LOOK.bastion;
+  return models[k] || (models[k] = new Promise((res, rej) => loader.load('models/' + (LOOK[k] ? k : 'bastion') + '.glb', g => {
+    const root = g.scene, wrap = new THREE.Group(); wrap.add(root);
+    root.position.sub(new THREE.Box3().setFromObject(wrap).getCenter(new V3()));
+    wrap.scale.setScalar(L.scale); wrap.rotation.y = L.rotY;
+    if (L.rough) root.traverse(o => { if (o.isMesh) { o.material.metalness *= L.metal; o.material.roughness = Math.max(o.material.roughness, 0.55); } });
+    res(wrap);
+  }, undefined, e => { delete models[k]; rej(e); })));
+}
+// Frame the whole hull side-on from starboard, bow to the right.
+function fit(w, h) {
+  hold.rotation.set(0, 0, 0); hold.position.set(0, 0, 0); hold.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(current), bc = box.getCenter(new V3()), bs = box.getSize(new V3());
+  const halfW = Math.max(bs.z / 2 * 1.04, bs.y / 2 * 1.1 * w / h), halfH = halfW * h / w;
+  Object.assign(cam, { left: -halfW, right: halfW, top: halfH, bottom: -halfH });
+  cam.position.set(bc.x + 2000, bc.y, bc.z); cam.lookAt(bc.x, bc.y, bc.z); cam.updateProjectionMatrix();
+}
+function frame(t) {
+  raf = requestAnimationFrame(frame);
+  const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
+  const pr = Math.min(2, (window.devicePixelRatio || 1) * (canvas.getBoundingClientRect().width / w || 1));
+  if (size[0] !== w || size[1] !== h || size[2] !== pr) { size = [w, h, pr]; renderer.setPixelRatio(pr); renderer.setSize(w, h, false); fit(w, h); }
+  hold.rotation.y = Math.sin(t * 0.00025) * 0.03; hold.position.y = Math.sin(t * 0.0004) * 1.2; hold.updateMatrixWorld();
+  renderer.render(scene, cam);
+  if (onFrame) onFrame(points.map(p => { v.set(p[0], p[1], p[2]).applyMatrix4(hold.matrixWorld).project(cam); return [(v.x + 1) / 2 * w, (1 - v.y) / 2 * h]; }));
+}
+window.BroadsideShipView = {
+  async show(c, k, pts, cb) {
+    active = true; points = pts; onFrame = cb;
+    if (!renderer) init(c);
+    const m = await model(k);
+    if (!active) return;
+    if (current !== m) { if (current) hold.remove(current); hold.add(m); current = m; size = [0, 0, 0]; }
+    if (!raf) raf = requestAnimationFrame(frame);
+  },
+  hide() { active = false; cancelAnimationFrame(raf); raf = 0; onFrame = null; }
+};
+window.dispatchEvent(new Event('shipviewready'));
 </script>
 </body>
 </html>

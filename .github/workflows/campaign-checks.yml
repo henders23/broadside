@@ -20,3 +20,5 @@ jobs:
         run: node tests/environment.test.js
       - name: Run flagship upgrade rules
         run: node tests/upgrades.test.js
+      - name: Run officer experience rules
+        run: node tests/experience.test.js

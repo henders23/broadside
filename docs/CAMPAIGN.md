@@ -66,7 +66,11 @@ Post-battle choices set named flags for future narrative use; they currently do 
 
 ## Officers
 
-Five named senior officers appear on the **Officers** screen (the Officers tab): a list of the bridge crew, and for the selected officer a large portrait, bio, battle command with its key, cooldown and duration, voice line, and the briefing lines they have given for unlocked operations. Below, **Known adversaries** shows the enemy commanders of unlocked or completed operations; the rest stay unidentified.
+Five named senior officers appear on the **Officers** screen (the Officers tab): a list of the bridge crew, and for the selected officer a large portrait, bio, battle command with its key, cooldown and duration, voice line, and the briefing lines they have given for unlocked operations. A **Service record** card shows the officer's rank, XP toward the next rank, engagements and commands given.
+
+**Officer experience** (`crew/experience.js`, tested by `tests/experience.test.js`): after every campaign engagement each officer earns 60 XP for a victory or 30 for a defeat, plus 15 XP for each time their command was used (up to three). The battle page saves the use counts with the result (`pendingResult.officerUses`); the campaign awards XP once when the after-action report opens (stored on the result so a reload cannot repeat it), saves it in `state.officers`, and lists the gains and promotions in the report. Ranks are Regular, Seasoned, Veteran, Elite and Ace at 0, 100, 250, 450 and 700 XP. Each rank above Regular makes the officer's command 8% stronger and its cooldown 5% shorter; the bridge controller applies this in battle (Brace shield restore, Target Solution damage bonus, Damage Control repair, Evasive Pattern damage reduction, and every cooldown). Renn's Threat Scan gains only the shorter cooldown. A new campaign resets the crew to Regular. Values are first-pass and need playtesting: with only five operations, officers reach Seasoned after two engagements and Veteran or Elite by the end of Act I.
+
+Below, **Known adversaries** shows the enemy commanders of unlocked or completed operations; the rest stay unidentified.
 
 - Commander Elise Varro — First officer and crisis coordination.
 - Lt. Commander Imani Okoye — Tactical officer and target assessment.
@@ -111,7 +115,7 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 - All ability cooldowns are **battle-local**, reset at mission deployment, and do not alter campaign save format.
 - `crew/upgrades.js` holds the shipyard upgrade catalogue and `apply()`, shared by the campaign and battle pages.
 - `crew/personnel.js` holds character descriptions, mission lines, commander identities, and portrait positions. `crew/bridge-controller.js` is decoupled from Three.js and takes battle objects via dependency injection.
-- `img/command-portraits.webp` is a compressed six-frame portrait atlas containing five Meridian officer portraits plus ORACLE-9's armoured synthetic portrait. Vex, Sable, Thorne and the Wraith Cantor now use individually designed SVG illustrations in `img/commanders/`; these assets are not yet photorealistic.
+- `img/command-portraits.webp` is a compressed six-frame portrait atlas containing five Meridian officer portraits plus ORACLE-9's armoured synthetic portrait. Captain Kora Vex and Captain Garrick Thorne use painted portraits (`img/commanders/vex.webp`, `thorne.webp`); Sable and the Wraith Cantor use SVG illustrations in `img/commanders/`; these assets are not yet photorealistic.
 - Automated testing covered the five command effects/cooldowns and the personnel and briefing UI, but **full live WebGL combat playthroughs remain unverified**.
 
 
@@ -121,7 +125,7 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 - In operation 1, the MV Peregrine has a distinctive procedural civilian freighter mesh with Sabre-derived flight and collision physics, and has no functional weapons. Either keep it alive until it crosses the jump-gate plane or destroy Vex first. H (or the HUD button) holds/resumes the convoy. Losing the transport fails the operation.
 - In operation 2, a weakened Scrapjaw pursuer flanks the Revenant minelayer from the opposite side, rather than merely copying its heading; both must be destroyed. The player may select a hostile contact with `J`, and the target HUD and officer scan follow the selected vessel.
 - The tactical plot now renders every active ship, including secondary opponents and friendly civilian craft. Ship collisions evaluate ship pairs; shell, torpedo and mine collision systems already iterate over every ship.
-- Four illustrated SVG enemy portraits are stored at `img/commanders/{vex,sable,thorne,cantor}.svg` and displayed in mission briefings and incoming hails. ORACLE-9 continues to use the sixth slot of the existing atlas.
+- Enemy portraits are stored in `img/commanders/` (painted `vex.webp` and `thorne.webp`, illustrated `sable.svg` and `cantor.svg`) and displayed in mission briefings, the arrival screen, the Officers screen and incoming hails. ORACLE-9 continues to use the sixth slot of the existing atlas.
 - Automated controller scenarios checked both win and loss conditions, target cycling and single-enemy compatibility. Syntax was checked for the browser scripts, but full interactive/WebGL battles have **not** been played through in this environment.
 - **Remaining limitations:** a Sabre is a visual stand-in for a civilian hull; direct collision and targeting behaviour require playtesting; balance of protecting the convoy against Kora's aggressive AI is unverified; the map artwork still includes baked labels; and alternate mission objectives are currently restricted to these bespoke scenarios.
 

@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
-for(const name of ['crew/personnel.js','crew/bridge-controller.js','crew/fleet-controller.js','crew/battle-environments.js','crew/upgrades.js']){
+for(const name of ['crew/personnel.js','crew/bridge-controller.js','crew/fleet-controller.js','crew/battle-environments.js','crew/upgrades.js','crew/experience.js']){
   const code=fs.readFileSync(name,'utf8');
   new Function(code);
 }
@@ -14,10 +14,15 @@ for(const name of ['index.html','campaign.html']){
     if(code.trim())new Function(code);
   }
 }
-for(const name of ['vex','sable','thorne','cantor']){
+for(const name of ['sable','cantor']){
   const asset=fs.readFileSync('img/commanders/'+name+'.svg','utf8');
   assert.match(asset,/<svg\s/);
   assert.match(asset,/<\/svg>/);
+}
+// Vex and Thorne use painted portraits; each must be a WebP image (RIFF....WEBP header).
+for(const name of ['vex','thorne']){
+  const head=fs.readFileSync('img/commanders/'+name+'.webp').subarray(0,12).toString('latin1');
+  assert.ok(head.startsWith('RIFF')&&head.endsWith('WEBP'),name+'.webp is a WebP image');
 }
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/fleet\.onDestroyed\(s\)/);

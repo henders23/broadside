@@ -420,6 +420,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 }}
 </script>
 <script src="crew/personnel.js"></script>
+<script src="crew/experience.js"></script>
 <script src="crew/bridge-controller.js"></script>
 <script src="crew/fleet-controller.js"></script>
 <script src="crew/battle-environments.js"></script>
@@ -1399,7 +1400,7 @@ function startGame() {
     DIFF,endGame,showMsg,game,V3,buildFreighter:ship=>battleEnvironment.buildFreighter(ship)
   }):null;
   fleet?.setup();
-  bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,getTarget:()=>player.target,showMsg,facings:FACINGS}) : null;
+  bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,getTarget:()=>player.target,showMsg,facings:FACINGS,levels:window.BroadsideExperience&&campaignSave?window.BroadsideExperience.levels(campaignSave.officers):null}) : null;
   bridge?.mount();
   cam.yaw = 0.55; cam.pitch = 0.3; cam.dist = player.C.camDist; cam.mode = 'chase'; cam.curYaw = player.yaw + cam.yaw; cam.curPitch = undefined;
   tacFull = false; $('tacfull').hidden = true;
@@ -1453,7 +1454,7 @@ function showOver() {
   if (campaignMission) {
     const saved = readCampaignSave();
     if (saved) {
-      saved.pendingResult = { id: campaignMissionId, outcome: win ? 'win' : 'loss', time: Math.round(game.time), tacticalOutcome: game.campaignOutcome || (win ? 'enemy_destroyed' : 'flagship_lost') };
+      saved.pendingResult = { id: campaignMissionId, outcome: win ? 'win' : 'loss', time: Math.round(game.time), tacticalOutcome: game.campaignOutcome || (win ? 'enemy_destroyed' : 'flagship_lost'), officerUses: bridge ? bridge.uses : null };
       // An escort loss is not the destruction of the player's flagship.
       const flagshipSurvived = player.alive && player.hull > 0;
       saved.hull = flagshipSurvived ? clamp(player.hull / player.C.hull, 0.1, 1) : 0.45;

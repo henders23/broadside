@@ -409,6 +409,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <script src="crew/bridge-controller.js"></script>
 <script src="crew/fleet-controller.js"></script>
 <script src="crew/battle-environments.js"></script>
+<script src="crew/upgrades.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -1135,8 +1136,7 @@ function makeBeamMesh(col) {
   return b;
 }
 function hideBeams(s) { for (const b of s.beams) b.visible = false; }
-function makeShip(key, team) {
-  const C = CLASSES[key];
+function makeShip(key, team, C = CLASSES[key]) {   // C: the class data, or an upgraded copy of it for the campaign flagship
   const obj = new THREE.Group(); scene.add(obj);
   const body = new THREE.Group(); obj.add(body);
   const model = instanceModel(key); body.add(model);
@@ -1192,7 +1192,7 @@ function fx(s) {
   const p = s.pips, sub = s.sub, o = s._fx || (s._fx = {});
   o.eng = (0.55 + 0.1125 * p.eng) * (0.45 + 0.55 * sub.engines / 100);
   o.turn = (0.7 + 0.075 * p.eng) * (0.5 + 0.5 * sub.engines / 100);
-  o.shd = (p.shd / 4) * (0.15 + 0.85 * sub.shields / 100);
+  o.shd = (p.shd / 4) * (s.C.shieldHardened ? 0.575 + 0.425 * sub.shields / 100 : 0.15 + 0.85 * sub.shields / 100);
   o.wpn = 0.35 + 0.1625 * p.wpn;
   return o;
 }
@@ -1358,7 +1358,8 @@ function startGame() {
   const pk = campaignSave && CLASSES[campaignSave.ship] && !CLASSES[campaignSave.ship].enemyOnly ? campaignSave.ship : choice.ship;
   const others = Object.keys(CLASSES).filter(k => k !== pk);
   const ek = campaignMission ? campaignMission.enemy : others[Math.floor(Math.random() * others.length)];
-  player = makeShip(pk, 'p'); enemy = makeShip(ek, 'e');
+  const upgraded = campaignSave && window.BroadsideUpgrades ? window.BroadsideUpgrades.apply(CLASSES[pk], campaignSave.upgrades) : CLASSES[pk];
+  player = makeShip(pk, 'p', upgraded); enemy = makeShip(ek, 'e');
   player.target = enemy; enemy.target = player;
   if (campaignMission) {
     player.name = (campaignSave && campaignSave.shipName) || 'MNS Resolute';
@@ -1493,6 +1494,7 @@ function damage(s, dmg, kind, local, src) {
     if (!steady || Math.random() < 0.15) shieldFlash(s, u);
     if (!steady) Sfx.shield(volAt(s.pos));
   }
+  if (hullD > 0 && s.C.armour) hullD *= s.C.armour;   // campaign armour upgrade
   if (hullD > 0) {
     if (s === player && s.hull >= s.C.hull * 0.25 && s.hull - hullD < s.C.hull * 0.25) Voice.say('hull-critical', 30, true);
     s.hull -= hullD;
@@ -1542,7 +1544,7 @@ function afterburnerUpdate(s, dt) {
   if (!s.abWant) s._abWarned = false;
   s.burn = ok;
   if (s.burn) {
-    s.abFuel = Math.max(0, s.abFuel - dt / AB.burnT);
+    s.abFuel = Math.max(0, s.abFuel - dt / (s.C.abBurn || AB.burnT));
     if (s.abFuel <= 0) { s.abLock = true; s.burn = false; s._abWarned = true; if (s === player) showMsg('Afterburner burnt out', 1.6, true); }
   } else {
     s.abFuel = Math.min(1, s.abFuel + dt / AB.rechargeT);
@@ -1600,7 +1602,7 @@ function shieldsUpdate(s, dt) {
   const u = s.shieldMesh.material.uniforms;
   if (!s.alive) { s.sh.fill(0); u.uStr.value.set(0, 0, 0, 0); return; }
   const C = s.C, e = fx(s), w = weights(s.focus), t = game.time;
-  const gen = 0.5 + 0.5 * s.sub.shields / 100;
+  const gen = C.shieldHardened ? 0.75 + 0.25 * s.sub.shields / 100 : 0.5 + 0.5 * s.sub.shields / 100;
   for (let i = 0; i < 4; i++) s.cap[i] = C.shield * (0.6 + 1.6 * w[i]) * gen;
   for (let i = 0; i < 4; i++) {
     if (s.sh[i] > s.cap[i]) {   // strength bleeds out of over-cap facings into the reinforced one
@@ -1613,7 +1615,7 @@ function shieldsUpdate(s, dt) {
   u.uStr.value.set(s.sh[0] / C.shield, s.sh[1] / C.shield, s.sh[2] / C.shield, s.sh[3] / C.shield); u.uFocus.value = s.focus; u.uT.value = t;
 }
 function powerUpdate(s) {
-  const avail = Math.max(6, Math.round(12 * (0.5 + 0.5 * s.sub.reactor / 100)));
+  const r = s.sub.reactor / 100, avail = Math.max(6, Math.round((s.C.power || 12) * (s.C.reactorHardened ? 0.75 + 0.25 * r : 0.5 + 0.5 * r)));
   if (avail !== s.avail) {
     const grew = avail > s.avail; s.avail = avail; const p = s.pips;
     if (grew) { let room = avail - (p.eng + p.shd + p.wpn); while (room > 0) { const k = ['eng', 'shd', 'wpn'].sort((a, b) => p[a] - p[b])[0]; if (p[k] >= 8) break; p[k]++; room--; } }
@@ -1626,7 +1628,7 @@ function repairsUpdate(s, dt) {
   if (s.repair && s.sub[s.repair] >= 100) s.repair = null;
   let k = s.repair;
   if (!k) { let lo = 100; for (const n of SUBS) if (s.sub[n] < lo) { lo = s.sub[n]; k = n; } }
-  if (k) s.sub[k] = Math.min(100, s.sub[k] + dt * (s.repair === k ? 2.6 : 1.6));
+  if (k) s.sub[k] = Math.min(100, s.sub[k] + dt * (s.repair === k ? 2.6 : 1.6) * (s.C.repairRate || 1));
 }
 function aimDir(s, tgt, muzzle, speed, err, out) {
   // aim at a random spot on the target hull, led for its current velocity

@@ -12,7 +12,7 @@
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#000;color:#fff;font:14px 'Inter Tight','Segoe UI',Arial,sans-serif}button,select{font:inherit;color:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:1px solid #fff;outline-offset:3px}button:disabled{cursor:not-allowed;opacity:.45}
 .k{display:block;font:500 11px 'JetBrains Mono',monospace;letter-spacing:.18em;color:var(--faint);text-transform:uppercase}.mono{font-family:'JetBrains Mono',monospace}
 #viewport{position:fixed;inset:0;overflow:auto;background:#000}#holder{position:relative;margin:auto;flex-shrink:0}#stage{width:1600px;height:900px;position:absolute;left:0;top:0;transform-origin:top left;overflow:hidden;background:#000}
-.view{position:absolute;inset:0;background:#000;z-index:1}#arrival,#yard{z-index:2}.view[hidden]{display:none}canvas.sky{position:absolute;left:0;top:0;width:1600px;height:900px;pointer-events:none}
+.view{position:absolute;inset:0;background:#000;z-index:1}#arrival,#yard,#crewview{z-index:2}.view[hidden]{display:none}canvas.sky{position:absolute;left:0;top:0;width:1600px;height:900px;pointer-events:none}
 /* header */
 #top{position:absolute;left:64px;top:30px;width:1472px;height:44px;display:flex;align-items:center;justify-content:space-between;z-index:30}#brand{font-size:13px;font-weight:600;letter-spacing:.55em}
 .nav{display:flex;gap:6px}.nav button{height:44px;padding:0 15px;border:0;border-radius:22px;background:none;color:var(--dim);font-size:13px;font-weight:500;letter-spacing:.14em;text-transform:uppercase}.nav button:hover{background:rgba(255,255,255,.08);color:#fff}.nav .current{background:rgba(255,255,255,.1);color:#fff}
@@ -52,6 +52,16 @@
 #slots{position:absolute;left:78px;top:430px;width:1444px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px}.slot{height:96px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.03);text-align:left;display:flex;flex-direction:column;gap:6px}.slot:hover{background:rgba(255,255,255,.07)}.slot.on{border-color:var(--amber);background:rgba(255,214,150,.08)}.slot .top{display:flex;justify-content:space-between;align-items:center}.slot svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.slot.on svg{stroke:var(--amber)}.slot .tier{font:10px 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--faint)}.slot b{font-size:15px;font-weight:500}.slot small{font-size:11px;color:var(--faint)}.slot small.warn{color:#ffb35c}.slot small.bad{color:#ff7a6b}
 #market{position:absolute;left:78px;top:566px;width:1036px}#market .mh{display:flex;justify-content:space-between;align-items:baseline;gap:20px}#markspec{font-size:13px;color:var(--dim);text-align:right}#markcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}.upcard{height:200px;padding:18px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);display:flex;flex-direction:column;gap:8px}.upcard .k{font-size:10px;color:var(--amber)}.upcard b{font-size:21px;font-weight:400}.upcard span{font-size:14px;line-height:1.4;color:rgba(255,255,255,.7)}.upcard button{margin-top:auto;align-self:flex-end;height:44px;padding:0 18px;border-radius:22px;border:1px solid rgba(255,255,255,.3);background:none;font-size:12px;font-weight:600;letter-spacing:.12em}#market .note{margin:12px 0 0;font-size:13px;color:var(--faint)}
 #services{position:absolute;left:1140px;top:566px;width:382px;padding:18px 20px;border-radius:16px;background:rgba(255,255,255,.06);display:flex;flex-direction:column;gap:12px}.svc{display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)}.svc div{flex:1;min-width:0}.svc b{display:block;font-size:15px;font-weight:500}.svc small{display:block;margin-top:2px;font-size:12px;color:var(--dim)}.svc button{height:44px;padding:0 16px;border-radius:22px;border:1px solid rgba(255,255,255,.45);background:none;font-size:12px;font-weight:600;letter-spacing:.1em;white-space:nowrap}.svc button:hover:not(:disabled){background:rgba(255,255,255,.1)}.svc button.solid{background:#fff;color:#000;border-color:#fff}
+.upcard.got{border-color:rgba(255,214,150,.6);background:rgba(255,214,150,.06)}.upcard button.buy{border-color:#fff;background:#fff;color:#000}.upcard button.buy:hover:not(:disabled){background:#e6e9ef}.upcard button.buy:disabled{background:none;color:#fff;border-color:rgba(255,255,255,.3)}.slot .tier.up{color:var(--amber)}
+/* officers */
+#crewlist{position:absolute;left:64px;top:118px;width:360px;display:flex;flex-direction:column;gap:8px}.officer{display:flex;align-items:center;gap:14px;width:100%;min-height:76px;padding:10px 14px 10px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);text-align:left}.officer:hover{background:rgba(255,255,255,.07)}.officer.on{border-color:var(--amber);background:rgba(255,214,150,.08)}.officer .crew-portrait{width:52px;height:56px;border-radius:8px;border-color:rgba(255,255,255,.2)}.officer span{min-width:0}.officer b{display:block;font-size:16px;font-weight:500}.officer small{display:block;margin-top:2px;font-size:12px;color:var(--dim)}.officer kbd{margin-left:auto;font:11px 'JetBrains Mono',monospace;padding:3px 7px;border:1px solid rgba(255,255,255,.3);border-radius:5px}
+#crewnote{position:absolute;left:64px;top:560px;width:360px;font-size:13px;line-height:1.5;color:var(--faint)}
+#dossier{position:absolute;left:480px;top:110px;width:1056px;display:grid;grid-template-columns:260px minmax(0,1fr);gap:40px}#dosportrait .crew-portrait.big{width:260px;height:312px;border-radius:18px;border:1px solid rgba(255,255,255,.18)}
+#dosreports{margin-top:18px;display:flex;flex-direction:column;gap:12px}#dosreports .k{font-size:10px}#dosreports p{margin:4px 0 0;font-size:14px;line-height:1.45;color:rgba(255,255,255,.78)}#dosreports .none{color:var(--faint)}
+#dosname{margin:8px 0 0 -3px;font-size:60px;line-height:1;font-weight:200;letter-spacing:-.025em}#dosbio{margin:16px 0 0;font-size:18px;font-weight:300;line-height:1.5;color:rgba(255,255,255,.85)}
+.command{margin-top:22px;padding:20px 22px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04)}.command .head{display:flex;align-items:center;gap:14px}.command kbd{font:600 15px 'JetBrains Mono',monospace;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--amber);color:var(--amber);border-radius:8px}.command .head b{font-size:22px;font-weight:400}.command p{margin:10px 0 0;font-size:16px;line-height:1.45;color:rgba(255,255,255,.8)}.command .stats{display:flex;gap:40px;margin-top:14px}.command .stats .k{font-size:10px}.command .stats b{display:block;margin-top:4px;font-size:17px;font-weight:400}
+#dosvoice{margin:16px 0 0;font-size:15px;font-style:italic;font-weight:300;color:rgba(255,255,255,.7)}
+#foes{position:absolute;left:480px;top:712px;width:1056px}#foelist{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:10px}.foe{display:flex;gap:12px;align-items:center;min-height:96px;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03)}.foe .crew-portrait{width:56px;height:64px;border-radius:8px}.foe b{display:block;font-size:15px;font-weight:500}.foe small{display:block;margin:2px 0 6px;font-size:12px;color:var(--dim)}.foe .k{font-size:10px}.foe.unknown{justify-content:center;text-align:center;font-size:13px;color:var(--faint);border-style:dashed}
 /* modal */
 #veil{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:22px}#veil[hidden]{display:none}#modal{width:min(650px,100%);max-height:min(90vh,800px);overflow:auto;background:#07090d;border:1px solid rgba(255,255,255,.18);border-radius:20px;box-shadow:0 25px 90px #000;padding:28px 33px 26px}#modalheader{font:11px 'JetBrains Mono',monospace;color:var(--amber);letter-spacing:.2em;margin-bottom:12px}#modaltitle{font-weight:300;letter-spacing:-.01em;font-size:40px;margin:0 0 15px;line-height:1.05}#modalbody{color:rgba(255,255,255,.8);font-size:15px;line-height:1.6}#modalbody p{margin:0 0 12px}#modalbody b{color:#fff;font-weight:600}#modalbody .choice{margin:6px 0 12px;display:block;border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:10px 14px;background:none;text-align:left;width:100%}#modalbody .choice:hover{background:rgba(255,255,255,.08)}#modalbody select{width:100%;background:#0d1118;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:12px;margin-top:10px}#modalactions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:22px}#modalactions button{min-height:44px;background:transparent;border:1px solid rgba(255,255,255,.35);border-radius:22px;padding:0 20px;letter-spacing:.12em;text-transform:uppercase;font-size:12px;font-weight:500}#modalactions .primary{background:#fff;border-color:#fff;color:#000;font-weight:600}#modalactions button:hover:not(:disabled){filter:brightness(1.2)}
 @media(max-width:700px){body{font-size:15px}}
@@ -85,14 +95,25 @@
 <svg id="yardlines" class="overlay" viewBox="0 0 1600 900" aria-hidden="true"><ellipse id="shieldline" cx="0" cy="0" rx="0" ry="0"></ellipse><g id="leaders"></g></svg>
 <div id="yardmarks" aria-hidden="true"><div id="plume"></div></div>
 <div id="slots" role="group" aria-label="Ship systems"></div>
-<section id="market" aria-label="Upgrades"><div class="mh"><span class="k" id="markk"></span><span id="markspec"></span></div><div id="markcards"></div><p class="note">Upgrades arrive in a later refit. Repairs and torpedo resupply are available now.</p></section>
+<section id="market" aria-label="Upgrades"><div class="mh"><span class="k" id="markk"></span><span id="markspec"></span></div><div id="markcards"></div><p class="note">Upgrades are permanent for this campaign and apply in every operation.</p></section>
 <aside id="services" aria-label="Dockyard services"><span class="k">Dockyard services</span><div id="svclist" style="display:flex;flex-direction:column;gap:12px"></div></aside>
+</section>
+<section id="crewview" class="view" hidden aria-label="Officers">
+<canvas class="sky" id="sky4" width="1600" height="900" aria-hidden="true"></canvas>
+<div id="crewlist" role="group" aria-label="Bridge officers"></div>
+<p id="crewnote">Each officer gives one battle command, on keys 5–9 or the bridge buttons in combat. Commands have their own cooldowns.</p>
+<div id="dossier" aria-live="polite"><div><div id="dosportrait"></div><div id="dosreports" aria-label="Field reports"></div></div>
+<div><span class="k" id="doskicker"></span><h1 id="dosname"></h1><p id="dosbio"></p>
+<div class="command"><div class="head"><kbd id="doskey"></kbd><span class="k">Battle command</span></div><div class="head" style="margin-top:10px"><b id="dosability"></b></div><p id="doseffect"></p><div class="stats"><div><span class="k">Cooldown</span><b id="doscool"></b></div><div><span class="k">Lasts</span><b id="dosdur"></b></div></div></div>
+<p id="dosvoice"></p></div></div>
+<section id="foes" aria-label="Known adversaries"><span class="k">Known adversaries</span><div id="foelist"></div></section>
 </section>
 <header id="top"><span id="brand">BROADSIDE</span><nav class="nav" aria-label="Campaign commands"><button class="current" id="tabMap">Map</button><button id="tabShip">Shipyard</button><button id="tabCrew">Officers</button><button id="tabIntel">Intel</button><button id="tabNew">New game</button><button id="tabDuel">Skirmish ↗</button></nav><span id="fleetstatus" aria-live="polite"></span></header>
 <div id="notice" role="status" aria-live="polite"></div>
 </div></div></div>
 <div id="veil" hidden><section id="modal" role="dialog" aria-modal="true" aria-labelledby="modaltitle"><div id="modalheader"></div><h2 id="modaltitle"></h2><div id="modalbody"></div><div id="modalactions"></div></section></div>
 <script src="crew/personnel.js"></script>
+<script src="crew/upgrades.js"></script>
 <script>
 'use strict';
 const Personnel=window.BroadsidePersonnel;
@@ -155,7 +176,7 @@ const TORPEDO_CAP={bastion:8,halberd:6,sabre:6,warden:16};
 const CREW=Personnel.crew;
 function crewById(id){return CREW.find(c=>c.id===id)||CREW[0]}
 function commanderByMission(n){return Personnel.commanders[n]}
-function initial(){let pick='bastion';try{const v=JSON.parse(localStorage.getItem('broadside')||'{}');if(shipChoices.includes(v.ship))pick=v.ship;}catch(e){}return {version:1,ship:pick,shipName:'MNS Resolute',system:'meridian',completed:[],flags:{},credits:850,hull:1,sub:null,torps:null,attempts:0,pendingResult:null};}
+function initial(){let pick='bastion';try{const v=JSON.parse(localStorage.getItem('broadside')||'{}');if(shipChoices.includes(v.ship))pick=v.ship;}catch(e){}return {version:1,ship:pick,shipName:'MNS Resolute',system:'meridian',completed:[],flags:{},credits:850,hull:1,sub:null,torps:null,attempts:0,pendingResult:null,upgrades:[]};}
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&v.version===1&&shipChoices.includes(v.ship)&&Array.isArray(v.completed))return v;}catch(e){}return initial();}
 let state=load(),selected='kestrel';
 function persist(){localStorage.setItem(KEY,JSON.stringify(state));}
@@ -220,7 +241,7 @@ function refresh(){const here=state.system&&byId[state.system]?state.system:HOME
  if(view==='yard')renderYard();}
 function selectSystem(id){if(!byId[id])return;selected=id;refresh();}
 function updateFleet(){refresh();}
-function setView(v){view=v;$('arrival').hidden=v!=='arrival';$('yard').hidden=v!=='yard';$('tabMap').classList.toggle('current',v!=='yard');$('tabShip').classList.toggle('current',v==='yard');if(v==='yard')openYard();else closeYard();}
+function setView(v){view=v;$('arrival').hidden=v!=='arrival';$('yard').hidden=v!=='yard';$('crewview').hidden=v!=='crew';$('tabMap').classList.toggle('current',v==='map'||v==='arrival');$('tabShip').classList.toggle('current',v==='yard');$('tabCrew').classList.toggle('current',v==='crew');if(v==='yard')openYard();else closeYard();if(v==='crew')renderCrew();}
 // Jumping moves the flagship at once and opens the arrival screen for the new system.
 function travel(id){const here=state.system&&byId[state.system]?state.system:HOME;if(id===here){showArrival(id,here,0);return;}const path=getPath(here,id);if(path.length<2){toast('No established jump route.');return;}state.system=id;selected=id;persist();refresh();showArrival(id,here,path.length-1);}
 function showArrival(id,from,jumps){const s=byId[id],k=regionOf(s),h=REGION_HUE[k],tone=t=>h.map(v=>Math.round(v*t)).join(','),light=t=>h.map(v=>Math.round(v+(255-v)*t)).join(','),accent=`rgb(${light(.45)})`;
@@ -246,50 +267,56 @@ function briefing(m){if(!isUnlocked(m.id)){toast('This operation has not yet bee
  {label:'Return to sector map',run:close},
  {label:'Launch operation',primary:true,run:()=>{state.pendingResult=null;state.attempts++;persist();location.href=`index.html?campaign=${m.id}`;}}
 ]);}
-// Shipyard: the flagship side-on, its seven systems as slots, and the dockyard's repair services.
-// Stats, starboard hardpoints and hull/shield ellipsoids per hull are copied from CLASSES in index.html.
+// Shipyard: the flagship side-on, its seven systems as slots, upgrades for each, and the dockyard's repair services.
+// Stats, starboard hardpoints and hull/shield ellipsoids per hull are copied from CLASSES in index.html
+// (turn is in degrees a second here); weapons use the same fields so BroadsideUpgrades.apply() works on them.
 const HULLS={
- bastion:{cls:'Heavy battleship',hull:3000,shield:620,regen:28,vmax:42,turn:5.5,tubes:4,broad:'Six turrets on each beam · 46 damage × 3 shells · 7.5 s reload · range 2,700',fore:['Dorsal turrets','Two turrets covering almost every bearing · 32 damage × 3 · 5.5 s reload'],
+ bastion:{cls:'Heavy battleship',hull:3000,shield:620,regen:28,vmax:42,accel:2.2,turn:5.5,weapons:[
+   {id:'port',sub:'port',type:'battery',n:6,reload:7.5,dmg:46,shots:3,range:2700,speed:480},{id:'stbd',sub:'stbd',type:'battery',n:6,reload:7.5,dmg:46,shots:3,range:2700,speed:480},
+   {id:'dorsal',sub:'fore',type:'battery',label:'Dorsal turrets',n:2,reload:5.5,dmg:32,shots:3,range:3000,speed:560},{id:'torp',sub:'torp',type:'torpedo',tubes:4,ammo:8,reload:12,dmg:340,range:5200}],
   stbd:[-100,-60,-20,20,60,100].map(z=>[31,-8,z]),forePts:[[0,17,-62],[0,9,70]],torpPts:[[14,-22,-146]],eng:[[22,-20,143],[0,-18,144]],hullE:{c:[0,-15,0],r:[40,17,146]},shieldE:{c:[0,-10,0],r:[64,40,178]}},
- halberd:{cls:'Lance cruiser',hull:2500,shield:520,regen:26,vmax:58,turn:9,tubes:2,broad:'Four turrets on each beam · 44 damage × 4 shells · 5 s reload · range 2,500',fore:['Spinal lance','Fires dead ahead · 600 damage a second for 2.4 s · 14 s charge · range 3,600'],
+ halberd:{cls:'Lance cruiser',hull:2500,shield:520,regen:26,vmax:58,accel:3.4,turn:9,weapons:[
+   {id:'lance',sub:'fore',type:'lance',label:'Spinal lance',range:3600,chargeT:14,dps:600,dur:2.4},{id:'port',sub:'port',type:'battery',n:4,reload:5,dmg:44,shots:4,range:2500,speed:500},
+   {id:'stbd',sub:'stbd',type:'battery',n:4,reload:5,dmg:44,shots:4,range:2500,speed:500},{id:'torp',sub:'torp',type:'torpedo',tubes:2,ammo:6,reload:10,dmg:340,range:5200}],
   stbd:[-60,-20,20,60].map(z=>[30,-4,z]),forePts:[[0,-14,-133]],torpPts:[[8,-30,-124]],eng:[[10,-10,127],[0,-24,125]],hullE:{c:[0,-10,0],r:[30,28,128]},shieldE:{c:[0,-4,0],r:[50,50,154]}},
- sabre:{cls:'Battlecruiser',hull:2400,shield:500,regen:26,vmax:62,turn:7.5,tubes:2,broad:'Four turrets on each beam · 42 damage × 3 shells · 6 s reload · range 2,600',fore:['Bow battery','Three turrets across the forward quarter · 50 damage × 3 · 6 s reload'],
+ sabre:{cls:'Battlecruiser',hull:2400,shield:500,regen:26,vmax:62,accel:3.8,turn:7.5,weapons:[
+   {id:'bow',sub:'fore',type:'battery',label:'Bow battery',n:3,reload:6,dmg:50,shots:3,range:3100,speed:540},{id:'port',sub:'port',type:'battery',n:4,reload:6,dmg:42,shots:3,range:2600,speed:500},
+   {id:'stbd',sub:'stbd',type:'battery',n:4,reload:6,dmg:42,shots:3,range:2600,speed:500},{id:'torp',sub:'torp',type:'torpedo',tubes:2,ammo:6,reload:10,dmg:340,range:5200}],
   stbd:[[32,-4,-40],[35,-4,-10],[43,-4,30],[43,-4,70]],forePts:[[0,4,-96],[0,7,-78],[0,10,-60]],torpPts:[[8,-28,-128]],eng:[[17,5,139],[0,11,139],[10,-5,139]],hullE:{c:[0,-10,0],r:[36,30,139]},shieldE:{c:[0,0,0],r:[58,64,168]}},
- warden:{cls:'Siege dreadnought',hull:3600,shield:600,regen:24,vmax:36,turn:4.5,tubes:6,broad:'Five turrets on each beam · 44 damage × 3 shells · 8 s reload · range 2,700',fore:['Siege cannons','Two cannons firing ahead · 150 damage × 2 · 12 s reload · range 4,200'],
+ warden:{cls:'Siege dreadnought',hull:3600,shield:600,regen:24,vmax:36,accel:1.8,turn:4.5,weapons:[
+   {id:'siege',sub:'fore',type:'battery',label:'Siege cannons',n:2,reload:12,dmg:150,shots:2,range:4200,speed:640},{id:'port',sub:'port',type:'battery',n:5,reload:8,dmg:44,shots:3,range:2700,speed:470},
+   {id:'stbd',sub:'stbd',type:'battery',n:5,reload:8,dmg:44,shots:3,range:2700,speed:470},{id:'torp',sub:'torp',type:'torpedo',tubes:6,ammo:16,reload:11,dmg:340,range:5200}],
   stbd:[[28,-4,-90],[40,-4,-50],[40,-4,-10],[39,-4,30],[40,-4,70]],forePts:[[0,10,-118],[0,12,-86]],torpPts:[[10,-35,-140],[16,-40,-120],[20,-40,-100]],eng:[[23,13,156],[13,-4,156]],hullE:{c:[0,-12,0],r:[36,32,155]},shieldE:{c:[0,0,0],r:[58,64,188]}}
 };
-// Upgrades are shown for planning only; buying them is not implemented yet.
-const PLANNED={
- engines:[['Vectored thrusters','A tighter turning circle.'],['Afterburner injectors','Longer afterburner burns.'],['High-yield drive','A higher top speed.']],
- hull:[['Reinforced plating','More hull points.'],['Ablative belt','Less damage from every hit.'],['Damage-control teams','Faster subsystem repairs in battle.']],
- reactor:[['Overcharged core','A stronger boost to the powered system.'],['Load balancer','Faster switching between power modes.'],['Emergency capacitors','A short burst of full power to every system.']],
- broadside:[['Rapid loaders','Shorter broadside reloads.'],['Heavy shells','More damage per shell.'],['Extended barrels','Longer broadside range.']],
- fore:[['Fire-control computer','Longer range for the forward weapon.'],['Heavier ordnance','More damage per salvo.'],['Faster cycling','A shorter reload or charge time.']],
- shields:[['Capacitor array','Stronger shields.'],['Regeneration coils','Faster shield recovery.'],['Facing projectors','Quicker reinforcement of a facing.']],
- torp:[['Expanded magazine','More torpedoes carried.'],['Fast-reload tubes','Shorter torpedo reloads.'],['Heavy warheads','More damage per torpedo.']]};
+const Upgrades=window.BroadsideUpgrades;
 const SLOT_ICON={hull:'M3 14 L6 9 L18 9 L21 14 L18 17 L6 17 Z',shields:'M12 3 L20 6 V12 C20 16.5 16.5 19.5 12 21 C7.5 19.5 4 16.5 4 12 V6 Z',reactor:'M13 3 L6 13 H11 L10 21 L18 10 H13 Z',engines:'M4 12 H14 M14 8 L20 12 L14 16 M4 8 H9 M4 16 H9',broadside:'M4 8 H16 M4 12 H20 M4 16 H16',fore:'M5 16 H19 M8 16 V12 H16 V16 M12 12 V6 H19',torp:'M3 12 H17 L21 12 L17 9 M17 15 L21 12 M6 9 V15'};
 const SHIP_BOX=[250,60],SLOT_X=[78,196,12],SLOT_TOP=430;
 let yardFocus='broadside',yardLayout=null,shipViewTimer=0;
-function torpStock(){const cap=TORPEDO_CAP[state.ship]||8;return {cap,have:state.torps==null?cap:Math.max(0,Math.min(cap,state.torps))};}
-function yardSlots(){const H=HULLS[state.ship]||HULLS.bastion,sub=state.sub||{},hc=H.hullE,sc=H.shieldE,t=torpStock(),c=k=>Math.round(typeof sub[k]==='number'?sub[k]:100);
+const n1=v=>String(Math.round(v*10)/10),num=v=>Math.round(v).toLocaleString('en-GB');
+function owned(){return Upgrades.owned(state.upgrades);}
+function shipStats(){const H=HULLS[state.ship]||HULLS.bastion;return Upgrades.apply(H,state.upgrades);}
+function torpStock(){const cap=Upgrades.torpedoCap(TORPEDO_CAP[state.ship]||8,state.upgrades);return {cap,have:state.torps==null?cap:Math.max(0,Math.min(cap,state.torps))};}
+function yardSlots(){const H=HULLS[state.ship]||HULLS.bastion,C=shipStats(),W=id=>C.weapons.find(w=>w.sub===id),sub=state.sub||{},hc=H.hullE,sc=H.shieldE,t=torpStock(),c=k=>Math.round(typeof sub[k]==='number'?sub[k]:100);
+ const b=W('stbd'),f=W('fore'),tp=W('torp');
  const slots=[
-  {id:'engines',name:'Engines',kind:'Propulsion',cond:c('engines'),spec:`Top speed ${H.vmax} · turns ${H.turn}° a second · afterburner 1.7× for about 7 s`,pts:H.eng},
-  {id:'hull',name:'Hull & armour',kind:'Defence',cond:Math.round((state.hull??1)*100),spec:`${H.hull.toLocaleString('en-GB')} hull points · battle damage carries between operations`,pts:[[0,hc.c[1]-hc.r[1]*.7,hc.r[2]*.25]]},
-  {id:'reactor',name:'Reactor',kind:'Power',cond:c('reactor'),spec:'Routes power to engines, shields or weapons (keys 1–4 in battle)',pts:[[0,hc.c[1]+hc.r[1]*.2,hc.r[2]*.05]]},
-  {id:'broadside',name:'Broadsides',kind:'Weapons',cond:Math.min(c('port'),c('stbd')),spec:H.broad,pts:H.stbd,mid:true},
-  {id:'fore',name:H.fore[0],kind:'Weapons',cond:c('fore'),spec:H.fore[1],pts:H.forePts},
-  {id:'shields',name:'Shields',kind:'Defence',cond:c('shields'),spec:`${H.shield} strength · regenerates ${H.regen} per second`,pts:[[0,sc.c[1]+sc.r[1]*.8,-sc.r[2]*.6]]},
-  {id:'torp',name:'Torpedo bay',kind:'Weapons',cond:c('torp'),spec:`${H.tubes} tubes · ${t.have} of ${t.cap} torpedoes · 340 damage · range 5,200`,pts:H.torpPts}];
+  {id:'engines',name:'Engines',kind:'Propulsion',cond:c('engines'),spec:`Top speed ${n1(C.vmax)} · turns ${n1(C.turn)}° a second · afterburner 1.7× for ${C.abBurn||7} s`,pts:H.eng},
+  {id:'hull',name:'Hull & armour',kind:'Defence',cond:Math.round((state.hull??1)*100),spec:`${num(C.hull)} hull points`+(C.armour?` · takes ${Math.round(C.armour*100)}% hull damage`:'')+(C.repairRate?' · subsystems repair 50% faster':' · damage carries between operations'),pts:[[0,hc.c[1]-hc.r[1]*.7,hc.r[2]*.25]]},
+  {id:'reactor',name:'Reactor',kind:'Power',cond:c('reactor'),spec:`${C.power||12} power pips for engines, shields and weapons`+(C.reactorHardened?' · hardened against damage':' (keys 1–4 in battle)'),pts:[[0,hc.c[1]+hc.r[1]*.2,hc.r[2]*.05]]},
+  {id:'broadside',name:'Broadsides',kind:'Weapons',cond:Math.min(c('port'),c('stbd')),spec:`${b.n} turrets on each beam · ${b.dmg} damage × ${b.shots} · ${n1(b.reload)} s reload · range ${num(b.range)}`,pts:H.stbd,mid:true},
+  {id:'fore',name:f.label,kind:'Weapons',cond:c('fore'),spec:f.type==='lance'?`Fires dead ahead · ${f.dps} damage a second for ${f.dur} s · ${n1(f.chargeT)} s charge · range ${num(f.range)}`:`${f.n} guns · ${f.dmg} damage × ${f.shots} · ${n1(f.reload)} s reload · range ${num(f.range)}`,pts:H.forePts},
+  {id:'shields',name:'Shields',kind:'Defence',cond:c('shields'),spec:`${num(C.shield)} strength · regenerates ${n1(C.regen)} per second`+(C.shieldHardened?' · hardened emitters':''),pts:[[0,sc.c[1]+sc.r[1]*.8,-sc.r[2]*.6]]},
+  {id:'torp',name:'Torpedo bay',kind:'Weapons',cond:c('torp'),spec:`${tp.tubes} tubes · ${t.have} of ${t.cap} torpedoes · ${tp.dmg} damage · ${n1(tp.reload)} s reload · range ${num(tp.range)}`,pts:H.torpPts}];
  for(const s of slots)s.anchor=s.pts[s.mid?Math.floor(s.pts.length/2):0];
  // Seen from starboard the stern is on the left, so slots run stern to bow.
  return slots.sort((a,b)=>b.anchor[2]-a.anchor[2]);}
-function renderYard(){const H=HULLS[state.ship]||HULLS.bastion,slots=yardSlots(),box=$('slots'),cards=$('markcards'),leaders=$('leaders'),marks=$('yardmarks');
+function renderYard(){const H=HULLS[state.ship]||HULLS.bastion,slots=yardSlots(),have=owned(),box=$('slots'),cards=$('markcards'),leaders=$('leaders'),marks=$('yardmarks');
  box.replaceChildren();
- slots.forEach(s=>{const on=s.id===yardFocus,b=el('button','slot'+(on?' on':'')),top=el('span','top');b.type='button';b.setAttribute('aria-pressed',String(on));
-  top.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${SLOT_ICON[s.id]}"></path></svg>`;top.append(el('span','tier','MK I'));
+ slots.forEach(s=>{const on=s.id===yardFocus,b=el('button','slot'+(on?' on':'')),top=el('span','top'),fitted=Upgrades.forSlot(s.id).filter(u=>have.has(u.id)).length;b.type='button';b.setAttribute('aria-pressed',String(on));
+  top.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${SLOT_ICON[s.id]}"></path></svg>`;top.append(el('span','tier'+(fitted?' up':''),fitted?`${fitted}/3 FITTED`:'MK I'));
   b.append(top,el('b',null,s.name),el('small',s.cond<50?'bad':s.cond<100?'warn':'',`${s.kind} · ${s.cond}%`));b.addEventListener('click',()=>{yardFocus=s.id;renderYard();});box.append(b);});
  const f=slots.find(s=>s.id===yardFocus);$('markk').textContent='Upgrades for · '+f.name;$('markspec').textContent=f.spec;cards.replaceChildren();
- for(const [n,d] of PLANNED[f.id]){const c=el('article','upcard'),btn=el('button',null,'In development');btn.type='button';btn.disabled=true;c.append(el('span','k','Mk II · planned'),el('b',null,n),el('span',null,d),btn);cards.append(c);}
+ for(const u of Upgrades.forSlot(f.id)){const got=have.has(u.id),short=!got&&state.credits<u.cost,c=el('article','upcard'+(got?' got':'')),btn=el('button',got?'':'buy',got?'Installed':`Install · ${u.cost}`);btn.type='button';btn.disabled=got||short;if(short)btn.title=`Needs ${u.cost} requisition`;btn.addEventListener('click',()=>confirmUpgrade(u));
+  c.append(el('span','k',got?'Fitted':`Upgrade · ${u.cost} req`),el('b',null,u.name),el('span',null,u.effect),btn);cards.append(c);}
  renderServices();
  leaders.replaceChildren();for(const m of [...marks.querySelectorAll('i')])m.remove();
  const points=[],rows=[];
@@ -297,6 +324,10 @@ function renderYard(){const H=HULLS[state.ship]||HULLS.bastion,slots=yardSlots()
   for(const p of s.pts){const m=el('i',on?'on':'');m.style.left='-100px';marks.append(m);rows.push({mark:m,idx:points.length});points.push(p);}});
  const sc=H.shieldE,si=points.length;points.push(sc.c,[sc.c[0],sc.c[1],sc.c[2]+sc.r[2]],[sc.c[0],sc.c[1]+sc.r[1],sc.c[2]]);const ei=points.length;points.push(H.eng[H.eng.length-1]);
  $('shieldline').classList.toggle('on',yardFocus==='shields');yardLayout={points,rows,si,ei};startShipView();}
+function confirmUpgrade(u){if(owned().has(u.id)||state.credits<u.cost)return;
+ openModal(`Install ${u.name}?`,'REFIT DIVISION / FLAGSHIP UPGRADE',`<p>${u.effect}</p><p>Cost <b>${u.cost}</b> requisition. You have <b>${state.credits.toLocaleString()}</b>.</p><p>Upgrades are permanent for this campaign and apply in every operation.</p>`,[
+  {label:'Cancel',run:close},{label:`Install · ${u.cost}`,primary:true,run:()=>buyUpgrade(u)}]);}
+function buyUpgrade(u){const have=owned();if(have.has(u.id)||state.credits<u.cost)return;state.credits-=u.cost;state.upgrades=[...have,u.id];persist();close();refresh();toast(`${u.name} installed. ${state.credits.toLocaleString()} requisition left.`);}
 // Called by the 3D view every frame with each layout point projected into the ship canvas.
 function yardFrame(sc){if(!yardLayout||view!=='yard')return;$('shipwait').hidden=true;const P=i=>[sc[i][0]+SHIP_BOX[0],sc[i][1]+SHIP_BOX[1]];
  for(const r of yardLayout.rows){const [x,y]=P(r.idx);if(r.line){r.line.setAttribute('x2',x.toFixed(1));r.line.setAttribute('y2',y.toFixed(1));}else{r.mark.style.left=x+'px';r.mark.style.top=y+'px';}}
@@ -310,7 +341,19 @@ function renderServices(){const list=$('svclist'),hull=state.hull??1,pts=Math.ce
  row('Full overhaul',pts?'Restores the hull and every damaged subsystem':'The hull is fully repaired',pts?`Overhaul · ${cost}`:'Not needed',!(pts>0&&state.credits>=cost),()=>{state.credits-=cost;state.hull=1;state.sub=null;persist();refresh();toast('Overhaul complete. Hull and subsystems restored.');},true);
  row('Emergency repair','Patches up to 15% of the hull','Repair · 100',state.credits<100||hull>=1,()=>{state.credits-=100;state.hull=Math.min(1,hull+.15);persist();refresh();toast('Emergency repairs complete.');});
  row('Torpedo resupply',`${t.have} of ${t.cap} aboard · 25 each`,tc?`Resupply · ${tc}`:'Full',!tc||state.credits<tc,()=>{state.credits-=tc;state.torps=t.cap;persist();refresh();toast('Torpedo magazine replenished.');});}
-function officerRoster(focus){const roster=focus?[...CREW].sort((a,b)=>(a.id===focus?-1:0)-(b.id===focus?-1:0)):CREW;const sections=roster.map(c=>`<article class="personnel-card">${Personnel.portrait(c)}<div><h3>${c.name}</h3><small>${c.post}</small><p>${c.bio}</p><strong>[${c.key}] ${c.ability} · ${c.cooldown}s cooldown</strong><p>${c.effect}</p></div></article>`).join('');openModal('Officers of the Resolute','MERIDIAN FLEET / PERSONNEL DOSSIER',`<p>Five named officers serve aboard <b>${state.shipName}</b>. Their abilities activate during campaign engagements using keys 5–9 or the bridge-command buttons.</p><div class="personnel-grid">${sections}</div>`,[{label:'Return to campaign',run:close}]);$('modal').classList.add('personnel');}
+// Officers: the five bridge officers, their battle commands, and the enemy commanders met so far.
+let crewFocus='varro';
+function officerRoster(focus){if(focus&&CREW.some(c=>c.id===focus))crewFocus=focus;close();setView('crew');}
+function renderCrew(){const list=$('crewlist'),o=crewById(crewFocus);list.replaceChildren();
+ for(const c of CREW){const b=el('button','officer'+(c.id===crewFocus?' on':'')),t=el('span');b.type='button';b.setAttribute('aria-pressed',String(c.id===crewFocus));b.insertAdjacentHTML('afterbegin',Personnel.portrait(c));t.append(el('b',null,c.name),el('small',null,c.post));b.append(t,el('kbd',null,c.key));b.addEventListener('click',()=>{crewFocus=c.id;renderCrew();});list.append(b);}
+ $('dosportrait').innerHTML=Personnel.portrait(o,'big');$('doskicker').textContent=`${o.post} · MNS ${state.shipName.replace(/^MNS\s+/,'')}`;$('dosname').textContent=o.name;$('dosbio').textContent=o.bio;
+ $('doskey').textContent=o.key;$('dosability').textContent=o.ability;$('doseffect').textContent=o.effect;$('doscool').textContent=o.cooldown+' s';$('dosdur').textContent=o.duration?o.duration+' s':'Instant';$('dosvoice').textContent=`“${o.voice}”`;
+ const rep=$('dosreports');rep.replaceChildren();const seen=MISSIONS.filter(m=>Personnel.leads[m.id]===o.id&&(isUnlocked(m.id)||state.completed.includes(m.id)));
+ if(seen.length)for(const m of seen){const d=el('div','report');d.append(el('span','k',`Operation ${opNo(m)} · ${m.name}`),el('p',null,`“${Personnel.briefLines[m.id]}”`));rep.append(d);}
+ else rep.append(el('p','none',`${o.short||o.name} has not led a briefing yet.`));
+ const foes=$('foelist');foes.replaceChildren();
+ for(const m of MISSIONS){if(!isUnlocked(m.id)&&!state.completed.includes(m.id))continue;const c=commanderByMission(m.id);if(!c)continue;const done=state.completed.includes(m.id),d=el('article','foe'),t=el('div');d.insertAdjacentHTML('afterbegin',Personnel.portrait(c));t.append(el('b',null,c.name),el('small',null,c.title||c.faction),el('span','k',done?`Op ${opNo(m)} · complete`:`Op ${opNo(m)} · at large`));d.append(t);foes.append(d);}
+ const hidden=MISSIONS.length-foes.children.length;if(hidden>0)foes.append(el('div','foe unknown',`${hidden} more ${hidden===1?'commander':'commanders'} not yet identified`));}
 function intelligence(){const done=state.completed;openModal('Campaign intelligence','SECTOR INTELLIGENCE / RESTRICTED',`<p><b>Meridian Core:</b> Navy territory remains secure, but frontier shipping has suffered unexplained losses.</p><p><b>Kestrel Verge:</b> ${done.includes(1)?'Pirate action disrupted. Captain Vex’s intelligence is being analysed.':'Distress calls report a fast pirate raider attacking merchant traffic.'}</p><p><b>Ash Marches:</b> ${done.includes(2)?'Evidence indicates that renegade human military hardware has been deployed.':'Renegade naval contacts remain unverified.'}</p><p><b>Halcyon Belt and Harrow Expanse:</b> Deep-space signals are classified pending additional missions.</p><p><b>Your decisions:</b> ${Object.keys(state.flags||{}).filter(k=>state.flags[k]).map(k=>k.replaceAll('_',' ')).join(' · ')||'No major campaign decisions recorded.'}</p>`,[{label:'Close intelligence',run:close}]);}
 function newCampaign(){openModal('Commission a flagship','NEW CAMPAIGN / THE LONG WATCH',`<p>The Meridian frontier has been quiet for fourteen years. Three merchant ships have vanished in six days. Navy command calls it piracy. The last transmission from Kestrel was not a distress call. It was a warning.</p><p>Choose the hull of <b>MNS Resolute</b>. This resets existing campaign progress.</p><label for="pickShip">FLAGSHIP CLASS</label><select id="pickShip"><option value="bastion">Bastion · Heavy battleship</option><option value="halberd">Halberd · Lance cruiser</option><option value="sabre">Sabre · Battlecruiser</option><option value="warden">Warden · Siege dreadnought</option></select>`,[
  {label:'Cancel',run:close},
@@ -325,7 +368,7 @@ function afterAction(){const r=state.pendingResult;if(!r)return;const m=MISSIONS
 $('arrback').addEventListener('click',()=>setView('map'));
 $('tabShip').addEventListener('click',()=>{close();setView('yard')});$('tabCrew').addEventListener('click',()=>officerRoster());$('tabIntel').addEventListener('click',intelligence);$('tabNew').addEventListener('click',newCampaign);$('tabDuel').addEventListener('click',()=>location.href='index.html');$('tabMap').addEventListener('click',()=>{close();setView('map')});$('veil').addEventListener('click',e=>{if(e.target===$('veil'))close()});
 window.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('veil').hidden)close();else if(view!=='map')setView('map');});window.addEventListener('resize',frameSize);window.addEventListener('shipviewready',startShipView);
-buildMap();drawSky($('sky2'),11);drawSky($('sky3'),5);frameSize();selected=(availableOps()[0]||{}).system||(byId[state.system]?state.system:'kestrel');refresh();if(!localStorage.getItem(KEY))persist();if(state.pendingResult)afterAction();
+buildMap();drawSky($('sky2'),11);drawSky($('sky3'),5);drawSky($('sky4'),3);frameSize();selected=(availableOps()[0]||{}).system||(byId[state.system]?state.system:'kestrel');refresh();if(!localStorage.getItem(KEY))persist();if(state.pendingResult)afterAction();
 </script>
 <script type="importmap">
 {"imports":{

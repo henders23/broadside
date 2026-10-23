@@ -18,3 +18,5 @@ jobs:
         run: node tests/fleet-controller.test.js
       - name: Run mission environment lifecycle tests
         run: node tests/environment.test.js
+      - name: Run flagship upgrade rules
+        run: node tests/upgrades.test.js

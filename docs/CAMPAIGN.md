@@ -22,7 +22,10 @@ The prototype currently has five consecutive story engagements. **Status matters
 - The shipyard shows the flagship's own GLB model side-on (orthographic camera from starboard, bow to the right) using the same three.js build, scale and rotation as the battle engine.
 - Seven slots (engines, hull and armour, reactor, broadsides, the class's forward weapon, shields, torpedo bay) are joined by leader lines to hardpoints projected from the model every frame. Gun, torpedo-tube and engine positions come from `CLASSES` in `index.html`; reactor, hull and shield markers are placed from the hull and shield ellipsoids. The `HULLS` table in `campaign.html` copies those stats and positions, so keep it in step with `CLASSES`.
 - Slot condition comes from the saved hull fraction and per-subsystem health (`state.sub`).
-- Hull overhaul, emergency repairs and torpedo resupply are live. Each slot lists three planned upgrades, shown as "in development"; there is no upgrade purchase or battle effect yet.
+- Hull overhaul, emergency repairs and torpedo resupply are live.
+- Each slot sells three permanent upgrades (21 in all, 260–450 requisition, with a confirmation step). Bought ids are saved in `state.upgrades`; a new campaign clears them. Slot specs show the upgraded figures.
+- `crew/upgrades.js` is the single source for the catalogue, prices and effects. `apply(class, upgrades)` returns an upgraded copy of a ship class; the campaign uses it for the shipyard's figures and `index.html` uses it to build the player's flagship in campaign battles (skirmish and enemies are unaffected). Most effects are stat multipliers on the class or its weapon groups (broadsides by `sub` port/stbd, the `fore` weapon, the torpedo group). Five need battle hooks, each a no-op without the upgrade: `abBurn` (afterburner seconds), `armour` (hull damage multiplier), `repairRate` (subsystem repair speed), `power` (reactor pips) and the `reactorHardened`/`shieldHardened` flags (halve the damage penalty). `tests/upgrades.test.js` covers the rules.
+- Prices and effect sizes are first-pass values, chosen so a campaign's rewards (3,130 requisition plus the starting 850) buy roughly a third of the catalogue alongside repairs. They need playtesting.
 - If WebGL or the three.js CDN is unavailable the slots and services still work, and the ship area shows a short notice.
 
 ## Core loop
@@ -58,7 +61,7 @@ Post-battle choices set named flags for future narrative use; they currently do 
 
 ## Officers
 
-Five named senior officers appear in an interactive personnel dossier:
+Five named senior officers appear on the **Officers** screen (the Officers tab): a list of the bridge crew, and for the selected officer a large portrait, bio, battle command with its key, cooldown and duration, voice line, and the briefing lines they have given for unlocked operations. Below, **Known adversaries** shows the enemy commanders of unlocked or completed operations; the rest stay unidentified.
 
 - Commander Elise Varro — First officer and crisis coordination.
 - Lt. Commander Imani Okoye — Tactical officer and target assessment.
@@ -101,6 +104,7 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 - Sato — Evasive Pattern: -22% incoming enemy damage for 12s; cooldown 105s.
 - Renn — Threat Scan: reports the enemy's weakest shield facing and least intact subsystem; cooldown 80s.
 - All ability cooldowns are **battle-local**, reset at mission deployment, and do not alter campaign save format.
+- `crew/upgrades.js` holds the shipyard upgrade catalogue and `apply()`, shared by the campaign and battle pages.
 - `crew/personnel.js` holds character descriptions, mission lines, commander identities, and portrait positions. `crew/bridge-controller.js` is decoupled from Three.js and takes battle objects via dependency injection.
 - `img/command-portraits.webp` is a compressed six-frame portrait atlas containing five Meridian officer portraits plus ORACLE-9's armoured synthetic portrait. Vex, Sable, Thorne and the Wraith Cantor now use individually designed SVG illustrations in `img/commanders/`; these assets are not yet photorealistic.
 - Automated testing covered the five command effects/cooldowns and the personnel and briefing UI, but **full live WebGL combat playthroughs remain unverified**.

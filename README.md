@@ -26,8 +26,8 @@ Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use 
 - **Five linked operations** with named enemies: Captain Kora Vex (Scrapjaw), Commander Orren Sable (Revenant), Captain Garrick Thorne (Scrapjaw), ORACLE-9 (Seraph) and the alien Cantor (Wraith).
 - Persistent campaign save in browser localStorage (key `broadside-campaign-v1`): selected flagship, progress, decisions, hull condition, critical subsystem damage, surviving torpedoes and requisition.
 - Mission three can end in a pirate surrender. The fifth operation can be won by surviving **100 seconds** or destroying the bioship.
-- **Shipyard** showing your flagship's 3D model side-on, with its seven systems (engines, hull, reactor, broadsides, forward weapon, shields, torpedo bay) as slots tied to their hardpoints and battle condition. Hull overhaul, emergency repairs and torpedo resupply work now; upgrades are shown as planned but cannot be bought yet.
-- **Officers** for bridge-character dossiers, and **Intel** for campaign clues and branching narrative decisions.
+- **Shipyard** showing your flagship's 3D model side-on, with its seven systems (engines, hull, reactor, broadsides, forward weapon, shields, torpedo bay) as slots tied to their hardpoints and battle condition. Each system has three permanent **upgrades** to buy with requisition (21 in all, 260–450 each); they apply in every campaign battle. Hull overhaul, emergency repairs and torpedo resupply are here too.
+- **Officers** screen with each bridge officer's dossier, battle command (key, cooldown, effect) and field reports, plus the enemy commanders identified so far, and **Intel** for campaign clues and branching narrative decisions.
 - Completing a mission unlocks the next operation. A mission loss returns you to the sector campaign with a damaged but recoverable flagship rather than deleting the save.
 
 The first five operations remain a **campaign vertical slice**, not a finished grand-strategy game. Operation 1 offers a choice between protecting the civilian MV Peregrine until it jumps or destroying the pirate first; Operation 2 includes a two-hostile encounter with coordinated flanking attacks. Every operation has a distinct generated 3D battle environment and themed nebula lighting. Named officer combat abilities (keys 5–9), cycling hostile targets (J), and multiple-contact tactical plots are playable. Full WebGL campaign QA and tuning are still required. `campaign.html` supplies the strategic UI while `index.html?campaign=N` launches the tactical encounters.
@@ -67,7 +67,7 @@ python3 -m http.server 8000
 
 ## Fleet encounter regression tests
 
-Run `node tests/fleet-controller.test.js` and `node tests/environment.test.js` from the repository root. This tests escort success/failure and two-enemy target cycling and completion, without requiring WebGL. The named enemy commanders have four distinct original SVG illustrations in `img/commanders/`, while ORACLE-9 uses the original portrait atlas. The SVG art is illustrated, not photorealistic.
+Run `node tests/fleet-controller.test.js`, `node tests/environment.test.js` and `node tests/upgrades.test.js` from the repository root. This tests escort success/failure and two-enemy target cycling and completion, without requiring WebGL. The named enemy commanders have four distinct original SVG illustrations in `img/commanders/`, while ORACLE-9 uses the original portrait atlas. The SVG art is illustrated, not photorealistic.
 
 ## Performance
 

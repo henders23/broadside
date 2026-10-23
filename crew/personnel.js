@@ -30,11 +30,11 @@
       voice:'I have a partial target profile. Transmitting vulnerabilities.'}
   ];
   const commanders = {
-    1:{id:'vex',name:'Captain Kora Vex',faction:'Corsair Clans',title:'THE KESTREL MARAUDER',line:'Navy hull, turn away. These transports are my business.',portrait:null},
-    2:{id:'sable',name:'Commander Orren Sable',faction:'Ash Fleet',title:'THE EXILE',line:'You are trespassing among the dead, captain. Turn back.',portrait:null},
-    3:{id:'thorne',name:'Captain Garrick Thorne',faction:'Corsair Clans',title:'THE WIDOWMAKER',line:'Pay the toll, Meridian, or I take it from your wreck.',portrait:null},
+    1:{id:'vex',name:'Captain Kora Vex',faction:'Corsair Clans',title:'THE KESTREL MARAUDER',line:'Navy hull, turn away. These transports are my business.',portrait:null,asset:'vex.svg',tactics:'Targets civilians and aggressively closes to ram.'},
+    2:{id:'sable',name:'Commander Orren Sable',faction:'Ash Fleet',title:'THE EXILE',line:'You are trespassing among the dead, captain. Turn back.',portrait:null,asset:'sable.svg',tactics:'Commands a minelayer supported by an Ash Fleet raider.'},
+    3:{id:'thorne',name:'Captain Garrick Thorne',faction:'Corsair Clans',title:'THE WIDOWMAKER',line:'Pay the toll, Meridian, or I take it from your wreck.',portrait:null,asset:'thorne.svg',tactics:'May surrender rather than lose his ship.'},
     4:{id:'oracle',name:'ORACLE-9',faction:'Autonomous Directorate',title:'AUTONOMOUS PURSUIT INTELLIGENCE',line:'Unknown human platform: your presence is statistically unacceptable.',portrait:5},
-    5:{id:'cantor',name:'The Cantor',faction:'Wraith',title:'UNKNOWN BIOLOGICAL ENTITY',line:'...harmonic emission detected. No comprehensible translation.',portrait:null}
+    5:{id:'cantor',name:'The Cantor',faction:'Wraith',title:'UNKNOWN BIOLOGICAL ENTITY',line:'...harmonic emission detected. No comprehensible translation.',portrait:null,asset:'cantor.svg',tactics:'A living vessel with regenerative hull and homing spores.'}
   };
   const leads={1:'renn',2:'okoye',3:'varro',4:'renn',5:'sato'};
   const briefLines={
@@ -45,6 +45,10 @@
     5:'Its hull is alive. We are here to record what we can, not prove we can kill it.'
   };
   function portrait(person, extra=''){
+    if(person && person.asset){
+      const asset=String(person.asset).replace(/[^a-z.]/g,'');
+      return `<span class="crew-portrait enemy-portrait ${extra}" role="img" aria-label="Portrait of ${person.name}" style="background-image:url('img/commanders/${asset}');background-size:cover;background-position:center"></span>`;
+    }
     if (person && Number.isInteger(person.portrait)){
       const n=person.portrait;
       return `<span class="crew-portrait ${extra}" role="img" aria-label="Portrait of ${person.name}" style="background-position:${(n%3)*50}% ${Math.floor(n/3)*100}%"></span>`;

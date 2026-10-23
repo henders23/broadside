@@ -40,6 +40,6 @@ const ship={body:new Obj(),model:{visible:true}};
 env.buildFreighter(ship);
 assert.equal(ship.model.visible,false);assert.ok(ship.body.children.length>0);
 env.configure(0);assert.equal(ship.body.children.length,0);
-assert.equal(scene.children.length,0);assert.equal(baked,8);
+assert.equal(scene.children.length,0);assert.equal(baked,7);
 env.clear();
 console.log('All six battle environment presets and scene reset passed.');

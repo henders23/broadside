@@ -1426,10 +1426,12 @@ function showOver() {
     const saved = readCampaignSave();
     if (saved) {
       saved.pendingResult = { id: campaignMissionId, outcome: win ? 'win' : 'loss', time: Math.round(game.time), tacticalOutcome: game.campaignOutcome || (win ? 'enemy_destroyed' : 'flagship_lost') };
-      saved.hull = win ? clamp(player.hull / player.C.hull, 0.1, 1) : 0.45;
-      saved.sub = win ? { ...player.sub } : null;
+      // An escort loss is not the destruction of the player's flagship.
+      const flagshipSurvived = player.alive && player.hull > 0;
+      saved.hull = flagshipSurvived ? clamp(player.hull / player.C.hull, 0.1, 1) : 0.45;
+      saved.sub = flagshipSurvived ? { ...player.sub } : null;
       const torpGroup = player.groups.find(g => g.type === 'torpedo');
-      saved.torps = win && torpGroup ? torpGroup.ammo : null;
+      saved.torps = flagshipSurvived && torpGroup ? torpGroup.ammo : null;
       if (!win) saved.credits = Math.max(0, (saved.credits || 0) - 100);
       try { localStorage.setItem(CAMPAIGN_KEY, JSON.stringify(saved)); } catch (e) { console.warn('Could not save campaign outcome', e); }
     }

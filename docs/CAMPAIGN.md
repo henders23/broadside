@@ -6,7 +6,7 @@ Updated: 23 October 2026.
 
 **Broadside** is a game about captaining a warship. The player directly manages one vessel's heading, throttle, firing arcs, directional shields, reactor allocation, torpedoes, subsystems and tactical decisions. The campaign adds persistent consequences and a cast of officers, but does not turn the game into a direct-control fleet strategy game.
 
-The prototype currently has five consecutive story engagements. **Status matters:** missions 1–5 launch in the browser today; mission 3's surrender trigger and mission 5's timed extraction are implemented; escort vessels, branching enemy negotiations during battle, and officer combat bonuses are not yet implemented.
+The prototype currently has five consecutive story engagements. **Status matters:** missions 1–5 launch in the browser today; mission 3's surrender trigger and mission 5's timed extraction are implemented; escort protection and the first two-enemy engagement are now implemented; surrender negotiations beyond the fixed trigger and more varied operation types are not yet implemented.
 
 ## Map and world
 
@@ -35,8 +35,8 @@ Skirmish mode still launches from the original title screen and remains independ
 
 | # | System | Enemy captain | Enemy hull | Win condition | Reward |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Kestrel | Captain Kora Vex | Scrapjaw pirate ram | Destroy pirate vessel | 420 requisition |
-| 2 | Cinder Wake | Commander Orren Sable | Revenant minelayer | Destroy minelayer | 540 requisition |
+| 1 | Kestrel | Captain Kora Vex | Scrapjaw pirate ram | Defeat pirate and preserve the unarmed MV Peregrine | 420 requisition |
+| 2 | Cinder Wake | Commander Orren Sable | Revenant + Scrapjaw pursuer | Destroy both hostile warships | 540 requisition |
 | 3 | Red Narrows | Captain Garrick Thorne | Scrapjaw pirate ram | Reduce enemy hull to <=28% for surrender, or destroy | 570 requisition |
 | 4 | Halcyon | ORACLE-9 | Seraph beam frigate | Destroy machine frigate | 700 requisition |
 | 5 | Harrow | The Cantor | Wraith bioship | Survive for 100 seconds, or defeat bioship | 900 requisition |
@@ -61,7 +61,7 @@ Five named senior officers appear in an interactive personnel dossier:
 - Lieutenant Nara Sato — Helm officer and evasive manoeuvring.
 - Ensign Idris Renn — Intelligence officer and signals analysis.
 
-These officers now have active battle commands (5–9): Varro shields, Okoye target solution, Vale damage control, Sato evasive patterns and Renn enemy scans. Each has a cooldown, bridge transmission and mission briefing introduction. **Dedicated command portrait atlas, command ability controller, and campaign battle commands are implemented. Enemy human portraits remain classified placeholder medallions until their separate art pass.** A first implementation should add high-resolution individual portraits, voice/personality briefs and exactly one mechanically legible passive bonus or cooldown per officer, balanced against the ship's base stats.
+These officers now have active battle commands (5–9): Varro shields, Okoye target solution, Vale damage control, Sato evasive patterns and Renn enemy scans. Each has a cooldown, bridge transmission and mission briefing introduction. **Dedicated command portrait atlas, command ability controller, and campaign battle commands are implemented. The four previously classified enemy commanders now have individually drawn SVG portraits (Vex, Sable, Thorne, Cantor); these are illustrated rather than photorealistic.** Future work should replace illustrated enemy portraits with cohesive photorealistic art, add recorded officer VO, and test combat balance across all ship classes.
 
 ## Architecture
 
@@ -69,7 +69,7 @@ These officers now have active battle commands (5–9): Varro shields, Okoye tar
 - `campaign.html`: Strategic map, route graph, accessible star hotspots, mission briefings, officer dossiers, shipyard, state persistence, after-action choices and return to skirmish.
 - `img/campaign-atlas.webp`: Compressed cinematic image asset underlying the real interactive UI.
 
-The original monolithic game script still contains direct player/enemy assumptions. **Do not try to add several combatants to the present battle engine without first generalising projectiles, targeting, HUD, collisions, AI and victory handling to support multiple independent `Ship` instances.**
+The original monolithic game script still contains direct player/enemy assumptions. The first fleet extension now permits multiple vessels, retargeting, fleet HUD markers, collision-pair processing and per-mission survival conditions. Remaining code still contains duel-era assumptions; **extend incrementally** and test targeting, projectile collision, AI behaviour and victory conditions before adding larger fleets.
 
 ## Technical QA and limitations
 
@@ -78,7 +78,7 @@ The strategic screen was exercised in a headless browser at 1600×900 and 1280×
 ## Recommended next milestones
 
 1. **Battle QA and balancing** — Play every operation on all four hulls. Confirm damage persistence, loss recovery, mission 3's surrender, mission 5's extraction, torpedo scarcity and navigation.
-2. **Officer portraits and command bridge** — Initial playable stage complete: five individual portraits drawn from one compressed atlas, officer dossiers, briefing reactions, keyboard/button commands and cooldowns. Next: distinct human enemy portraits and recorded bridge VO; currently dialogue is on-screen text.
+2. **Officer portraits and command bridge** — Initial playable stage complete: five individual portraits drawn from one compressed atlas, officer dossiers, briefing reactions, keyboard/button commands and cooldowns. Next: photorealistic portrait replacement and recorded bridge VO; dialogue is still on-screen text.
 3. **Real alternate objectives** — Protect a moving transport, disable an enemy without killing, defend a relay, reach an extraction point. Introduce reusable objective/event logic rather than per-mission conditionals.
 4. **Multiple ships** — Refactor target selection, AI, collision, munition pools and health state to support escorts and fleet elements without breaking the duel.
 5. **Dynamic galaxy** — Add ownership changes, faction movement, reputation, intel unlocks, optional operations and consequences that affect the next mission.
@@ -97,5 +97,16 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 - Renn — Threat Scan: reports the enemy's weakest shield facing and least intact subsystem; cooldown 80s.
 - All ability cooldowns are **battle-local**, reset at mission deployment, and do not alter campaign save format.
 - `crew/personnel.js` holds character descriptions, mission lines, commander identities, and portrait positions. `crew/bridge-controller.js` is decoupled from Three.js and takes battle objects via dependency injection.
-- `img/command-portraits.webp` is a compressed six-frame portrait atlas containing five Meridian officer portraits plus ORACLE-9's armoured synthetic portrait. Human enemy commanders and the Wraith's Cantor use deliberate classified-identification medallions until commissioned artwork is complete.
+- `img/command-portraits.webp` is a compressed six-frame portrait atlas containing five Meridian officer portraits plus ORACLE-9's armoured synthetic portrait. Vex, Sable, Thorne and the Wraith Cantor now use individually designed SVG illustrations in `img/commanders/`; these assets are not yet photorealistic.
 - Automated testing covered the five command effects/cooldowns and the personnel and briefing UI, but **full live WebGL combat playthroughs remain unverified**.
+
+
+## Fleet and mission objective expansion — 23 October 2026
+
+- `crew/fleet-controller.js` implements mission-scoped protected and hostile ship objectives, status messages, target cycling, and victory/failure gates, while retaining skirmish mode.
+- In operation 1, the MV Peregrine (currently displayed using the Sabre hull as a temporary civilian-transport stand-in) has no functional weapons and must survive while the enemy captain is defeated. If the transport is destroyed the operation is lost.
+- In operation 2, a weakened Scrapjaw pursuer supports the Revenant minelayer; both must be destroyed. The player may select a hostile contact with `J`, and the target HUD and officer scan follow the selected vessel.
+- The tactical plot now renders every active ship, including secondary opponents and friendly civilian craft. Ship collisions evaluate ship pairs; shell, torpedo and mine collision systems already iterate over every ship.
+- Four illustrated SVG enemy portraits are stored at `img/commanders/{vex,sable,thorne,cantor}.svg` and displayed in mission briefings and incoming hails. ORACLE-9 continues to use the sixth slot of the existing atlas.
+- Automated controller scenarios checked both win and loss conditions, target cycling and single-enemy compatibility. Syntax was checked for the browser scripts, but full interactive/WebGL battles have **not** been played through in this environment.
+- **Remaining limitations:** a Sabre is a visual stand-in for a civilian hull; direct collision and targeting behaviour require playtesting; balance of protecting the convoy against Kora's aggressive AI is unverified; the map artwork still includes baked labels; and alternate mission objectives are currently restricted to these bespoke scenarios.

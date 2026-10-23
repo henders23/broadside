@@ -1509,8 +1509,8 @@ function killShip(s) {
   if (s.lanceGlow) s.lanceGlow.visible = false;
   if(fleet)fleet.onDestroyed(s);
   else {endGame(s===player?'lose':'win'); if(s===player)enemy.isWinner=true;else player.isWinner=true;}
-  if(s===player)for(const opponent of ships)if(opponent.team==='e')opponent.isWinner=true;
-  else if(game.ending&&game.outcome==='win')player.isWinner=true;
+  if(s===player){for(const opponent of ships)if(opponent.team==='e')opponent.isWinner=true;}
+  else if(game.ending&&game.outcome==='win'){player.isWinner=true;}
 }
 function subName(s, k) { return k === 'fore' ? s.C.fore : SUBNAME[k]; }
 
@@ -1856,7 +1856,7 @@ function torpsUpdate(dt) {
   }
 }
 function pointDefence(s, dt) {
-  if (!s.alive) return;
+  if (!s.alive || s.civilian) return;
   const e = fx(s);
   for (const t of torps) {
     if (!t.active || t.team === s.team) continue;

@@ -29,7 +29,7 @@ Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use 
 - **Shipyard** for hull repairs and torpedo resupply, **Officers** for bridge-character dossiers, and **Intel** for campaign clues and branching narrative decisions.
 - Completing a mission unlocks the next operation. A mission loss returns you to the sector campaign with a damaged but recoverable flagship rather than deleting the save.
 
-The first five operations remain a **campaign vertical slice**, not a finished grand-strategy game. Operation 1 now requires escorting the unarmed MV Peregrine; Operation 2 includes a two-hostile encounter. Named officer combat abilities (keys 5–9), cycling hostile targets (J), and multiple-contact tactical plots are playable. Full WebGL campaign QA and tuning are still required. `campaign.html` supplies the strategic UI while `index.html?campaign=N` launches the tactical encounters.
+The first five operations remain a **campaign vertical slice**, not a finished grand-strategy game. Operation 1 offers a choice between protecting the civilian MV Peregrine until it jumps or destroying the pirate first; Operation 2 includes a two-hostile encounter with coordinated flanking attacks. Every operation has a distinct generated 3D battle environment and themed nebula lighting. Named officer combat abilities (keys 5–9), cycling hostile targets (J), and multiple-contact tactical plots are playable. Full WebGL campaign QA and tuning are still required. `campaign.html` supplies the strategic UI while `index.html?campaign=N` launches the tactical encounters.
 
 See [Campaign design and technical notes](docs/CAMPAIGN.md) for current architecture, known limitations and roadmap.
 
@@ -58,6 +58,7 @@ python3 -m http.server 8000
 | T | Torpedo |
 | B | Batteries free: guns fire automatically when loaded and in arc |
 | J | Cycle enemy targets (campaign battles) |
+| H | Hold / resume MV Peregrine (Operation 1; also available as an on-screen button) |
 | 5 / 6 / 7 / 8 / 9 | Bridge officer abilities (campaign battles) |
 | Drag / wheel | Orbit / zoom the camera · C looks toward the enemy |
 | Tab | Enlarged tactical plot |
@@ -65,7 +66,7 @@ python3 -m http.server 8000
 
 ## Fleet encounter regression tests
 
-Run `node tests/fleet-controller.test.js` from the repository root. This tests escort success/failure and two-enemy target cycling and completion, without requiring WebGL. The named enemy commanders have four distinct original SVG illustrations in `img/commanders/`, while ORACLE-9 uses the original portrait atlas. The SVG art is illustrated, not photorealistic.
+Run `node tests/fleet-controller.test.js` and `node tests/environment.test.js` from the repository root. This tests escort success/failure and two-enemy target cycling and completion, without requiring WebGL. The named enemy commanders have four distinct original SVG illustrations in `img/commanders/`, while ORACLE-9 uses the original portrait atlas. The SVG art is illustrated, not photorealistic.
 
 ## Performance
 

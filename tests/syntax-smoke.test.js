@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
-for(const name of ['crew/personnel.js','crew/bridge-controller.js','crew/fleet-controller.js']){
+for(const name of ['crew/personnel.js','crew/bridge-controller.js','crew/fleet-controller.js','crew/battle-environments.js']){
   const code=fs.readFileSync(name,'utf8');
   new Function(code);
 }
@@ -21,6 +21,8 @@ for(const name of ['vex','sable','thorne','cantor']){
 }
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/fleet\.onDestroyed\(s\)/);
+assert.match(html,/battleEnvironment\.configure\(campaignMissionId\)/);
+assert.match(html,/escort-hold/);
 assert.match(html,/fleet\?\.tick\(dt\)/);
 assert.match(html,/getTarget:\(\)=>player\.target/);
 assert.match(html,/if\(k==='KeyJ'&&fleet\)/);

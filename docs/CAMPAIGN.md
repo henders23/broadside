@@ -104,9 +104,19 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 ## Fleet and mission objective expansion — 23 October 2026
 
 - `crew/fleet-controller.js` implements mission-scoped protected and hostile ship objectives, status messages, target cycling, and victory/failure gates, while retaining skirmish mode.
-- In operation 1, the MV Peregrine (currently displayed using the Sabre hull as a temporary civilian-transport stand-in) has no functional weapons and must survive while the enemy captain is defeated. If the transport is destroyed the operation is lost.
-- In operation 2, a weakened Scrapjaw pursuer supports the Revenant minelayer; both must be destroyed. The player may select a hostile contact with `J`, and the target HUD and officer scan follow the selected vessel.
+- In operation 1, the MV Peregrine has a distinctive procedural civilian freighter mesh with Sabre-derived flight and collision physics, and has no functional weapons. Either keep it alive until it crosses the jump-gate plane or destroy Vex first. H (or the HUD button) holds/resumes the convoy. Losing the transport fails the operation.
+- In operation 2, a weakened Scrapjaw pursuer flanks the Revenant minelayer from the opposite side, rather than merely copying its heading; both must be destroyed. The player may select a hostile contact with `J`, and the target HUD and officer scan follow the selected vessel.
 - The tactical plot now renders every active ship, including secondary opponents and friendly civilian craft. Ship collisions evaluate ship pairs; shell, torpedo and mine collision systems already iterate over every ship.
 - Four illustrated SVG enemy portraits are stored at `img/commanders/{vex,sable,thorne,cantor}.svg` and displayed in mission briefings and incoming hails. ORACLE-9 continues to use the sixth slot of the existing atlas.
 - Automated controller scenarios checked both win and loss conditions, target cycling and single-enemy compatibility. Syntax was checked for the browser scripts, but full interactive/WebGL battles have **not** been played through in this environment.
 - **Remaining limitations:** a Sabre is a visual stand-in for a civilian hull; direct collision and targeting behaviour require playtesting; balance of protecting the convoy against Kora's aggressive AI is unverified; the map artwork still includes baked labels; and alternate mission objectives are currently restricted to these bespoke scenarios.
+
+
+## Distinct battlefields and expanded escort choices (23 October 2026)
+
+- `crew/battle-environments.js` constructs deterministic mission-specific background scenery and nebula colour schemes: Kestrel jump gate and trade station, Cinder Wake wreckage field, Red Narrows fractured pylons, Halcyon relay arrays, Harrow organic spires. Decorative assets are non-colliding; Three.js geometries and materials are disposed when changing mission, returning to title, or entering skirmish.
+- The escort ship now visibly resembles a modular cargo freighter, not a warship. Its movement/collision model is still inherited from the Sabre and will need an authored transport hull for final production.
+- The civilian escort has **two victory paths**: (a) protect it to its extraction waypoint, or (b) destroy the pirate attacker first. The captain can order HOLD/RESUME with H or a visible HUD button. Objective progress and the extraction beacon are visible on tactical instruments.
+- Vex retargets to defend herself when the player intercepts her closely, permitting a tactical diversion. Cinder Wake's minelayer/pursuer now attempt a pincer rather than stacking in a single pursuit line.
+- Officer tactical bonuses now apply across all enemy contacts, not only the originally designated opponent.
+- Automated fleet-state regression, procedural environment lifecycle tests, and static JavaScript syntax checks run through GitHub Actions. Full GPU/WebGL playthroughs, final art acceptance and comprehensive difficulty balancing remain unverified.

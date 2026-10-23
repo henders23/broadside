@@ -16,3 +16,5 @@ jobs:
         run: node tests/syntax-smoke.test.js
       - name: Run fleet objective regression cases
         run: node tests/fleet-controller.test.js
+      - name: Run mission environment lifecycle tests
+        run: node tests/environment.test.js

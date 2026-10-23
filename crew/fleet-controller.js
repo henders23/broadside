@@ -44,7 +44,7 @@ function create({missionId,makeShip,placeShip,ships,player,primaryEnemy,getSelec
   function onDestroyed(ship){
     if(game.ending)return;
     if(ship===player){endGame('lose');return;}
-    if(ship.civilian){game.campaignOutcome='convoy_lost';endGame('lose');return;}
+    if(ship.civilian){game.campaignOutcome='convoy_lost';player.isWinner=true;for(const foe of hostile()){foe.ai=null;foe.target=null;foe.step=0;}endGame('lose');return;}
     const alive=hostile();
     if(!alive.length){if(convoy&&convoy.alive){convoy.isWinner=true;game.campaignOutcome='escort_saved';}else if(mission===2)game.campaignOutcome='fleet_destroyed';endGame('win');return;}
     if(getSelected()===ship||!getSelected()?.alive){

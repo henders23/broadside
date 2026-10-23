@@ -236,6 +236,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div id="msg"></div>
     <div id="warn" hidden></div>
     <div id="tip"></div>
+    <button type="button" id="escort-hold" hidden style="position:absolute;top:176px;left:50%;transform:translateX(-50%);z-index:7;background:#071825;color:#b4e9ff;border:1px solid #6ab6d7;padding:7px 16px;letter-spacing:.13em;font-size:11px;cursor:pointer;pointer-events:auto">HOLD CONVOY [H]</button>
     <div id="fleet-objective" hidden aria-live="polite" style="position:absolute;top:143px;left:50%;transform:translateX(-50%);z-index:5;background:#041320dc;border:1px solid #5b8ba3;padding:6px 13px;text-align:center;font-size:10px;letter-spacing:.12em;color:#b1e8ee;max-width:55%;pointer-events:none"></div>
     <div id="campaign-objective" hidden style="position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:5;background:#061523e8;border:1px solid #d4a269;padding:8px 15px;text-align:center;font-size:11px;letter-spacing:.1em;color:#ffda9e;max-width:55%;pointer-events:none"></div>
 
@@ -1393,6 +1394,8 @@ function startGame() {
   renderer.compile(scene, camera);
   $('campaign-objective').hidden = !campaignMission;
   $('fleet-objective').hidden = !fleet;
+  $('escort-hold').hidden = !fleet?.convoy;
+  $('escort-hold').textContent='HOLD CONVOY [H]';
   if (campaignMission) $('campaign-objective').textContent = 'OPERATION 0' + campaignMissionId + ' // ' + campaignMission.objective;
   bridge?.incomingHail(campaignMissionId);
   if(fleet)$('fleet-objective').textContent=fleet.status();
@@ -1420,7 +1423,7 @@ function showOver() {
   if (player.groups.some(g => g.type === 'lance')) rows.push(['Lance damage', Math.round(st.lanceDmg)]);
   rows.push(['Hull left', Math.max(0, Math.round(player.hull))]);
   $('over-stats').innerHTML = rows.map(r => `<div><small>${r[0]}</small><b>${r[1]}</b></div>`).join('');
-  $('hud').hidden = true; $('over').hidden = false; Sfx.engine(0, false);
+  $('hud').hidden = true; $('escort-hold').hidden=true; $('over').hidden = false; Sfx.engine(0, false);
   if (campaignMission && win && game.campaignOutcome === 'escort_extracted') {
     $('over-word').textContent = 'Convoy extracted';
     $('over-sub').textContent = 'The MV Peregrine reached the illuminated jump gate. You held the corridor long enough for its civilians to escape.';
@@ -2043,7 +2046,7 @@ window.addEventListener('keydown', e => {
   if (bridge && bridge.activateByKey(k)) return;
   if (k === 'KeyC') cam.mode = cam.mode === 'chase' ? 'target' : 'chase';
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
-  if(k==='KeyH'&&fleet?.toggleHold())return;
+  if(k==='KeyH'&&fleet?.toggleHold()){$('escort-hold').textContent=fleet.held?'RESUME CONVOY [H]':'HOLD CONVOY [H]';return;}
   if(k==='KeyJ'&&fleet){fleet.cycle();return;}
   if (k === 'KeyM') Sfx.toggle();
   if (k === 'KeyN') toggleMusic();
@@ -2058,6 +2061,10 @@ window.addEventListener('keydown', e => {
   const wk = { KeyQ: 'Q', KeyE: 'E', Space: 'Space', KeyT: 'T' }[k];
   if (wk) { const g = P.groups.find(g => g.key === wk); if (g && !fireGroup(P, g)) { Sfx.beep(220, 0.08, 0.05, 'sawtooth'); flashRow(g.id); } }
   if (k === 'KeyB') { P.autofire = !P.autofire; $('autofire').textContent = P.autofire ? 'ON' : 'OFF'; showMsg(P.autofire ? 'Batteries free: guns fire when ready' : 'Batteries on manual', 1.6); }
+});
+$('escort-hold').addEventListener('click',()=>{
+  if(state!=='playing'||!fleet?.toggleHold())return;
+  $('escort-hold').textContent=fleet.held?'RESUME CONVOY [H]':'HOLD CONVOY [H]';
 });
 window.addEventListener('keyup', e => keys.delete(e.code));
 window.addEventListener('blur', () => { keys.clear(); pause(true); });

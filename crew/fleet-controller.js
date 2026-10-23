@@ -29,6 +29,7 @@ function create({missionId,makeShip,placeShip,ships,player,primaryEnemy,getSelec
      convoy.hull=Math.round(convoy.C.hull*.65);
      convoy.sh=convoy.sh.map(v=>Math.round(v*.65));
      convoy.cap=convoy.cap.map(v=>Math.round(v*.65));
+     for(const group of convoy.groups)for(const mount of group.mounts||[])if(mount.t)mount.t.visible=false;
      convoy.groups=[];convoy.step=3;
      placeShip(convoy,new V3(GATE.x,GATE.y,3650),0);
      buildFreighter?.(convoy);
@@ -80,7 +81,7 @@ function create({missionId,makeShip,placeShip,ships,player,primaryEnemy,getSelec
      convoy.rudder=0;
      convoy.climb=0;
      // Holding is deliberate; extraction requires entering the visual gate.
-     if(!held&&convoy.pos.z<=GATE.z&&distance(convoy.pos,GATE)<GATE.radius){
+     if(!held&&convoy.pos.z<=GATE.z&&Math.abs(convoy.pos.x-GATE.x)<GATE.radius&&Math.abs(convoy.pos.y-GATE.y)<GATE.radius){
        phase='extracted';finish('win','escort_extracted');return;
      }
      const progress=clamp((3650-convoy.pos.z)/(3650-GATE.z),0,1);

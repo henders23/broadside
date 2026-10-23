@@ -20,7 +20,7 @@ for(const name of ['vex','sable','thorne','cantor']){
   assert.match(asset,/<\/svg>/);
 }
 const html=fs.readFileSync('index.html','utf8');
-assert.match(html,/fleet\?\.onDestroyed\(s\)/);
+assert.match(html,/fleet\.onDestroyed\(s\)/);
 assert.match(html,/fleet\?\.tick\(dt\)/);
 assert.match(html,/getTarget:\(\)=>player\.target/);
 assert.match(html,/if\(k==='KeyJ'&&fleet\)/);

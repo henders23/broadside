@@ -407,6 +407,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <script src="crew/personnel.js"></script>
 <script src="crew/bridge-controller.js"></script>
 <script src="crew/fleet-controller.js"></script>
+<script src="crew/battle-environments.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -664,17 +665,17 @@ const skyGroup = new THREE.Group(); scene.add(skyGroup);   // live stars follow 
 const skyScene = new THREE.Scene();                          // nebula and planet, baked once into a cube map
 const SKY_R = 60000;
 const sky = new THREE.Mesh(new THREE.SphereGeometry(SKY_R, 48, 24), new THREE.ShaderMaterial({
-  uniforms: { sunDir: { value: SUN_DIR } },
+  uniforms: { sunDir: { value: SUN_DIR }, nebBlue:{value:new V3(.020,.055,.085)},nebRed:{value:new V3(.090,.022,.045)},sunTint:{value:new V3(1,.72,.42)} },
   vertexShader: `varying vec3 vDir; void main(){ vDir=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
-  fragmentShader: `uniform vec3 sunDir; varying vec3 vDir; ${NOISE_GLSL}
+  fragmentShader: `uniform vec3 sunDir; uniform vec3 nebBlue; uniform vec3 nebRed; uniform vec3 sunTint; varying vec3 vDir; ${NOISE_GLSL}
   void main(){ vec3 d=normalize(vDir);
     float n=fbm(d*2.3+vec3(3.1,1.7,0.4)); float n2=fbm(d*5.5+vec3(n*2.2));
     float band=exp(-pow(d.y*2.0+0.45*sin(d.x*2.3+d.z),2.0));
     vec3 col=vec3(0.0035,0.0045,0.010);
-    col+=vec3(0.020,0.055,0.085)*smoothstep(0.38,0.9,n)*(0.35+band*1.4);
-    col+=vec3(0.090,0.022,0.045)*pow(smoothstep(0.45,0.92,n2),2.0)*band*1.3;
+    col+=nebBlue*smoothstep(0.38,0.9,n)*(0.35+band*1.4);
+    col+=nebRed*pow(smoothstep(0.45,0.92,n2),2.0)*band*1.3;
     float s=max(dot(d,sunDir),0.);
-    col+=vec3(1.0,0.72,0.42)*(pow(s,2600.)*5.+pow(s,140.)*0.04+pow(s,10.)*0.01);
+    col+=sunTint*(pow(s,2600.)*5.+pow(s,140.)*0.04+pow(s,10.)*0.01);
     gl_FragColor=vec4(col,1.); }`,
   side: THREE.BackSide, depthWrite: false, depthTest: false
 }));
@@ -778,6 +779,10 @@ const ARENA = 7500;
     asteroids.push({ mesh: m, pos: m.position, r: s * 1.02, spin: new V3(r() - .5, r() - .5, r() - .5).multiplyScalar(0.05) });
   }
 })();
+const battleEnvironment=window.BroadsideEnvironments.create({
+  THREE,scene,sky,planet,rockMat,
+  rebakeSky:()=>{skySize=0;bakeSky(QUALITY[gfx.q].sky);}
+});
 
 // ---------------- particles ----------------
 class Particles {
@@ -1338,6 +1343,7 @@ function showMsg(text, dur = 2.4, bad = false) { const el = $('msg'); el.textCon
 let vignetteA = 0;
 
 function clearWorld() {
+  battleEnvironment.clear();
   for (const s of ships.slice()) removeShip(s);
   for (const b of shells) b.active = false;
   for (const t of torps) { t.active = false; t.obj.visible = false; }
@@ -1346,7 +1352,7 @@ function clearWorld() {
 }
 function startGame() {
   Sfx.init(); Music.play('battle', true);
-  clearWorld(); display.visible = false;
+  clearWorld(); battleEnvironment.configure(campaignMissionId); display.visible = false;
   const campaignSave = campaignMission ? readCampaignSave() : null;
   const pk = campaignSave && CLASSES[campaignSave.ship] && !CLASSES[campaignSave.ship].enemyOnly ? campaignSave.ship : choice.ship;
   const others = Object.keys(CLASSES).filter(k => k !== pk);
@@ -1373,7 +1379,7 @@ function startGame() {
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
     missionId:campaignMissionId,makeShip,placeShip,ships,player,primaryEnemy:enemy,
     getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
-    DIFF,endGame,showMsg,game,V3
+    DIFF,endGame,showMsg,game,V3,buildFreighter:ship=>battleEnvironment.buildFreighter(ship)
   }):null;
   fleet?.setup();
   bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,getTarget:()=>player.target,showMsg,facings:FACINGS}) : null;
@@ -1399,7 +1405,7 @@ function endGame(outcome) {
   game.ending = true; game.outcome = outcome; game.endT = 7; bridge?.onEnd();
   // Mission 3 can end in surrender and mission 5 by transmitting/escaping.
   // Neither should trigger the destroyed-enemy VO.
-  if (!(outcome === 'win' && (game.campaignOutcome === 'surrender' || game.campaignOutcome === 'extracted')))
+  if (!(outcome === 'win' && ['surrender','extracted','escort_extracted'].includes(game.campaignOutcome)))
     Voice.say(outcome === 'win' ? 'enemy-destroyed' : 'ship-lost', 0, true);
 }
 function showOver() {
@@ -1415,7 +1421,10 @@ function showOver() {
   rows.push(['Hull left', Math.max(0, Math.round(player.hull))]);
   $('over-stats').innerHTML = rows.map(r => `<div><small>${r[0]}</small><b>${r[1]}</b></div>`).join('');
   $('hud').hidden = true; $('over').hidden = false; Sfx.engine(0, false);
-  if (campaignMission && win && game.campaignOutcome === 'surrender') {
+  if (campaignMission && win && game.campaignOutcome === 'escort_extracted') {
+    $('over-word').textContent = 'Convoy extracted';
+    $('over-sub').textContent = 'The MV Peregrine reached the illuminated jump gate. You held the corridor long enough for its civilians to escape.';
+  } else if (campaignMission && win && game.campaignOutcome === 'surrender') {
     $('over-word').textContent = 'Pirate commander surrendered';
     $('over-sub').textContent = 'Captain Thorne has powered down his weapons and surrendered the Red Narrows toll lane.';
   } else if (campaignMission && win && game.campaignOutcome === 'extracted') {
@@ -1445,7 +1454,7 @@ function showOver() {
   }
 }
 function toMenu(page = 'main') {
-  state = 'menu'; game = null; fleet = null; bridge = null; clearWorld(); player = enemy = null; Music.play('title');
+  state = 'menu'; game = null; fleet = null; bridge = null; clearWorld(); battleEnvironment.configure(0); player = enemy = null; Music.play('title');
   display.visible = true; updateDisplay();
   $('hud').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('menu').hidden = false;
   showPage(page);
@@ -1467,8 +1476,8 @@ function shieldFlash(s, u) {
 const SHIELD_MULT = { lance: 1.4, beam: 1.2, plasma: 1.5, torp: 0.6, mine: 0.6, missile: 0.8, rail: 0.7 };
 function damage(s, dmg, kind, local, src) {
   if (!s.alive || (game && game.ending && s.isWinner)) return;
-  if (bridge && s === enemy && src === player) dmg *= bridge.attackMultiplier();
-  if (bridge && s === player && src === enemy) dmg *= bridge.defenseMultiplier();
+  if (bridge && s.team === 'e' && src === player) dmg *= bridge.attackMultiplier();
+  if (bridge && s === player && src?.team === 'e') dmg *= bridge.defenseMultiplier();
   const u = localUnit(s, local, _du); const f = facingOfUnit(u);
   const mult = SHIELD_MULT[kind] || 1;
   let hullD = dmg; const t = game.time;
@@ -1970,6 +1979,8 @@ function aiUpdate(s, dt) {
     const corr = clamp((dist - pref) / 1200, -1, 1) * 45;
     desired = ai.side * ((s.C.beam || 90) - corr); ai.mode = 'broadside';
   }
+  // Sable and the pursuer take opposing approach angles instead of stacking in one line.
+  if(ai.flankOffset && (ai.mode==='broadside'||ai.mode==='close')) desired=clamp(desired+ai.flankOffset,-155,155);
   let err = wrapDeg(b - desired);
   // steer around rocks in the way
   for (const a of asteroids) {
@@ -2032,6 +2043,7 @@ window.addEventListener('keydown', e => {
   if (bridge && bridge.activateByKey(k)) return;
   if (k === 'KeyC') cam.mode = cam.mode === 'chase' ? 'target' : 'chase';
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
+  if(k==='KeyH'&&fleet?.toggleHold())return;
   if(k==='KeyJ'&&fleet){fleet.cycle();return;}
   if (k === 'KeyM') Sfx.toggle();
   if (k === 'KeyN') toggleMusic();
@@ -2268,6 +2280,13 @@ function drawTac(cv, full) {
     const friendly=ship.team===P.team;
     drawShip2D(g,q.x,q.y,-(ship.yaw-P.yaw),ship,Math.max(sc,5*pr/ship.C.hullE.r[2]),friendly?'#81e7ab':'#ff836b',friendly?'rgba(90,230,164,.22)':'rgba(255,90,70,.22)');
     g.fillStyle=friendly?'#9fe9c5':'#ffb39d';g.fillText(ship.name.slice(0,22),q.x+8*pr,q.y-8*pr);
+  }
+  // Clearly identified extraction gate on the radar; it is not a hostile target.
+  if(fleet?.convoy?.alive && fleet.gate){
+    const goal=toMap(fleet.gate,_mp);
+    g.strokeStyle='#70e5f1';g.lineWidth=2*pr;
+    g.beginPath();g.arc(goal.x,goal.y,12*pr,0,Math.PI*2);g.stroke();
+    g.fillStyle='#b5edff';g.fillText('JUMP GATE',goal.x+15*pr,goal.y-8*pr);
   }
   // predicted own course
   if (P.alive) {

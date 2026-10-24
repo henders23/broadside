@@ -72,25 +72,25 @@
         paras: [
           'For fourteen years the Shattered Reach has been quiet. That quiet is over. Three merchant ships have vanished on the Kestrel lanes in six days, and the last signal out of Kestrel was not a distress call. It was a warning.',
           'Command calls it piracy. I am not convinced. Corsairs do not fly with Navy transponders, and they do not vanish without wreckage. Someone is arming them, and someone wants this frontier empty.',
-          'You will take {ship} out of Meridian and answer that warning. She is the only capital ship I can spare, so bring her home. Every plate of hull you lose comes out of the fleet’s requisition, and the frontier cannot afford to lose you.'
+          'You will take {ship} out of Meridian and answer that warning. Find out who sent it, and who is acting on it. She is the only capital ship I can spare, so bring her home. Every plate of hull you lose comes out of the fleet’s requisition, and the frontier cannot afford to lose you.'
         ],
         orders: ['Answer the call at Kestrel and protect the civilian traffic there.', 'Trace the stolen Navy hardware to whoever is supplying it, and end the Ash Fleet at its source.', 'Starbases post work for any captain who wants it. Take it, and keep the dockyards on our side.'] } },
     { n: 2, numeral: 'II', name: 'The Machine Signal', foes: ['Pirates', 'Renegades', 'Machines'], main: ['Machines'], story: [4, 6, 9],
       briefing: {
         sub: 'From Fleet Admiral Gideon Harlan, to the captain of {ship}',
         paras: [
-          'Good work in the Narrows. Thorne’s people talked, and what they told us is worse than piracy. The Ash Fleet was never the end of the chain. Someone has been feeding them patrol schedules that no human officer could have known.',
-          'Our listening posts have traced the leak to a signal in the Halcyon Belt. It repeats every eleven minutes, and every repetition answers a question we have not yet asked. The colonies at Midway have stopped talking to anyone.',
-          'Find the source of that signal, captain. Whatever is out there has been watching this frontier longer than we have.'
+          'Halloran is dead, and the Ash Fleet with her. Before the Pyre went down she told you why she did it: eleven years ago a machine signal out of the Halcyon Belt warned her what was coming to the Reach. Command buried the report. She took the fleet and set about emptying the frontier the only way she could.',
+          'The Kestrel warning was that same signal. It repeats every eleven minutes, and every repetition answers a question we have not yet asked. The colonies at Midway have stopped talking to anyone.',
+          'Find the source, captain. I want to know what it saw, and why it never said so plainly.'
         ],
         orders: ['Investigate the ghost relay at Halcyon.', 'Follow the signal back to the mind that is sending it.', 'The Elysia observatory and Juniper Ringport will need protecting while you do.'] } },
     { n: 3, numeral: 'III', name: 'The Wraith', foes: ['Pirates', 'Renegades', 'Machines', 'Aliens', 'Unknown'], main: ['Aliens', 'Unknown'], story: [5, 7, 10],
       briefing: {
         sub: 'From Fleet Admiral Gideon Harlan, to the captain of {ship}',
         paras: [
-          'The machines were not the enemy. They were the alarm. Every message they sent, every ship they turned, was an attempt to empty the Reach before something else arrived.',
-          'That something is here. Harrow has gone silent, and our probes are coming back coated in living tissue. The Directorate archive calls it the Wraith, and its estimates for the Reach are not survivable.',
-          'I need you to look this thing in the eye and bring back everything you see. Then I need you to get our people out.'
+          'The machines were never the enemy. They were the alarm. Halloran heard it eleven years ago, and she and the Directorate each tried to empty the Reach before something else arrived: she by terror, they by silence. We fought them both, and we were wrong about why.',
+          'That something is here. Harrow has gone silent, and our probes are coming back coated in living tissue. The Directorate called it the Wraith, and its projections for the Reach are not survivable.',
+          'So we do what they tried to do, and we do it properly. Look this thing in the eye, get our people out of its way, and then find where it grows and burn it.'
         ],
         orders: ['Make first contact at Harrow and survive it, then evacuate the colonies in its path.', 'Find where the Wraith is growing, and burn it out.', 'Hold the quarantine line from Juniper. Nothing green gets past it.'] } }
   ];
@@ -165,7 +165,7 @@
         { name: 'Fortress', note: 'Siege cannons and minefields' },
         { at: 0.65, name: 'The clans answer', line: 'Every clan in the Narrows owes me a debt. I am calling it in.', shields: true,
           spawn: [{ cls: 'scrapjaw', name: 'Clan raider', hull: 0.35, shield: 0.55, diff: 'commander' }, { cls: 'scrapjaw', name: 'Clan raider', hull: 0.35, shield: 0.55, diff: 'commander' }] },
-        { at: 0.3, name: 'Scorched earth', line: 'If I cannot hold the Reach, nobody will. All batteries, fire at will.', unlock: ['inferno'] }] },
+        { at: 0.3, name: 'Scorched earth', line: 'Eleven years ago a machine told me what is coming, Captain. Command buried it. I emptied what I could. All batteries, fire at will.', unlock: ['inferno'] }] },
       ends: { boss_destroyed: ['The Pyre is burning', 'Commodore Halloran’s flagship broke apart over Grimhold. Without her, the Ash Fleet is finished.'] },
       choice: ['Search the wreck for Halloran’s logs', 'Offer her surviving crews amnesty'], flags: ['halloran_logs', 'ash_amnesty'] },
     { id: 9, act: 2, system: 'halcyon', name: 'The Arbiter', enemy: 'arbiter', captain: 'THE ARBITER', kind: 'Directorate core warship', reward: 1900,
@@ -177,9 +177,9 @@
       goal: { type: 'boss' },
       boss: { title: 'THE ARBITER', phases: [
         { name: 'Overwatch', note: 'Beam arrays and railgun' },
-        { at: 0.6, name: 'Shield lattice', line: 'Lattice engaged. Your weapons are now statistically irrelevant.', lattice: 0.2,
+        { at: 0.6, name: 'Shield lattice', line: 'Lattice engaged. You keep sending ships into the dark, Captain. We keep counting the dead.', lattice: 0.2,
           spawn: [{ cls: 'seraph', name: 'Lattice node', hull: 0.32, shield: 0.5, diff: 'commander', lattice: true }, { cls: 'seraph', name: 'Lattice node', hull: 0.32, shield: 0.5, diff: 'commander', lattice: true }] },
-        { at: 0.3, name: 'Judgement', line: 'Calculation complete. Executing.', shields: true, unlock: ['judgement'] }] },
+        { at: 0.3, name: 'Judgement', line: 'Calculation complete. You will not leave the Reach. Neither will they.', shields: true, unlock: ['judgement'] }] },
       ends: { boss_destroyed: ['The Arbiter is silent', 'The Directorate’s mind went dark with its ship. Across the Belt, the machines have stopped moving.'] },
       choice: ['Salvage the Arbiter’s core', 'Destroy every trace of it'], flags: ['arbiter_salvaged', 'arbiter_destroyed'] },
     { id: 10, act: 3, system: 'verdant', name: 'Mother of the Bloom', enemy: 'mother', captain: 'The Bloom-Mother', kind: 'Wraith brood-mother', reward: 2400,
@@ -197,6 +197,51 @@
       ends: { boss_destroyed: ['The Bloom is dying', 'The Bloom-Mother came apart in Verdant’s upper atmosphere. The brood ships are drifting, and the green is turning brown.'] },
       choice: ['Burn the nursery from orbit', 'Quarantine Verdant and study it'], flags: ['verdant_burned', 'verdant_quarantined'] }
   ];
+  // The story spine: what each operation reveals about the Kestrel warning (`log`, for the Story so far), Harlan's
+  // transmission after a win, and the lead officer's reaction to a win or a loss.
+  const NARRATIVE = {
+    1: { log: 'At Kestrel you drove off Kora Vex and saved the Peregrine. Vex took no cargo from the ships she hunted: she was paid to scare traffic off the lanes.',
+      harlan: 'Pirates who do not take cargo are not pirates. Somebody is paying them to empty the Kestrel lanes, and I want to know who.',
+      win: 'Vex’s hold was empty, captain. Every ship she hit, she let the cargo drift. She was not stealing; she was clearing the lane.', loss: 'We lost the Peregrine’s trail. Vex will hit the next convoy the same way. We need to be there first.' },
+    2: { log: 'In the Cinder Wake you destroyed Commander Sable’s minelayer. His transponder used Navy codes deleted eleven years ago, and his logs showed the Ash Fleet paying the pirate clans.',
+      harlan: 'The Ash Fleet. Halloran’s people. I signed her death certificate myself, eleven years ago. If she is alive, she has had a long time to plan.',
+      win: 'The transponder is genuine, captain. Navy hardware, Navy codes, and payments to the clans going back years.', loss: 'Sable’s mines did their job. Next time we keep out of his wake.' },
+    3: { log: 'In the Red Narrows you broke Garrick Thorne’s toll. Thorne said Halloran never wanted the cargo, only for the ships to turn back. She told the clans something was coming.',
+      harlan: 'Halloran is at Grimhold. Whatever she thinks is coming, she is killing people to keep them out of its way. End it, captain.',
+      win: 'Thorne talked. Halloran pays the clans to turn ships around, not to rob them. He says she is frightened, and Thorne does not frighten easily.', loss: 'Thorne holds the Narrows for now. He will not wait for us to come back stronger.' },
+    8: { log: 'At Grimhold you destroyed the Pyre. Halloran’s last words: a machine signal from the Halcyon Belt warned her of what was coming. Command buried her report, so she tried to empty the Reach by force.',
+      harlan: 'She was right about one thing. There is a signal in the Halcyon Belt, and it has been talking for eleven years. It was the Kestrel warning. I want to know what it is saying.',
+      win: 'The Pyre is gone, captain. Before she went, Halloran sent one last message. It was not a threat. It was the same warning Kestrel heard.', loss: 'The Pyre outgunned us. Halloran knows our doctrine; we need to fight her with something she did not teach.' },
+    4: { log: 'At Halcyon you silenced ORACLE-9. Its archive was a casualty projection for the Reach, colony by colony, falling to nothing in three years. The machines had been keeping people away.',
+      harlan: 'It is a casualty projection, captain. Ours. The machines have been counting our dead before we die. What you do with the archive is your call.',
+      win: 'The archive is intact. It does not predict a war. It predicts an extinction, and it has been right about everything else.', loss: 'ORACLE saw every move before we made it. We need to be less predictable.' },
+    6: { log: 'At Midway you broke the VIGIL pickets. The relay had been jamming Midway’s calls to keep its traffic from flying toward Harrow. The Directorate’s mind is coming out to stop you: the Arbiter.',
+      harlan: 'It is not hiding any more. It is coming out to stop us, and it thinks it is protecting someone. So do I.',
+      win: 'The relay is down. It was not cutting Midway off from us; it was cutting Midway off from Harrow.', loss: 'The pickets held. Two minds working as one; we need to split them.' },
+    9: { log: 'At Halcyon you destroyed the Arbiter. As it died it sent one coordinate: Harrow. The thing the machines had warned of all along was already there.',
+      harlan: 'We killed the only thing in the Reach that saw this coming. Then we had better be as good as it feared we were not. Harrow, captain.',
+      win: 'The Arbiter is silent. Its last transmission was a single set of coordinates: Harrow. Then nothing.', loss: 'The lattice held and the lance found us. We need those node ships dead first.' },
+    5: { log: 'At Harrow you met the Wraith and lived. Your sensor archive is the first record of a living warship, and it is heading for every colony in the Expanse.',
+      harlan: 'Every colony from Nex to Mire evacuates. Today. Halloran tried to do this with fear and the machines with silence. We do it with ships.',
+      win: 'We have the recording, captain. It is alive, it is hungry, and there are more of them behind it.', loss: 'We did not get the whole archive out. Whatever that was, it learned something about us too.' },
+    7: { log: 'At Nex you brought the Long Lantern and its eleven thousand colonists out. The brood that hunted it came from Verdant, where something vast is growing them.',
+      harlan: 'The brood is coming from Verdant. Burn it out, captain, and the Reach is ours again.',
+      win: 'The Lantern is through the beacon. Every one of them. The brood ships turned back toward Verdant when we broke them.', loss: 'The Lantern did not make it. We will not get another chance like that one.' },
+    10: { log: 'At Verdant you killed the Bloom-Mother. The brood is dying in the sky, and the warning that began at Kestrel eleven years ago has finally been answered.',
+      harlan: '', win: 'She is dead, captain. The brood ships are drifting. It is over.', loss: 'She grows back faster than we can hurt her. We go back in harder.' }
+  };
+  for (const m of STORY) Object.assign(m, NARRATIVE[m.id]);
+  // Four decisions change later battles. Each consequence notes itself in the briefing of the battle it changes.
+  const CONSEQUENCES = [
+    { flag: 'thorne_amnesty', story: [8], note: 'Thorne’s charts of Grimhold: the Pyre’s minefields are mapped and its mine layer is out of the fight.', apply: spec => { spec.disable = [...(spec.disable || []), 'mines']; } },
+    { flag: 'halloran_logs', story: [4, 6], note: 'Halloran’s logs carry the Directorate’s shield frequencies: machine shields start the fight at half strength.', apply: spec => { spec.enemyShieldStart = 0.5; } },
+    { flag: 'ash_amnesty', story: [7, 10], note: 'The ASF Penitence, crewed by Halloran’s pardoned officers, flies at your side.', apply: spec => { spec.friends = [...(spec.friends || []), { cls: 'revenant', name: 'ASF Penitence', hull: 0.7, shield: 0.8 }]; } },
+    { flag: 'oracle_transmitted', story: [7], note: 'Command acted on ORACLE’s archive: the Long Lantern is already a third of the way to the beacon.', apply: spec => { spec.goal.headStart = 0.33; } },
+    { flag: 'oracle_sealed', story: [9], note: 'With the archive sealed, the Arbiter never learned how much you know: its shield lattice is weaker.', apply: spec => { const p = spec.boss && spec.boss.phases.find(x => x.lattice); if (p) p.lattice = Math.max(p.lattice, 0.4); } },
+    { flag: 'arbiter_salvaged', story: [10], note: 'The Arbiter’s salvaged core models the Bloom-Mother’s growth: her regrowth is slower.', apply: spec => { const p = spec.boss && spec.boss.phases.find(x => x.regen); if (p) p.regen = 1.5; } }
+  ];
+  // Which decisions have later consequences (shown when the choice is offered).
+  const CHOICE_STAKES = { 3: 'Amnesty brings Thorne’s charts of Grimhold; impounding brings his ship.', 8: 'His logs help in the Halcyon Belt; an amnesty brings an Ash Fleet ship to your side.', 4: 'Transmitting warns the colonies; sealing keeps the Arbiter in the dark.', 9: 'A salvaged core could help against the Wraith; destroying it earns Command’s trust.' };
   const storyById = Object.fromEntries(STORY.map(m => [m.id, m]));
 
   function actOf(completed) {
@@ -349,8 +394,9 @@
   // ---------------- interceptions ----------------
   const INTERCEPT_CHANCE = [0, 0.06, 0.12, 0.18, 0.24, 0.3];   // by threat level
   // Returns the first system on the way (not counting the start) where hostiles drop out of the lane, or null.
+  // scale: a multiplier, or a function of the system id (difficulty and the state of its front).
   function rollInterception(route, act, random, scale = 1) {
-    for (const id of route.slice(1)) { const s = byId[id]; if (s && hostile(s, act) && random() < INTERCEPT_CHANCE[threatLevel(s)] * scale) return id; }
+    for (const id of route.slice(1)) { const s = byId[id], k = typeof scale === 'function' ? scale(id) : scale; if (s && hostile(s, act) && k > 0 && random() < INTERCEPT_CHANCE[threatLevel(s)] * k) return id; }
     return null;
   }
   function interception(id, act, seed) {
@@ -405,6 +451,45 @@
     return [[station, win ? REP[kind] || REP.contract : REP.loss]];
   }
 
+  // ---------------- frontlines ----------------
+  // One front for each contested region, -10 (held by the enemy) to +10 (secured), moved only by battle results.
+  // The current act's front also slips back if the captain fights elsewhere for too long.
+  const FRONTS = {
+    'Kestrel Verge': { start: 0, foe: 'the Corsair Clans' }, 'Red Narrows': { start: -6, foe: 'the Corsair Clans' },
+    'Ash Marches': { start: -6, foe: 'the Ash Fleet' }, 'Halcyon Belt': { start: -2, foe: 'the Directorate' }, 'Harrow Expanse': { start: -6, foe: 'the Wraith' }
+  };
+  const FRONT_REGIONS = Object.keys(FRONTS);
+  const ACT_FRONT = { 1: 'Ash Marches', 2: 'Halcyon Belt', 3: 'Harrow Expanse' };
+  const FRONT_STATES = ['Enemy-held', 'Enemy advantage', 'Contested', 'Navy advantage', 'Secured'];
+  const PUSHBACK = { every: 3, by: 2 };   // the act's front loses 2 after 3 battles without a win there
+  // What each state does, from Enemy-held to Secured.
+  const FRONT_EFFECTS = { ambush: [1.5, 1.2, 1, 0.6, 0], enemyHull: [1.1, 1.05, 1, 0.95, 0.9], danger: [1.2, 1.1, 1, 1, 1], prices: [1.1, 1.05, 1, 0.97, 0.94] };
+  const startFronts = () => Object.fromEntries(FRONT_REGIONS.map(r => [r, FRONTS[r].start]));
+  function frontLevel(v) { return v <= -6 ? 0 : v <= -2 ? 1 : v < 2 ? 2 : v < 6 ? 3 : 4; }
+  function front(fronts, region) {
+    if (!FRONTS[region]) return null;
+    const value = Math.max(-10, Math.min(10, Math.round(fronts && Number.isFinite(fronts[region]) ? fronts[region] : FRONTS[region].start))), level = frontLevel(value);
+    return { region, value, level, name: FRONT_STATES[level], foe: FRONTS[region].foe };
+  }
+  const frontOf = (fronts, systemId) => byId[systemId] ? front(fronts, byId[systemId].region) : null;
+  // How much a result moves the front of the region it was fought in.
+  function frontShift(kind, win, isBoss) {
+    if (!win) return kind === 'intercept' ? -1 : -2;
+    return isBoss ? 10 : kind === 'story' ? 4 : kind === 'intercept' ? 1 : 2;
+  }
+  // Applies one result: the battle's front moves, and the act's front slips if it was neglected. Returns what changed.
+  function applyBattle(fronts, clock, { kind, win, system, boss, act }) {
+    const out = Object.assign(startFronts(), fronts || {}), changes = [], region = byId[system] && byId[system].region, actFront = ACT_FRONT[Math.min(act, 3)];
+    const move = (r, d, why) => { if (!FRONTS[r] || !d) return; const before = front(out, r); out[r] = Math.max(-10, Math.min(10, out[r] + d)); const after = front(out, r); if (after.value !== before.value) changes.push({ region: r, from: before, to: after, why }); };
+    if (FRONTS[region]) move(region, frontShift(kind, win, boss), 'battle');
+    let next = clock || 0;
+    if (actFront && act <= 3) {
+      if (region === actFront && win) next = 0;
+      else if (++next >= PUSHBACK.every) { move(actFront, -PUSHBACK.by, 'pushback'); next = 0; }
+    }
+    return { fronts: out, clock: next, changes };
+  }
+
   // ---------------- the fleet ----------------
   // Hulls for sale at every starbase. A ship sells back for half its hull price; upgrades are not refunded.
   const MAX_FLEET = 3;
@@ -446,11 +531,12 @@
   // ---------------- encounter specs ----------------
   const ENV_BY_REGION = { 'Meridian Core': 0, 'Kestrel Verge': 1, 'Ash Marches': 2, 'Red Narrows': 3, 'Halcyon Belt': 4, 'Harrow Expanse': 5 };
   // Everything the battle page needs to stage a fight, as plain JSON (it travels in the save under `launch`).
-  function encounter(src) {
+  // ctx (optional): { flags, fronts } from the save, so a battle reflects earlier decisions and the war.
+  function encounter(src, ctx) {
     const story = storyById[src.id] === src, sys = byId[src.system] || byId.kestrel;
     const label = story && src.boss ? 'ACT ' + ACTS[src.act - 1].numeral + ' FINALE' : story ? 'OPERATION ' + String(src.id).padStart(2, '0') : src.kind === 'side' ? 'STATION MISSION' : src.kind === 'intercept' ? 'INTERCEPTION' : (CONTRACT_TYPES[src.type] || { label: 'Contract' }).label.toUpperCase() + ' CONTRACT';
     const lead = src.enemies[0], foe = foeFor(sys, src.act || 1);
-    return {
+    const spec = {
       id: story ? 'story:' + src.id : src.id, kind: story ? 'story' : src.kind, story: story ? src.id : null, system: sys.id,
       title: src.name, label, objective: src.hud || src.objective, reward: src.reward || 0,
       env: story && src.id <= 5 ? src.id : ENV_BY_REGION[sys.region] || 0, gate: src.goal.type === 'escort',
@@ -458,6 +544,7 @@
       enemies: src.enemies.map(e => Object.assign({}, e)), goal: Object.assign({}, src.goal), ends: src.ends || null,
       support: Number.isInteger(src.support) ? src.support : null, boss: src.boss && typeof src.boss === 'object' ? JSON.parse(JSON.stringify(src.boss)) : null
     };
+    return shape(spec, story ? src.id : null, ctx);
   }
   const HAILS = {
     scrapjaw: 'Cut your engines, Navy. Whatever is in your hold is ours now.',
@@ -465,14 +552,45 @@
     seraph: 'Human platform: your trajectory has been predicted. Your outcome has been predicted.',
     wraith: '...a low harmonic rises through the hull. It is not a language. It is a hunting call.'
   };
-  const storyEncounter = id => storyById[id] ? encounter(storyById[id]) : null;
+  const storyEncounter = (id, ctx) => storyById[id] ? encounter(storyById[id], ctx) : null;
+  // Decisions and fronts reshape a battle. Every change is listed in spec.notes for the briefing.
+  function shape(spec, storyId, ctx) {
+    spec.notes = [];
+    if (!ctx) return spec;
+    const flags = ctx.flags || {};
+    if (storyId) for (const c of CONSEQUENCES) if (flags[c.flag] && c.story.includes(storyId)) { c.apply(spec); spec.notes.push(c.note); }
+    const f = frontOf(ctx.fronts, spec.system);
+    if (f) {
+      spec.front = { region: f.region, level: f.level, name: f.name, hull: FRONT_EFFECTS.enemyHull[f.level] };
+      if (f.level !== 2) spec.notes.push(`${f.region} front: ${f.name.toLowerCase()}. Enemy ships here are ${f.level < 2 ? 'reinforced' : 'worn down'} (${Math.round((spec.front.hull - 1) * 100) > 0 ? '+' : ''}${Math.round((spec.front.hull - 1) * 100)}% hull).`);
+    }
+    // The war shapes the finales.
+    const level = r => front(ctx.fronts, r).level;
+    if (storyId === 8) {
+      const clans = [2, 2, 2, 1, 0][level('Red Narrows')], p = spec.boss.phases[1];
+      p.spawn = p.spawn.slice(0, clans);
+      spec.notes.push(clans === 2 ? 'The Red Narrows clans still answer Halloran’s call.' : clans === 1 ? 'With the Red Narrows front turning, only one clan answers Halloran.' : 'The Red Narrows are secured: no clan will answer Halloran.');
+      if (level('Ash Marches') >= 3) { spec.enemies = spec.enemies.slice(0, 1); spec.notes.push('The Ash Marches are turning: the Pyre has lost its escort.'); }
+    }
+    if (storyId === 9) {
+      const p = spec.boss.phases.find(x => x.lattice), l = level('Halcyon Belt'), k = [0.15, 0.2, 0.2, 0.35, 0.5][l];
+      if (p) { p.lattice = Math.max(p.lattice, k); if (l !== 1 && l !== 2) spec.notes.push(l > 2 ? 'Navy gains in the Halcyon Belt have thinned the Arbiter’s lattice.' : 'The Directorate holds the Halcyon Belt: the Arbiter’s lattice is at full strength.'); }
+    }
+    if (storyId === 10) {
+      const brood = [3, 2, 2, 1, 0][level('Harrow Expanse')], p = spec.boss.phases[1];
+      p.spawn = brood > p.spawn.length ? [...p.spawn, ...p.spawn.slice(0, brood - p.spawn.length)] : p.spawn.slice(0, brood);
+      if (brood !== 2) spec.notes.push(brood > 2 ? 'The Wraith hold the Harrow Expanse: a larger brood wakes for the Mother.' : brood === 1 ? 'With the Harrow front turning, only one brood ship wakes.' : 'The Harrow Expanse is secured: the Mother’s brood never wakes.');
+    }
+    return spec;
+  }
 
   root.BroadsideCampaign = Object.freeze({
     SYSTEMS, byId, ROUTES, THREATS, threatLevel, neighbors, path, jumps,
     ACTS, STORY, STORY_ORDER, storyById, actOf, storyUnlocked, storyAvailable, openStory,
     STATIONS, nearestStation, SIDE, sideById, sideMissions,
     CONTRACT_TYPES, contracts, hostile, rollInterception, interception, fleeChance,
-    ENV_BY_REGION, encounter, storyEncounter, supportCap,
+    ENV_BY_REGION, encounter, storyEncounter, supportCap, NARRATIVE, CONSEQUENCES, CHOICE_STAKES,
+    FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle,
     SAVE_BASE, SLOT_KEY, SLOTS, slotKey, activeSlot, saveKey, DIFFICULTY, difficulty,
     REP_TIERS, REP, standing, adjustRep, repChanges,
     MAX_FLEET, HULL_PRICES, CAPTURE, capturable, prizeName, SHIP_NAMES, sellPrice, nextShipName, deployed, fleetFleeChance, reinforcements

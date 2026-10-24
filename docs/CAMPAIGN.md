@@ -6,7 +6,7 @@ Updated: 24 October 2026.
 
 **Broadside** is a game about captaining a warship. The player directly manages one vessel's heading, throttle, firing arcs, directional shields, reactor allocation, torpedoes, subsystems and tactical decisions. The campaign adds persistent consequences, a cast of officers and up to two escorts, but the escorts take standing orders rather than direct control: it does not become a fleet strategy game.
 
-The campaign is being built out into a three-act grand campaign in four milestones. **Milestone 1 is in:** three acts, seven story operations, five starbases with mission boards (hand-written station missions and generated contracts), repairs and refits only at starbases, interceptions in hostile space, and one data-driven encounter system behind every battle. **Milestone 2 is in:** a fleet of up to three ships with per-ship damage, upgrades and names, a choice of flagship, and 3 v 3 battles with escort orders. **Milestone 3 is in:** a boss battle closing each act. **Milestone 4 is in:** reputation, claimed hulls, recruitable officers, a codex, save slots and difficulty.
+The campaign is being built out into a three-act grand campaign in four milestones. **Milestone 1 is in:** three acts, seven story operations, five starbases with mission boards (hand-written station missions and generated contracts), repairs and refits only at starbases, interceptions in hostile space, and one data-driven encounter system behind every battle. **Milestone 2 is in:** a fleet of up to three ships with per-ship damage, upgrades and names, a choice of flagship, and 3 v 3 battles with escort orders. **Milestone 3 is in:** a boss battle closing each act. **Milestone 4 is in:** reputation, claimed hulls, recruitable officers, a codex, save slots and difficulty. **Milestone 5 is in:** the Kestrel warning story spine with consequences, frontlines, and larger officer and admiral cards.
 
 ## Map and world
 
@@ -27,6 +27,46 @@ The campaign is being built out into a three-act grand campaign in four mileston
 - `crew/upgrades.js` is the single source for the catalogue, prices and effects. `apply(class, upgrades)` returns an upgraded copy of a ship class; the campaign uses it for the shipyard's figures and `index.html` uses it to build the player's flagship in campaign battles (skirmish and enemies are unaffected). Most effects are stat multipliers on the class or its weapon groups (broadsides by `sub` port/stbd, the `fore` weapon, the torpedo group). Five need battle hooks, each a no-op without the upgrade: `abBurn` (afterburner seconds), `armour` (hull damage multiplier), `repairRate` (subsystem repair speed), `power` (reactor pips) and the `reactorHardened`/`shieldHardened` flags (halve the damage penalty). `tests/upgrades.test.js` covers the rules.
 - Prices and effect sizes are first-pass values, chosen so a campaign's rewards (3,130 requisition plus the starting 850) buy roughly a third of the catalogue alongside repairs. They need playtesting.
 - If WebGL or the three.js CDN is unavailable the slots and services still work, and the ship area shows a short notice.
+
+## The story: the Kestrel warning
+
+The opening briefing promises two things: the last signal out of Kestrel “was not a distress call, it was a warning”, and “someone wants this frontier empty”. The campaign pays both off.
+
+- **The warning** is a Directorate prediction, broadcast from the Halcyon Belt for eleven years, that the Wraith are coming to the Reach.
+- **Act I · The Long Watch.** Vex takes no cargo: she is paid to scare traffic off the lanes. Sable's codes and logs show the Ash Fleet paying the clans. Thorne says Halloran only wants ships to turn back because "something is coming". At Grimhold, Halloran's last words: a machine told her what was coming, Command buried her report, and she emptied what she could by force.
+- **Act II · The Machine Signal.** ORACLE-9's archive is a casualty projection for the Reach, falling to nothing in three years; the machines had been keeping people away. The Midway relay was cutting Midway off from Harrow, not from the Navy. The Arbiter fights believing it protects the colonies and, dying, sends one coordinate: Harrow.
+- **Act III · The Wraith.** Harlan's verdict: Halloran tried by terror and the machines by silence, and "we were wrong about why". The Navy does it properly: survive first contact, evacuate Nex, and kill the Bloom-Mother at Verdant.
+- Each story operation has a `log` entry (Intel's **Story so far**, with the decision taken), a transmission from **Harlan** shown in the after-action report, and win and loss reactions from the operation's lead officer (`NARRATIVE` in `crew/campaign-data.js`).
+- The final report from Harlan reflects the decisions taken and the state of every front.
+
+## Decisions and consequences
+
+Four aftermath decisions change later battles. The after-action report says which decisions have stakes; the briefing of the battle they change lists the effect under **What has changed** (`CONSEQUENCES`).
+
+| Decision | Choice | Effect |
+| --- | --- | --- |
+| Op 3, Thorne | Amnesty | The Pyre's mine layer is out of the fight (Thorne's charts). |
+| | Impound | Thorne's ship, the Widow, joins the fleet. |
+| Op 8, Halloran | Search the wreck | ORACLE-9 and the VIGIL pickets start with half shields. |
+| | Amnesty | The ASF Penitence fights at your side at Nex and Verdant. |
+| Op 4, ORACLE's archive | Transmit | The Long Lantern starts a third of the way to the beacon. |
+| | Seal | The Arbiter's lattice is weaker (takes 40% instead of 20%). |
+| Op 9, the Arbiter | Salvage the core | The Bloom-Mother regrows at 1.5× instead of 2.5× in her last phase. |
+| | Destroy it | +10 standing with both Navy yards. |
+
+## Frontlines
+
+- Five fronts: Kestrel Verge (starts Contested), Red Narrows, Ash Marches and Harrow Expanse (Enemy-held), Halcyon Belt (Enemy advantage). Each runs from −10 to +10 in five states: Enemy-held, Enemy advantage, Contested, Navy advantage, Secured. The Meridian Core has no front.
+- A battle in a front's region moves it: story win +4, finale win +10, station mission or contract win +2, interception win +1, a loss −2 (interception −1).
+- **Push back:** the current act's front (Ash Marches, Halcyon Belt, Harrow Expanse) loses 2 after three battles anywhere without a win there; a win there resets the count. The map's front strip counts down, and the after-action report says when it happens.
+- Effects by state (Enemy-held → Secured): ambush chance ×1.5 / 1.2 / 1 / 0.6 / none; enemy hull ×1.1 / 1.05 / 1 / 0.95 / 0.9; pay for work there ×1.2 / 1.1 / 1 (danger money); prices at a starbase in the region ×1.1 / 1.05 / 1 / 0.97 / 0.94.
+- Finales: the Red Narrows decide how many clan raiders answer Halloran (2, then 1 at Navy advantage, none when secured) and a turning Ash Marches strips the Pyre's escort; the Halcyon Belt thins the Arbiter's lattice (to 35% or 50% damage taken); the Harrow Expanse sets the Bloom-Mother's brood (3 when enemy-held, down to none when secured).
+- On the map, region borders shift from their own colour toward Navy blue and brighten as a front is won; a selected system shows its front, and Intel and the final report list all five.
+- `encounter(src, ctx)` builds every battle with the save's flags and fronts (`ctx`), and `applyBattle()` turns a result into front changes; both are covered by `tests/war.test.js`.
+
+## Officers and admirals in reports
+
+- Briefings open with a large card for the operation's lead officer; after-action reports carry the lead officer's reaction (or the first officer's, for contracts and ambushes) and Harlan's transmission, with 128 × 148 portraits. Enemy commanders' cards in briefings are the same size. Reports and briefings use a wider dialog.
 
 ## Act briefings
 
@@ -249,4 +289,9 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 
 - Node tests: `tests/depth.test.js` covers slot keys (and storage failures), difficulty, interception scaling, standing tiers and changes, priority contracts, escort targets, capture rules and prize names, recruits and duty assignment, experience for officers on and off duty, each recruit command against a stub ship (including refusals), and every codex entry's unlock.
 - Headless Chromium runs covered: the Saves panel; a new Admiral campaign in slot 2 with its own briefing while slot 1 stays untouched; that campaign's battle (Admiral captain, 15% more enemy hull, enemy hits 15% harder); loading slot 1 back and deleting slot 2; Trusted standing at Peregrine (board, priority contract, 10% more pay, 10% off upgrades and the recruit); hiring Fenn and assigning posts both ways; claiming Vex's wreck after Operation 1; the codex unlocking the Scrapjaw; the Scrapjaw in the shipyard with its six systems; repairing it, making it flagship and flying it into Operation 3 with Fenn's Overcharge on key 6; and impounding the Widow after Thorne's surrender. No page errors.
+
+## Milestone 5 — QA (24 October 2026)
+
+- Node tests: `tests/war.test.js` covers the narrative data (every operation has a log, reactions and a transmission), each consequence and that shaping a battle never changes the story data, front states and every way they move, the push back and its reset, front effects on generated fights, ambushes and the three finales, and the convoy's head start.
+- Headless Chromium runs covered: fronts in a new save and on the map; Thorne's after-action with large officer and admiral cards, the war, the stakes, and amnesty recorded; the push back on the third battle away from the act front; the Pyre briefing listing Thorne's charts, the enemy-held front and one clan; the Pyre in battle with its mine layer silenced through every phase, 10% more hull and one clan raider; Nex with the ASF Penitence alongside and the Long Lantern a third of the way in; Intel's story so far; and the final report reflecting decisions and fronts. No page errors. Battle results were injected into the save, not fought out.
 

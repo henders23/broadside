@@ -50,7 +50,8 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    convoy.cap=convoy.cap.map(v=>Math.round(v*.65));
    for(const group of convoy.groups)for(const mount of group.mounts||[])if(mount.t)mount.t.visible=false;
    convoy.groups=[];convoy.step=3;
-   placeShip(convoy,new V3(GATE.x,GATE.y,3650),0);
+   // A head start (the colonies were warned in time) puts the convoy part of the way to the beacon.
+   placeShip(convoy,new V3(GATE.x,GATE.y,3650-(goal.headStart||0)*(3650-GATE.z)),0);
    buildFreighter?.(convoy);
    if(goal.hunter!==false)primaryEnemy.target=convoy;
    primaryEnemy.ai.side=1;
@@ -85,7 +86,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   if(p.line)hail?.({name:b.name,faction:spec.hail&&spec.hail.faction||'',line:p.line});
   (p.spawn||[]).forEach((e,k)=>{const side=k%2?1:-1;addHostile(e,side,new V3(b.pos.x+side*800,b.pos.y+60,b.pos.z+300));hostileCount++;});
   if(p.shields)b.sh=b.cap.slice();
-  for(const g of b.groups)if((p.unlock||[]).includes(g.id))g.locked=false;
+  for(const g of b.groups)if((p.unlock||[]).includes(g.id)&&!g.disabled)g.locked=false;
   if(p.lattice)b.dmgTaken=p.lattice;
   if(p.regen)b.regenK=p.regen;
  }

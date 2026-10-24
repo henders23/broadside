@@ -87,7 +87,13 @@
     9:'Its shields lean on those node ships. Kill the nodes and the numbers stop working for it.',
     10:'The longer this takes, the more of it grows back. We go in, we keep firing, and we do not stop.'
   };
+  // Fleet Admiral Harlan, who briefs each act and sends a transmission after every story operation.
+  const harlan = {id:'harlan',name:'Fleet Admiral Gideon Harlan',title:'Commander, Frontier Fleet',image:'img/admiral-harlan.webp'};
   function portrait(person, extra=''){
+    if(person && person.image){
+      const src=String(person.image).replace(/[^a-z0-9./-]/gi,'');
+      return `<span class="crew-portrait ${extra}" role="img" aria-label="Portrait of ${person.name}" style="background-image:url('${src}');background-size:cover;background-position:center 18%"></span>`;
+    }
     if(person && person.initials && !person.asset && !Number.isInteger(person.portrait)){
       const t=String(person.initials).replace(/[^A-Z]/g,'').slice(0,2);
       return `<span class="crew-portrait classified recruit ${extra}" role="img" aria-label="Portrait of ${person.name}"><span>${t}</span></span>`;
@@ -104,5 +110,5 @@
     const code=(person?.faction||'UNKNOWN').slice(0,2).toUpperCase();
     return `<span class="crew-portrait classified ${extra}" role="img" aria-label="Commander identity classified"><span>${code}</span></span>`;
   }
-  root.BroadsidePersonnel = Object.freeze({crew,recruits,POSTS,activeCrew,commanders,leads,briefLines,portrait});
+  root.BroadsidePersonnel = Object.freeze({crew,recruits,POSTS,activeCrew,commanders,leads,briefLines,portrait,harlan});
 })(window);

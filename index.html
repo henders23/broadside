@@ -650,7 +650,9 @@ const campaignMissionId = Number(campaignParams.get('campaign')) || 0;
 const campaignMission = (() => {
   const C = window.BroadsideCampaign; if (!C) return null;
   if (campaignParams.has('encounter')) { const save = readCampaignSave(); return save && save.launch && Array.isArray(save.launch.enemies) && save.launch.enemies.length ? save.launch : null; }
-  return campaignMissionId ? C.storyEncounter(campaignMissionId) : null;
+  if (!campaignMissionId) return null;
+  const save = readCampaignSave();
+  return C.storyEncounter(campaignMissionId, save ? { flags: save.flags, fronts: save.fronts } : null);
 })();
 let bridge = null, escortHudT = 0, campaignDiff = null;   // campaignDiff: the campaign's difficulty (crew/campaign-data.js)
 let fleet = null;
@@ -1443,6 +1445,16 @@ function startGame() {
     e.target = enemy; placeShip(e, new V3(off * 0.3 + side * 560, 0, 2950), 0);
     return e;
   });
+  // Ships that fight alongside the fleet without being part of it (the pardoned ASF Penitence).
+  for (const [i, f] of ((campaignMission && campaignMission.friends) || []).entries()) {
+    const e = makeShip(f.cls, 'p'), side = (allies.length + i) % 2 ? 1 : -1;
+    e.name = f.name; e.escort = true; e.friend = true;
+    if (f.hull) e.hull = Math.round(e.C.hull * f.hull); e.maxHull = e.hull;
+    if (f.shield) { e.sh = e.sh.map(v => Math.round(v * f.shield)); e.cap = e.cap.map(v => Math.round(v * f.shield)); }
+    e.ai = { diff: DIFF.captain, side, flankOffset: side * 18, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
+    e.target = enemy; placeShip(e, new V3(off * 0.3 + side * 900, 0, 3150), 0);
+    allies.push(e);
+  }
   campaignDiff = campaignMission && window.BroadsideCampaign ? window.BroadsideCampaign.difficulty(campaignSave && campaignSave.difficulty) : null;
   const aiKey = campaignDiff ? campaignDiff.ai : choice.diff;
   enemy.ai = { diff: DIFF[aiKey], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
@@ -1453,9 +1465,14 @@ function startGame() {
     DIFF,endGame,showMsg,hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>battleEnvironment.buildFreighter(ship)
   }):null;
   fleet?.setup();
-  // Campaign difficulty: enemy hulls scale, and on Admiral the lesser captains fight a grade better.
+  // Campaign difficulty and the state of the region's front scale enemy hulls; on Admiral the lesser captains fight a
+  // grade better. Earlier decisions can silence a weapon or start enemy shields low.
+  const frontHull = campaignMission && campaignMission.front ? campaignMission.front.hull : 1;
   if (campaignDiff) for (const s of ships) if (s.team === 'e') {
-    s.hull = Math.round(s.hull * campaignDiff.enemyHull); s.maxHull = Math.round((s.maxHull || s.C.hull) * campaignDiff.enemyHull);
+    const k = campaignDiff.enemyHull * frontHull;
+    s.hull = Math.round(s.hull * k); s.maxHull = Math.round((s.maxHull || s.C.hull) * k);
+    if (campaignMission.enemyShieldStart) s.sh = s.sh.map(v => Math.round(v * campaignMission.enemyShieldStart));
+    if (s === enemy) for (const g of s.groups) if ((campaignMission.disable || []).includes(g.id)) { g.locked = true; g.disabled = true; }
     if (campaignDiff.ai === 'admiral' && s.ai && s.ai.diff === DIFF.commander) s.ai.diff = DIFF.captain;
   }
   bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,getTarget:()=>player.target,showMsg,facings:FACINGS,levels:window.BroadsideExperience&&campaignSave?window.BroadsideExperience.levels(campaignSave.officers):null,crew:window.BroadsidePersonnel?window.BroadsidePersonnel.activeCrew(campaignSave&&campaignSave.crew):null,world:{torps}}) : null;

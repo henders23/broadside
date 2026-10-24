@@ -38,7 +38,7 @@
     const C = { ...base, weapons: base.weapons.map(w => ({ ...w })), upgrades: [...has] };
     const broad = C.weapons.filter(w => w.sub === 'port' || w.sub === 'stbd');
     const fore = C.weapons.filter(w => w.sub === 'fore');
-    const torps = C.weapons.filter(w => w.type === 'torpedo');
+    const torps = C.weapons.filter(w => w.type === 'torpedo' || w.type === 'mine');   // a claimed minelayer's mine layer takes the torpedo-bay upgrades
     const faster = (w, k) => { if (w.reload) w.reload *= k; if (w.chargeT) w.chargeT *= k; };
     const harder = (w, k) => { if (w.dmg) w.dmg = Math.round(w.dmg * k); if (w.dps) w.dps = Math.round(w.dps * k); };
     const longer = (w, k) => { w.range = Math.round(w.range * k); if (w.speed) w.speed = Math.round(w.speed * k); };

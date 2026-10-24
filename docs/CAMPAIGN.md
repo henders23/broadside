@@ -6,7 +6,7 @@ Updated: 24 October 2026.
 
 **Broadside** is a game about captaining a warship. The player directly manages one vessel's heading, throttle, firing arcs, directional shields, reactor allocation, torpedoes, subsystems and tactical decisions. The campaign adds persistent consequences, a cast of officers and up to two escorts, but the escorts take standing orders rather than direct control: it does not become a fleet strategy game.
 
-The campaign is being built out into a three-act grand campaign in four milestones. **Milestone 1 is in:** three acts, seven story operations, five starbases with mission boards (hand-written station missions and generated contracts), repairs and refits only at starbases, interceptions in hostile space, and one data-driven encounter system behind every battle. **Milestone 2 is in:** a fleet of up to three ships with per-ship damage, upgrades and names, a choice of flagship, and 3 v 3 battles with escort orders. **Milestone 3 is in:** a boss battle closing each act. Still to come: reputation, captured hulls, recruitable officers, a codex, save slots and difficulty (milestone 4).
+The campaign is being built out into a three-act grand campaign in four milestones. **Milestone 1 is in:** three acts, seven story operations, five starbases with mission boards (hand-written station missions and generated contracts), repairs and refits only at starbases, interceptions in hostile space, and one data-driven encounter system behind every battle. **Milestone 2 is in:** a fleet of up to three ships with per-ship damage, upgrades and names, a choice of flagship, and 3 v 3 battles with escort orders. **Milestone 3 is in:** a boss battle closing each act. **Milestone 4 is in:** reputation, claimed hulls, recruitable officers, a codex, save slots and difficulty.
 
 ## Map and world
 
@@ -108,6 +108,33 @@ Operations unlock in story order (1, 2, 3, 8, 4, 6, 9, 5, 7, 10); the numbers 1�
 - Losing an escort does not lose the battle; losing the flagship does. Every ship that flew writes its condition back to its record; a disabled escort comes home at 30% hull and the after-action report names it (`pendingResult.lost`).
 - Officer commands still act on the flagship only.
 
+## Save slots and difficulty
+
+- Three slots. Slot 1 keeps the original key `broadside-campaign-v1`; slots 2 and 3 use `broadside-campaign-v1-s2` and `-s3`, and the active slot's number is in `broadside-campaign-slot`. Both pages read the save through `saveKey()` in `crew/campaign-data.js`, so the battle page always writes back to the slot that launched it.
+- **Saves** (top bar) lists the slots with act, flagship, progress, requisition, difficulty and date; it loads, starts or deletes a campaign (not the one being played), and changes the current campaign's difficulty. Starting a campaign in another slot writes it and reloads on that slot.
+- Difficulty (`DIFFICULTY`): **Ensign** (Commander-grade enemy captains, enemy hull ×0.85, enemy damage ×0.8, ambushes ×0.6), **Captain** (as designed) and **Admiral** (Admiral-grade captains with escorts a grade sharper, hull ×1.15, damage ×1.15, ambushes ×1.3, pay ×1.25). Campaign battles use it instead of the skirmish menu's enemy captain.
+
+## Reputation
+
+- Standing with each starbase, 0–100 (`state.rep`), in four tiers: Neutral, Friendly (25: 5% off the yard and 5% more pay), Trusted (50: 10%, and a fourth, harder **priority bounty** at 40% more pay), Honoured (75: 15%).
+- Station missions +10 and contracts +6 with the posting station; story operations +5 with both Navy yards (Meridian and Tarn); clearing an ambush +2 with the nearest starbase; losing a station's order −2; abandoning one −5. After-action reports show the change and any new tier.
+- The discount applies at the docked station to upgrades, hulls, repairs, torpedoes and officers; the pay bonus to that station's own work. Escort contracts now only go to independent or contested systems (previously Act I could send an escort into machine space).
+
+## Officers for hire
+
+- One recruit per starbase (`recruits` in `crew/personnel.js`): Lt. Yusuf Adeyemi (First Officer, Meridian, *Rally the Crew*: 6% hull and 10 to every subsystem), Lt. Dario Fenn (Tactical, Peregrine, *Overcharge*: every weapon and tube reloads), Chief Petty Officer Ama Osei (Engineer, Tarn, *Hull Patch*: 12% hull), Ensign Kit Marlow (Helm, Juniper, *Burn Hard*: refuel the afterburner, +30 engines) and Lt. Soren Achterberg (Intelligence, Elysia, *Jamming Field*: hostile missiles and torpedoes in flight lose their lock). Most need Friendly standing; Osei is available to anyone.
+- Hiring offers to put them on duty at once. `state.crew` maps each post to its holder, `activeCrew()` builds the five on duty (keys 5–9 follow the post), and the Officers screen lists who is on duty and in reserve, with Assign and Stand down. Experience goes to the officers on duty; others keep their records. Recruits arrive with some experience and share the promotion rules.
+
+## Claimed hulls
+
+- After a victory the after-action report offers up to two wrecks of capturable classes that were destroyed (Scrapjaw 650, Seraph 700, Revenant 800 requisition to refit). One may be claimed, if a berth is free; it joins in reserve at 35% hull with a prize name (MNS Jackal, MNS Echo, MNS Penitent…). Bosses and Wraith cannot be claimed.
+- If Thorne surrenders, impounding his matériel adds his Scrapjaw, the Widow, at 50% hull for nothing.
+- Claimed ships fly like the Navy hulls, with their own weapons, keys and model. The shipyard shows only the systems a hull carries (a Scrapjaw has no torpedo bay; a Revenant's mine layer takes the torpedo-bay upgrades; a Seraph's beam arrays take the broadside upgrades). They sell for half a nominal value.
+
+## The codex
+
+- `crew/codex.js` holds 40 entries in five categories (Ships, Factions, People, Places, Guide), each with an unlock rule: from the start, a ship class met in battle (`pendingResult.met` → `state.met`), a story operation completed or opened, or a region visited (`state.visited`). Older saves are credited with what their completed operations imply. Entries opened after the start are marked new until read.
+
 ## Interceptions
 
 - Jumping is free. Every system on the route (not counting the start) that is hostile in the current act rolls for an ambush: 6–30% depending on threat. Act I's hostile factions are pirates and renegades; Act II adds the machines and Act III the Wraith.
@@ -160,10 +187,9 @@ The rebuilt strategic screen was exercised in headless Chromium (SwiftShader Web
 
 ## Recommended next milestones
 
-1. **Depth (milestone 4)** — Faction reputation, capturing hulls, recruitable officers, a codex, save slots and difficulty settings.
-2. **Battle QA and balancing** — including the three bosses, solo and with a fleet.
-3. **Further QA** — Play every operation, station mission and contract type on all four hulls, alone and with escorts. Contract pay, enemy strength, hull prices, reinforcement strength, interception odds and breakaway chances are first-pass numbers.
-4. **Art pass** — Portraits for the new commanders (VIGIL Array and the Choir use the classified medallion; generated contract captains do too), an authored civilian hull, arrival transitions.
+1. **Battle QA and balancing** — including the three bosses, solo and with a fleet, on each difficulty; recruit commands; captured hulls as flagships.
+2. **Further QA** — Play every operation, station mission and contract type on all four hulls, alone and with escorts. Contract pay, enemy strength, hull prices, reinforcement strength, interception odds and breakaway chances are first-pass numbers.
+3. **Art pass** — Portraits for the recruits and the new commanders (VIGIL Array and the Choir use the classified medallion; generated contract captains do too), an authored civilian hull, arrival transitions.
 
 Every milestone should preserve the intentional slow, dangerous, naval feel of Broadside.
 
@@ -218,4 +244,9 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 - Node tests: `tests/campaign-data.test.js` covers the new story order and act boundaries, the finales' phases, and support caps (fixed per story operation, 0–2 for generated fights). `tests/fleet-controller.test.js` runs each boss: the Pyre's clan raiders, restored shields, hail and inferno unlock, and winning with escorts still alive; the Arbiter's lattice holding until both nodes die, then the lance unlocking; and the Bloom-Mother crossing two phases in one hit.
 - Headless Chromium runs covered: the Act I finale on the map, arrival card and briefing (with phases); the Pyre in battle with its boss bar, a lone flagship facing it plus one escort, the inferno salvo locked, phase 2's raiders and phase 3's unlock, destroying it, the end screen, the after-action report, and Act II opening; Halcyon offering the Arbiter after Ghost Frequency, the lattice with its nodes, a 1,000-point hit reduced to 200, the lattice falling with the nodes; the Bloom-Mother and her regrowth phase; three ships against Thorne alone; and a new game leaving one fresh ship with no upgrades or damage, fighting with the stock hull. No page errors. Phases were reached by setting the boss's hull through the test hook; the fights were not played out.
 - Fixed in passing: scaled-down ships with a living hull (Wraith spawn) regrew to the full class hull instead of their own.
+
+## Grand campaign milestone 4 — QA (24 October 2026)
+
+- Node tests: `tests/depth.test.js` covers slot keys (and storage failures), difficulty, interception scaling, standing tiers and changes, priority contracts, escort targets, capture rules and prize names, recruits and duty assignment, experience for officers on and off duty, each recruit command against a stub ship (including refusals), and every codex entry's unlock.
+- Headless Chromium runs covered: the Saves panel; a new Admiral campaign in slot 2 with its own briefing while slot 1 stays untouched; that campaign's battle (Admiral captain, 15% more enemy hull, enemy hits 15% harder); loading slot 1 back and deleting slot 2; Trusted standing at Peregrine (board, priority contract, 10% more pay, 10% off upgrades and the recruit); hiring Fenn and assigning posts both ways; claiming Vex's wreck after Operation 1; the codex unlocking the Scrapjaw; the Scrapjaw in the shipyard with its six systems; repairing it, making it flagship and flying it into Operation 3 with Fenn's Overcharge on key 6; and impounding the Widow after Thorne's surrender. No page errors.
 

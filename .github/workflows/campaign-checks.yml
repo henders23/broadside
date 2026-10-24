@@ -24,3 +24,5 @@ jobs:
         run: node tests/experience.test.js
       - name: Run campaign data rules
         run: node tests/campaign-data.test.js
+      - name: Run campaign depth rules (slots, difficulty, reputation, captures, recruits, codex)
+        run: node tests/depth.test.js

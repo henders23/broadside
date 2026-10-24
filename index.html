@@ -605,6 +605,8 @@ const CLASSES = {
     intel: 'Minelayer. It keeps you on its quarter and drops proximity mines astern, so chasing it means flying through them. Watch the plot for red mine markers.'
   }
 };
+// Hulls that can be claimed from wrecks in the campaign and flown by the player (they stay out of skirmish).
+for (const [k, d] of [['scrapjaw', 760], ['seraph', 800], ['revenant', 880]]) Object.assign(CLASSES[k], { capturable: true, camDist: d });
 // Act bosses (campaign only): an existing hull scaled up and re-armed. Weapons a later phase unlocks are listed
 // in the encounter's boss phases (crew/campaign-data.js) and stay silent until crew/fleet-controller.js frees them.
 function bossClass(key, base, o) {
@@ -642,7 +644,7 @@ const DIFF = {
 const choice = { ship: 'bastion', diff: 'captain' };
 // Campaign battles are staged from an encounter spec (crew/campaign-data.js): campaign.html stores it in the save
 // under `launch` and opens index.html?encounter=1. index.html?campaign=N still opens story operation N.
-const CAMPAIGN_KEY = 'broadside-campaign-v1';
+const CAMPAIGN_KEY = window.BroadsideCampaign ? window.BroadsideCampaign.saveKey(localStorage) : 'broadside-campaign-v1';   // the active save slot
 const campaignParams = new URLSearchParams(location.search);
 const campaignMissionId = Number(campaignParams.get('campaign')) || 0;
 const campaignMission = (() => {
@@ -650,14 +652,14 @@ const campaignMission = (() => {
   if (campaignParams.has('encounter')) { const save = readCampaignSave(); return save && save.launch && Array.isArray(save.launch.enemies) && save.launch.enemies.length ? save.launch : null; }
   return campaignMissionId ? C.storyEncounter(campaignMissionId) : null;
 })();
-let bridge = null, escortHudT = 0;
+let bridge = null, escortHudT = 0, campaignDiff = null;   // campaignDiff: the campaign's difficulty (crew/campaign-data.js)
 let fleet = null;
 // The ships a campaign battle deploys: flagship first, then up to two escorts (older saves hold one ship at the top level).
 function campaignShips(save) {
   if (!save) return [];
   const list = Array.isArray(save.ships) && save.ships.length ? save.ships : [{ id: 'flag', ship: save.ship, shipName: save.shipName, hull: save.hull, sub: save.sub, torps: save.torps, upgrades: save.upgrades }];
   const C = window.BroadsideCampaign, out = C ? C.deployed(list, save.flag) : list.slice(0, 1);
-  return out.filter(r => CLASSES[r.ship] && !CLASSES[r.ship].enemyOnly);
+  return out.filter(r => CLASSES[r.ship] && (!CLASSES[r.ship].enemyOnly || CLASSES[r.ship].capturable));
 }
 // Hull, subsystem damage and torpedoes carried over from the campaign.
 function applyRecord(s, rec) {
@@ -1441,7 +1443,9 @@ function startGame() {
     e.target = enemy; placeShip(e, new V3(off * 0.3 + side * 560, 0, 2950), 0);
     return e;
   });
-  enemy.ai = { diff: DIFF[choice.diff], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
+  campaignDiff = campaignMission && window.BroadsideCampaign ? window.BroadsideCampaign.difficulty(campaignSave && campaignSave.difficulty) : null;
+  const aiKey = campaignDiff ? campaignDiff.ai : choice.diff;
+  enemy.ai = { diff: DIFF[aiKey], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
   game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [] };
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
     encounter:campaignMission,allies,makeShip,placeShip,ships,player,primaryEnemy:enemy,
@@ -1449,7 +1453,12 @@ function startGame() {
     DIFF,endGame,showMsg,hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>battleEnvironment.buildFreighter(ship)
   }):null;
   fleet?.setup();
-  bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,getTarget:()=>player.target,showMsg,facings:FACINGS,levels:window.BroadsideExperience&&campaignSave?window.BroadsideExperience.levels(campaignSave.officers):null}) : null;
+  // Campaign difficulty: enemy hulls scale, and on Admiral the lesser captains fight a grade better.
+  if (campaignDiff) for (const s of ships) if (s.team === 'e') {
+    s.hull = Math.round(s.hull * campaignDiff.enemyHull); s.maxHull = Math.round((s.maxHull || s.C.hull) * campaignDiff.enemyHull);
+    if (campaignDiff.ai === 'admiral' && s.ai && s.ai.diff === DIFF.commander) s.ai.diff = DIFF.captain;
+  }
+  bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,getTarget:()=>player.target,showMsg,facings:FACINGS,levels:window.BroadsideExperience&&campaignSave?window.BroadsideExperience.levels(campaignSave.officers):null,crew:window.BroadsidePersonnel?window.BroadsidePersonnel.activeCrew(campaignSave&&campaignSave.crew):null,world:{torps}}) : null;
   bridge?.mount();
   cam.yaw = 0.55; cam.pitch = 0.3; cam.dist = player.C.camDist; cam.mode = 'chase'; cam.curYaw = player.yaw + cam.yaw; cam.curPitch = undefined;
   tacFull = false; $('tacfull').hidden = true;
@@ -1468,7 +1477,7 @@ function startGame() {
   if (campaignMission) $('campaign-objective').textContent = campaignMission.label + ' // ' + campaignMission.objective;
   bridge?.incomingHail(campaignMission ? campaignMission.hail : 0);
   if(fleet)$('fleet-objective').textContent=fleet.status();
-  showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[choice.diff].label, 3.4);
+  showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[aiKey].label, 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
   setTimeout(() => Voice.say('battle-stations', 0), 2000);
 }
@@ -1516,6 +1525,10 @@ function showOver() {
       if (Array.isArray(saved.ships)) { for (const s of flown) { const rec = saved.ships.find(r => r.id === s.recId); if (rec) Object.assign(rec, record(s)); } }
       else Object.assign(saved, record(player));
       saved.pendingResult.lost = lost;
+      // Wrecks the salvage crews can claim: destroyed capturable hostiles, or a commander who surrendered.
+      if (win) saved.pendingResult.wrecks = ships.filter(s => s.team === 'e' && s.C.capturable && !s.isBoss && (!s.alive || game.campaignOutcome === 'surrender' && s === enemy))
+        .map(s => ({ cls: s.key, name: s.name })).filter((w, i, a) => a.findIndex(x => x.cls === w.cls) === i).slice(0, 2);
+      saved.pendingResult.met = [...new Set(ships.filter(s => s.team === 'e').map(s => s.key))];   // ship classes seen, for the codex
       if (!win) saved.credits = Math.max(0, (saved.credits || 0) - 100);
       try { localStorage.setItem(CAMPAIGN_KEY, JSON.stringify(saved)); } catch (e) { console.warn('Could not save campaign outcome', e); }
     }
@@ -1556,6 +1569,7 @@ function damage(s, dmg, kind, local, src) {
   if (bridge && s.team === 'e' && src === player) dmg *= bridge.attackMultiplier();
   if (bridge && s === player && src?.team === 'e') dmg *= bridge.defenseMultiplier();
   if (s.dmgTaken != null) dmg *= s.dmgTaken;   // a boss behind its shield lattice
+  if (campaignDiff && src?.team === 'e' && s.team === 'p') dmg *= campaignDiff.enemyDamage;
   const u = localUnit(s, local, _du); const f = facingOfUnit(u);
   const mult = SHIELD_MULT[kind] || 1;
   let hullD = dmg; const t = game.time;
@@ -2350,7 +2364,7 @@ let ownRows = [], foeRows = [], wEls = {}, subEls = {}, pipEls = {};
 function buildHud() {
   _els = {};
   $('own-name').textContent = player.name; $('own-cls').textContent = player.C.cls;
-  $('foe-name').textContent = enemy.name; $('foe-cls').textContent = enemy.C.cls + ' · ' + DIFF[choice.diff].label;
+  $('foe-name').textContent = enemy.name; $('foe-cls').textContent = enemy.C.cls + ' · ' + (enemy.ai ? enemy.ai.diff.label : '');
   $('own-pips').innerHTML = [['eng', 'ENG', '1'], ['shd', 'SHD', '2'], ['wpn', 'WPN', '3']].map(([k, l, key]) =>
     `<div class="pipcol ${k}"><div class="pp" id="pp-${k}">${'<i></i>'.repeat(8)}</div><span>${l} <kbd>${key}</kbd></span></div>`).join('');
   $('own-subs').innerHTML = SUBS.map(k => `<button type="button" class="sub" data-k="${k}" id="sub-${k}"><span>${subName(player, k)}</span><div class="bar"><i></i></div><span>100</span></button>`).join('');

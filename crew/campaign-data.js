@@ -120,7 +120,8 @@
       hud: 'Force Captain Thorne to surrender or destroy his toll raider',
       enemies: [{ cls: 'scrapjaw', name: 'Captain Garrick Thorne' }], goal: { type: 'surrender', at: 0.28 },
       ends: { surrender: ['Pirate commander surrendered', 'Captain Thorne has powered down his weapons and surrendered the Red Narrows toll lane.'] },
-      choice: ['Offer amnesty for intelligence', 'Impound all captured pirate matériel'], flags: ['thorne_amnesty', 'thorne_impounded'] },
+      choice: ['Offer amnesty for intelligence', 'Impound all captured pirate matériel'], flags: ['thorne_amnesty', 'thorne_impounded'],
+      impound: { choice: 1, cls: 'scrapjaw', name: 'The Widow', hull: 0.5, needs: 'surrender' } },
     { id: 4, act: 2, system: 'halcyon', name: 'Ghost Frequency', enemy: 'seraph', captain: 'ORACLE-9', kind: 'Autonomous warship', reward: 700, support: 2,
       objective: 'Disable ORACLE-9 and recover the anomalous signal archive.',
       brief: 'A deserted relay broadcasts coordinates with impossible precision. A machine warship called ORACLE-9 guards the transmission. Disable it and download the surviving data core.',
@@ -321,15 +322,26 @@
       enemies: [{ cls: foe.cls, name: `${foe.group} ${ship}`, hull: round(s), shield: round(Math.min(1, s + 0.1)) }], goal: { type: 'escort', convoy: `${convoy} · Freighter`, hunter: true } });
   }
   // Three contracts per starbase. The board changes whenever `cycle` does (the campaign bumps it after each victory).
-  function contracts(station, cycle, act) {
+  function contracts(station, cycle, act, priority = false) {
     const r = rng(hash(station + ':' + cycle)), a = Math.min(act, 3), out = [];
     const near = SYSTEMS.filter(s => { const j = jumps(station, s.id); return j >= 1 && j <= 3; });
     const main = near.filter(s => ACTS[a - 1].main.includes(s.faction)), foes = near.filter(s => hostile(s, a));
-    const targets = { bounty: main.length ? main : foes, patrol: near.filter(s => hostile(s, a) || s.faction === 'Contested'), escort: near.filter(s => !hostile(s, a) && s.faction !== 'Navy') };
+    const targets = { bounty: main.length ? main : foes, patrol: near.filter(s => hostile(s, a) || s.faction === 'Contested'), escort: near.filter(s => s.faction === 'Independent' || s.faction === 'Contested') };
     for (const [i, type] of ['bounty', 'patrol', 'escort'].entries()) {
       const pool = targets[type].length ? targets[type] : near.filter(s => s.faction !== 'Navy');
       if (!pool.length) continue;
       out.push(contractFor(type, station, pick(r, pool), a, r, `c:${station}:${cycle}:${i}`));
+    }
+    // A station that trusts you posts a fourth, harder bounty at higher pay.
+    const pool = targets.bounty.length ? targets.bounty : near.filter(s => s.faction !== 'Navy');
+    if (priority && pool.length) {
+      let k = contractFor('bounty', station, pick(r, pool), a, r, `c:${station}:${cycle}:p`);
+      for (let n = 0; n < 4 && out.some(o => o.captain === k.captain); n++) k = contractFor('bounty', station, pick(r, pool), a, r, `c:${station}:${cycle}:p`);
+      k.priority = true; k.name = 'Priority ' + k.name.charAt(0).toLowerCase() + k.name.slice(1); k.reward = Math.round(k.reward * 1.4);
+      for (const e of k.enemies) { e.hull = round(Math.min(1, e.hull + 0.15)); e.shield = round(Math.min(1, e.shield + 0.15)); }
+      k.enemies.push({ cls: k.enemies[0].cls, name: k.enemies[0].name.split(' ').pop() + '’s wingman', hull: 0.4, shield: 0.55, diff: 'commander' });
+      k.objective = `Destroy ${k.captain} and the wingman.`; k.support = 0;
+      out.push(k);
     }
     return out;
   }
@@ -337,8 +349,8 @@
   // ---------------- interceptions ----------------
   const INTERCEPT_CHANCE = [0, 0.06, 0.12, 0.18, 0.24, 0.3];   // by threat level
   // Returns the first system on the way (not counting the start) where hostiles drop out of the lane, or null.
-  function rollInterception(route, act, random) {
-    for (const id of route.slice(1)) { const s = byId[id]; if (s && hostile(s, act) && random() < INTERCEPT_CHANCE[threatLevel(s)]) return id; }
+  function rollInterception(route, act, random, scale = 1) {
+    for (const id of route.slice(1)) { const s = byId[id]; if (s && hostile(s, act) && random() < INTERCEPT_CHANCE[threatLevel(s)] * scale) return id; }
     return null;
   }
   function interception(id, act, seed) {
@@ -352,15 +364,62 @@
       intel: `${pair ? 'Two' : 'One'} ${foe.group} ${{ scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship' }[foe.cls]}${pair ? 's' : ''}.`, enemies, goal: { type: 'destroy' } };
   }
   // The chance of slipping an ambush: fast hulls and healthy engines get away more often.
-  const FLEE = { sabre: 0.8, halberd: 0.7, bastion: 0.5, warden: 0.4 };
+  const FLEE = { sabre: 0.8, halberd: 0.7, bastion: 0.5, warden: 0.4, scrapjaw: 0.75, seraph: 0.7, revenant: 0.5 };
   function fleeChance(ship, engines) { return round((FLEE[ship] || 0.5) * (0.55 + 0.45 * Math.max(0, Math.min(100, engines == null ? 100 : engines)) / 100)); }
+
+  // ---------------- save slots and difficulty ----------------
+  // Three campaign slots. Slot 1 keeps the original key so older saves stay where they were; the active slot's
+  // number is stored separately and both pages read the save from saveKey().
+  const SAVE_BASE = 'broadside-campaign-v1', SLOT_KEY = 'broadside-campaign-slot', SLOTS = 3;
+  const slotKey = n => n > 1 ? SAVE_BASE + '-s' + n : SAVE_BASE;
+  function activeSlot(storage) { try { const n = Number(storage.getItem(SLOT_KEY)); return n >= 1 && n <= SLOTS ? n : 1; } catch (e) { return 1; } }
+  const saveKey = storage => slotKey(activeSlot(storage));
+  // Difficulty is chosen per campaign: the enemy captains' skill, enemy hull and damage, pay and how often ambushes spring.
+  const DIFFICULTY = {
+    ensign: { label: 'Ensign', blurb: 'Weaker, less skilled enemies and fewer ambushes. For learning the ropes.', ai: 'commander', enemyHull: 0.85, enemyDamage: 0.8, reward: 1, intercept: 0.6 },
+    captain: { label: 'Captain', blurb: 'The campaign as designed.', ai: 'captain', enemyHull: 1, enemyDamage: 1, reward: 1, intercept: 1 },
+    admiral: { label: 'Admiral', blurb: 'Tougher, sharper enemies that hit harder, and more ambushes. Pays a quarter more.', ai: 'admiral', enemyHull: 1.15, enemyDamage: 1.15, reward: 1.25, intercept: 1.3 }
+  };
+  const difficulty = key => DIFFICULTY[key] || DIFFICULTY.captain;
+
+  // ---------------- reputation ----------------
+  // Standing with each starbase, 0–100. Work done for a station raises it; story operations raise the Navy yards.
+  const REP_TIERS = [
+    { at: 0, name: 'Neutral', discount: 0, bonus: 0 }, { at: 25, name: 'Friendly', discount: 0.05, bonus: 0.05 },
+    { at: 50, name: 'Trusted', discount: 0.1, bonus: 0.1 }, { at: 75, name: 'Honoured', discount: 0.15, bonus: 0.15 }
+  ];
+  const REP = { side: 10, contract: 6, story: 5, intercept: 2, abandon: -5, loss: -2 };
+  function standing(rep, station) {
+    const value = Math.max(0, Math.min(100, Math.round((rep && rep[station]) || 0)));
+    let i = 0; for (let k = 0; k < REP_TIERS.length; k++) if (value >= REP_TIERS[k].at) i = k;
+    const next = REP_TIERS[i + 1] || null;
+    return Object.assign({ value, level: i, next: next ? next.name : null, toNext: next ? next.at - value : 0 }, REP_TIERS[i]);
+  }
+  function adjustRep(rep, station, delta) { const out = Object.assign({}, rep); if (STATIONS[station]) out[station] = Math.max(0, Math.min(100, (out[station] || 0) + delta)); return out; }
+  // What a result is worth to whom: the posting station for its own work, the Navy yards for story operations,
+  // the nearest starbase for clearing an ambush.
+  function repChanges(kind, win, station, system) {
+    if (kind === 'story') return win ? [['meridian', REP.story], ['tarn', REP.story]] : [];
+    if (kind === 'intercept') return win ? [[nearestStation(system), REP.intercept]] : [];
+    if (!STATIONS[station]) return [];
+    return [[station, win ? REP[kind] || REP.contract : REP.loss]];
+  }
 
   // ---------------- the fleet ----------------
   // Hulls for sale at every starbase. A ship sells back for half its hull price; upgrades are not refunded.
   const MAX_FLEET = 3;
   const HULL_PRICES = { sabre: 1100, halberd: 1250, bastion: 1500, warden: 1700 };
   const SHIP_NAMES = ['MNS Valiant', 'MNS Harrier', 'MNS Steadfast', 'MNS Vigilant', 'MNS Corvid', 'MNS Lantern', 'MNS Indomitable', 'MNS Swiftsure', 'MNS Aurelian', 'MNS Kestrel'];
-  const sellPrice = cls => Math.round((HULL_PRICES[cls] || 1000) / 2);
+  // Wrecks that can be claimed after a victory: towed home and refitted for a Navy helm, at a price, badly damaged.
+  // Bosses and the Wraith (whose ships die without their brood) cannot be claimed.
+  const CAPTURE = {
+    scrapjaw: { refit: 650, hull: 0.35, value: 1200, names: ['MNS Jackal', 'MNS Scavenger', 'MNS Reprisal'] },
+    revenant: { refit: 800, hull: 0.35, value: 1500, names: ['MNS Penitent', 'MNS Ember', 'MNS Homecoming'] },
+    seraph: { refit: 700, hull: 0.35, value: 1300, names: ['MNS Turncoat', 'MNS Echo', 'MNS Second Opinion'] }
+  };
+  const capturable = cls => !!CAPTURE[cls];
+  function prizeName(cls, taken) { const t = new Set(taken), c = CAPTURE[cls]; return (c && c.names.find(n => !t.has(n))) || nextShipName(taken); }
+  const sellPrice = cls => Math.round((HULL_PRICES[cls] || (CAPTURE[cls] && CAPTURE[cls].value) || 1000) / 2);
   function nextShipName(taken) { const t = new Set(taken); return SHIP_NAMES.find(n => !t.has(n)) || 'MNS Escort ' + (t.size + 1); }
   // The ships that fly: the flagship first, then up to two escorts not held in reserve.
   function deployed(ships, flag) {
@@ -414,6 +473,8 @@
     STATIONS, nearestStation, SIDE, sideById, sideMissions,
     CONTRACT_TYPES, contracts, hostile, rollInterception, interception, fleeChance,
     ENV_BY_REGION, encounter, storyEncounter, supportCap,
-    MAX_FLEET, HULL_PRICES, SHIP_NAMES, sellPrice, nextShipName, deployed, fleetFleeChance, reinforcements
+    SAVE_BASE, SLOT_KEY, SLOTS, slotKey, activeSlot, saveKey, DIFFICULTY, difficulty,
+    REP_TIERS, REP, standing, adjustRep, repChanges,
+    MAX_FLEET, HULL_PRICES, CAPTURE, capturable, prizeName, SHIP_NAMES, sellPrice, nextShipName, deployed, fleetFleeChance, reinforcements
   });
 })(typeof window !== 'undefined' ? window : globalThis);

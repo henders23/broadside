@@ -29,6 +29,39 @@
       effect:'Identify the weakest enemy shield facing and most damaged subsystem.',
       voice:'I have a partial target profile. Transmitting vulnerabilities.'}
   ];
+  // Officers for hire at starbases. Each serves at one of the five posts in place of its regular officer
+  // (`post` is that officer's id) and brings a different battle command. `rep` is the standing level required
+  // at the hiring station (1 Friendly, 2 Trusted); `startXp` is the experience they arrive with.
+  const recruits = [
+    {id:'adeyemi',name:'Yusuf Adeyemi',given:'Yusuf Adeyemi',short:'Adeyemi',post:'varro',postName:'First Officer',initials:'YA',station:'meridian',cost:520,rep:1,startXp:100,
+      bio:'Adeyemi held the bridge of a burning frigate for nine hours at the Outer Dock. He believes a crew that is told the truth will do anything.',
+      ability:'Rally the Crew',cooldown:140,duration:0,effect:'Restore 6% of the hull and 10 integrity to every subsystem.',
+      voice:'All hands, damage-control stations. We are not finished.'},
+    {id:'fenn',name:'Dario Fenn',given:'Dario Fenn',short:'Fenn',post:'okoye',postName:'Tactical Officer',initials:'DF',station:'peregrine',cost:480,rep:1,startXp:100,
+      bio:'A merchant-marine gunner who learned his trade fighting off raiders on the eastern spur. He does not wait for a firing solution; he makes one.',
+      ability:'Overcharge',cooldown:120,duration:0,effect:'Every weapon and torpedo tube reloads at once.',
+      voice:'Bypassing the safeties. Every gun, ready now.'},
+    {id:'osei',name:'Ama Osei',given:'Ama Osei',short:'Osei',post:'vale',postName:'Chief Engineer',initials:'AO',station:'tarn',cost:450,rep:0,startXp:100,
+      bio:'Osei ran the Tarn repair yards for eleven years. She can patch a hull breach with whatever is in reach, and frequently does.',
+      ability:'Hull Patch',cooldown:150,duration:0,effect:'Restore 12% of the hull.',
+      voice:'Sealing the breaches. Hold her steady for me.'},
+    {id:'marlow',name:'Kit Marlow',given:'Kit Marlow',short:'Marlow',post:'sato',postName:'Helm Officer',initials:'KM',station:'juniper',cost:420,rep:1,startXp:0,
+      bio:'A Juniper ring pilot who has flown every lane in the Halcyon Belt, most of them faster than the port authority allows.',
+      ability:'Burn Hard',cooldown:90,duration:0,effect:'Refuel the afterburner and restore 30 engine integrity.',
+      voice:'Hang on to something. We are leaving.'},
+    {id:'achterberg',name:'Soren Achterberg',given:'Soren Achterberg',short:'Achterberg',post:'renn',postName:'Intelligence Officer',initials:'SA',station:'elysia',cost:560,rep:1,startXp:100,
+      bio:'An Elysia signals scientist who spent six years listening to the Halcyon relay. He knows how the machines talk to their missiles.',
+      ability:'Jamming Field',cooldown:100,duration:0,effect:'Hostile missiles and torpedoes in flight lose their lock.',
+      voice:'Jamming every guidance band. They are flying blind.'}
+  ];
+  const POSTS = crew.map(c => c.id);   // post order sets the command keys 5–9
+  // The five officers on duty: `assign` maps each post (its regular officer's id) to whoever holds it.
+  function activeCrew(assign) {
+    return POSTS.map((post, i) => {
+      const base = crew[i], id = assign && assign[post], r = id && id !== post ? recruits.find(x => x.id === id && x.post === post) : null;
+      return r ? Object.assign({}, r, { key: base.key, post: base.post, slot: post }) : Object.assign({}, base, { slot: post });
+    });
+  }
   const commanders = {
     1:{id:'vex',name:'Captain Kora Vex',faction:'Corsair Clans',title:'THE KESTREL MARAUDER',line:'Navy hull, turn away. These transports are my business.',portrait:null,asset:'vex.webp',tactics:'Targets civilians and aggressively closes to ram.'},
     2:{id:'sable',name:'Commander Orren Sable',faction:'Ash Fleet',title:'THE EXILE',line:'You are trespassing among the dead, captain. Turn back.',portrait:null,asset:'sable.svg',tactics:'Commands a minelayer supported by an Ash Fleet raider.'},
@@ -55,6 +88,10 @@
     10:'The longer this takes, the more of it grows back. We go in, we keep firing, and we do not stop.'
   };
   function portrait(person, extra=''){
+    if(person && person.initials && !person.asset && !Number.isInteger(person.portrait)){
+      const t=String(person.initials).replace(/[^A-Z]/g,'').slice(0,2);
+      return `<span class="crew-portrait classified recruit ${extra}" role="img" aria-label="Portrait of ${person.name}"><span>${t}</span></span>`;
+    }
     if(person && person.asset){
       const asset=String(person.asset).replace(/[^a-z.]/g,'');
       return `<span class="crew-portrait enemy-portrait ${extra}" role="img" aria-label="Portrait of ${person.name}" style="background-image:url('img/commanders/${asset}');background-size:cover;background-position:center"></span>`;
@@ -67,5 +104,5 @@
     const code=(person?.faction||'UNKNOWN').slice(0,2).toUpperCase();
     return `<span class="crew-portrait classified ${extra}" role="img" aria-label="Commander identity classified"><span>${code}</span></span>`;
   }
-  root.BroadsidePersonnel = Object.freeze({crew,commanders,leads,briefLines,portrait});
+  root.BroadsidePersonnel = Object.freeze({crew,recruits,POSTS,activeCrew,commanders,leads,briefLines,portrait});
 })(window);

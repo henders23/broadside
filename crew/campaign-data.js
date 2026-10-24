@@ -66,7 +66,7 @@
   // An act's foes are the factions whose space is hostile (and can intercept you) while it runs;
   // its main foes are the ones the starbases mostly post work against.
   const ACTS = [
-    { n: 1, numeral: 'I', name: 'The Long Watch', foes: ['Pirates', 'Renegades'], main: ['Pirates', 'Renegades'], story: [1, 2, 3],
+    { n: 1, numeral: 'I', name: 'The Long Watch', foes: ['Pirates', 'Renegades'], main: ['Pirates', 'Renegades'], story: [1, 2, 3, 8],
       briefing: {
         sub: 'From Fleet Admiral Gideon Harlan, to the captain of {ship}',
         paras: [
@@ -74,8 +74,8 @@
           'Command calls it piracy. I am not convinced. Corsairs do not fly with Navy transponders, and they do not vanish without wreckage. Someone is arming them, and someone wants this frontier empty.',
           'You will take {ship} out of Meridian and answer that warning. She is the only capital ship I can spare, so bring her home. Every plate of hull you lose comes out of the fleet’s requisition, and the frontier cannot afford to lose you.'
         ],
-        orders: ['Answer the call at Kestrel and protect the civilian traffic there.', 'Trace the stolen Navy hardware to whoever is supplying it.', 'Starbases post work for any captain who wants it. Take it, and keep the dockyards on our side.'] } },
-    { n: 2, numeral: 'II', name: 'The Machine Signal', foes: ['Pirates', 'Renegades', 'Machines'], main: ['Machines'], story: [4, 6],
+        orders: ['Answer the call at Kestrel and protect the civilian traffic there.', 'Trace the stolen Navy hardware to whoever is supplying it, and end the Ash Fleet at its source.', 'Starbases post work for any captain who wants it. Take it, and keep the dockyards on our side.'] } },
+    { n: 2, numeral: 'II', name: 'The Machine Signal', foes: ['Pirates', 'Renegades', 'Machines'], main: ['Machines'], story: [4, 6, 9],
       briefing: {
         sub: 'From Fleet Admiral Gideon Harlan, to the captain of {ship}',
         paras: [
@@ -83,8 +83,8 @@
           'Our listening posts have traced the leak to a signal in the Halcyon Belt. It repeats every eleven minutes, and every repetition answers a question we have not yet asked. The colonies at Midway have stopped talking to anyone.',
           'Find the source of that signal, captain. Whatever is out there has been watching this frontier longer than we have.'
         ],
-        orders: ['Investigate the ghost relay at Halcyon.', 'Follow the signal wherever it leads.', 'The Elysia observatory and Juniper Ringport will need protecting while you do.'] } },
-    { n: 3, numeral: 'III', name: 'The Wraith', foes: ['Pirates', 'Renegades', 'Machines', 'Aliens', 'Unknown'], main: ['Aliens', 'Unknown'], story: [5, 7],
+        orders: ['Investigate the ghost relay at Halcyon.', 'Follow the signal back to the mind that is sending it.', 'The Elysia observatory and Juniper Ringport will need protecting while you do.'] } },
+    { n: 3, numeral: 'III', name: 'The Wraith', foes: ['Pirates', 'Renegades', 'Machines', 'Aliens', 'Unknown'], main: ['Aliens', 'Unknown'], story: [5, 7, 10],
       briefing: {
         sub: 'From Fleet Admiral Gideon Harlan, to the captain of {ship}',
         paras: [
@@ -92,28 +92,28 @@
           'That something is here. Harrow has gone silent, and our probes are coming back coated in living tissue. The Directorate archive calls it the Wraith, and its estimates for the Reach are not survivable.',
           'I need you to look this thing in the eye and bring back everything you see. Then I need you to get our people out.'
         ],
-        orders: ['Make first contact at Harrow and survive it.', 'Evacuate the colonies in the Wraith’s path.', 'Hold the quarantine line from Juniper. Nothing green gets past it.'] } }
+        orders: ['Make first contact at Harrow and survive it, then evacuate the colonies in its path.', 'Find where the Wraith is growing, and burn it out.', 'Hold the quarantine line from Juniper. Nothing green gets past it.'] } }
   ];
   const STORY_ORDER = ACTS.flatMap(a => a.story);
 
   // ---------------- story operations ----------------
   // env picks the battle scenery preset in crew/battle-environments.js; goal is the win condition (see fleet-controller.js).
   const STORY = [
-    { id: 1, act: 1, system: 'kestrel', name: 'Distress at Kestrel', enemy: 'scrapjaw', captain: 'Captain Kora Vex', kind: 'Pirate ram', reward: 420,
+    { id: 1, act: 1, system: 'kestrel', name: 'Distress at Kestrel', enemy: 'scrapjaw', captain: 'Captain Kora Vex', kind: 'Pirate ram', reward: 420, support: 1,
       objective: 'Keep the MV Peregrine alive until it reaches the jump beacon, OR destroy Vex’s raider first.',
       brief: 'MV Peregrine is carrying evacuees toward the illuminated Kestrel jump beacon. You can win by protecting it until extraction OR by destroying Kora Vex first. Press H or use the on-screen command to hold or resume the convoy. If Peregrine is lost, the operation fails.',
       intel: 'Vex prioritises the unarmed civilian freighter but will turn toward your flagship if you intercept her.',
       hud: 'Defeat Captain Kora Vex and secure the trade lane',
       enemies: [{ cls: 'scrapjaw', name: 'Captain Kora Vex' }], goal: { type: 'escort', convoy: 'MV Peregrine · Civilian transport', hunter: true },
       choice: ['Recover civilian survivors', 'Pursue the escaping pirate network'], flags: ['kestrel_rescue', 'kestrel_pursuit'] },
-    { id: 2, act: 1, system: 'cinder', name: 'The Cinder Wake', enemy: 'revenant', captain: 'Commander Orren Sable', kind: 'Renegade minelayer', reward: 540,
+    { id: 2, act: 1, system: 'cinder', name: 'The Cinder Wake', enemy: 'revenant', captain: 'Commander Orren Sable', kind: 'Renegade minelayer', reward: 540, support: 1,
       objective: 'Destroy the Ash Fleet Revenant and its raider escort to recover a navy transponder.',
       brief: 'A military transponder lies among the burning wreckage. Sable’s Revenant minelayer and a fast Scrapjaw pursuer attack from opposite sides. Defeat both to secure the transponder, using J to switch targets. Beware of chasing directly into the mine trail.',
       intel: 'Long-range missile salvos and proximity mines deployed astern. Avoid chasing directly behind the ship.',
       hud: 'Defeat the Ash Fleet minelayer and recover the transponder evidence',
       enemies: [{ cls: 'revenant', name: 'Commander Orren Sable' }, { cls: 'scrapjaw', name: 'Ash Fleet Pursuer', hull: 0.38, shield: 0.58, diff: 'commander' }], goal: { type: 'destroy' },
       choice: ['Rescue the surviving crew', 'Recover the intact coded transponder'], flags: ['vela_rescue', 'vela_transponder'] },
-    { id: 3, act: 1, system: 'rednarrows', name: 'The Widow’s Toll', enemy: 'scrapjaw', captain: 'Captain Garrick Thorne', kind: 'Pirate commander', reward: 570,
+    { id: 3, act: 1, system: 'rednarrows', name: 'The Widow’s Toll', enemy: 'scrapjaw', captain: 'Captain Garrick Thorne', kind: 'Pirate commander', reward: 570, support: 0,
       objective: 'Reopen the Red Narrows trade route.',
       brief: 'An illegal toll operation is strangling the jump route. Captain Garrick Thorne offers a bargain: leave the corridor or take his scrap-armoured cruiser head-on. His crew may surrender if their hull is severely damaged.',
       intel: 'A Scrapjaw rammer. Force Thorne below 28% hull integrity to compel surrender, or destroy the raider.',
@@ -121,21 +121,21 @@
       enemies: [{ cls: 'scrapjaw', name: 'Captain Garrick Thorne' }], goal: { type: 'surrender', at: 0.28 },
       ends: { surrender: ['Pirate commander surrendered', 'Captain Thorne has powered down his weapons and surrendered the Red Narrows toll lane.'] },
       choice: ['Offer amnesty for intelligence', 'Impound all captured pirate matériel'], flags: ['thorne_amnesty', 'thorne_impounded'] },
-    { id: 4, act: 2, system: 'halcyon', name: 'Ghost Frequency', enemy: 'seraph', captain: 'ORACLE-9', kind: 'Autonomous warship', reward: 700,
+    { id: 4, act: 2, system: 'halcyon', name: 'Ghost Frequency', enemy: 'seraph', captain: 'ORACLE-9', kind: 'Autonomous warship', reward: 700, support: 2,
       objective: 'Disable ORACLE-9 and recover the anomalous signal archive.',
       brief: 'A deserted relay broadcasts coordinates with impossible precision. A machine warship called ORACLE-9 guards the transmission. Disable it and download the surviving data core.',
       intel: 'The Seraph fights at long range with tracking beams and a devastating railgun. Close distance while controlling your shield facings.',
       hud: 'Disable ORACLE-9 and recover its transmission archive',
       enemies: [{ cls: 'seraph', name: 'ORACLE-9' }], goal: { type: 'destroy' },
       choice: ['Transmit the archive to Fleet Command', 'Seal the archive pending investigation'], flags: ['oracle_transmitted', 'oracle_sealed'] },
-    { id: 6, act: 2, system: 'midway', name: 'The Quiet Relay', enemy: 'seraph', captain: 'VIGIL Array', kind: 'Machine picket pair', reward: 760,
+    { id: 6, act: 2, system: 'midway', name: 'The Quiet Relay', enemy: 'seraph', captain: 'VIGIL Array', kind: 'Machine picket pair', reward: 760, support: 1,
       objective: 'Destroy both VIGIL pickets and take the Midway relay off the air.',
       brief: 'ORACLE-9’s archive names a second transmitter: the Midway trade relay, silent to human traffic for three weeks. Two Directorate pickets share a single mind there and fight as one. Break them apart and the signal goes dark.',
       intel: 'Twin Seraph pickets on thinner hulls. They hold range and alternate railgun shots; when one falls, the other closes to finish the fight.',
       hud: 'Destroy both VIGIL pickets and silence the Midway relay',
       enemies: [{ cls: 'seraph', name: 'VIGIL-4 picket', hull: 0.62, shield: 0.75 }, { cls: 'seraph', name: 'VIGIL-7 picket', hull: 0.55, shield: 0.7, diff: 'captain' }], goal: { type: 'destroy' },
       choice: ['Destroy the relay outright', 'Capture the relay core for analysis'], flags: ['relay_destroyed', 'relay_captured'] },
-    { id: 5, act: 3, system: 'harrow', name: 'The First Bloom', enemy: 'wraith', captain: 'The Cantor', kind: 'Alien bioship', reward: 900,
+    { id: 5, act: 3, system: 'harrow', name: 'The First Bloom', enemy: 'wraith', captain: 'The Cantor', kind: 'Alien bioship', reward: 900, support: 0,
       objective: 'Survive contact for 100 seconds and transmit your sensor archive, or defeat the bioship.',
       brief: 'The colonial guard at Harrow has vanished. A vessel that appears to be alive enters sensor range. Stay intact long enough for the automatic hundred-second sensor transmission to complete.',
       intel: 'Its plasma eats shields. Spore salvos track your course. Its hull regenerates, so the safest objective is survival, not destruction.',
@@ -143,13 +143,58 @@
       enemies: [{ cls: 'wraith', name: 'The Cantor' }], goal: { type: 'survive', seconds: 100, label: 'FIRST CONTACT // TRANSMITTING' },
       ends: { extracted: ['First contact survived', 'The Cantor remains at large. Your ship has transmitted alien biosignatures and escaped the engagement.'] },
       choice: ['Warn every frontier colony immediately', 'Classify the encounter while the navy prepares'], flags: ['harrow_warning', 'harrow_classified'] },
-    { id: 7, act: 3, system: 'nex', name: 'Exodus at Nex', enemy: 'wraith', captain: 'The Choir', kind: 'Wraith brood', reward: 980,
+    { id: 7, act: 3, system: 'nex', name: 'Exodus at Nex', enemy: 'wraith', captain: 'The Choir', kind: 'Wraith brood', reward: 980, support: 1,
       objective: 'Escort the colony ship Long Lantern to the jump beacon, OR destroy the brood hunting it.',
       brief: 'Nex is the last colony between the Wraith and Juniper. Eleven thousand people are packed into the Long Lantern, and a Wraith brood is already in the system. Get the ship to the beacon. Press H to hold or resume it if the path ahead is not clear.',
       intel: 'A Wraith bioship escorted by a younger brood vessel. They hunt the slowest target first and their spores follow it through the debris.',
       hud: 'Get the Long Lantern to the jump beacon',
       enemies: [{ cls: 'wraith', name: 'The Choir' }, { cls: 'wraith', name: 'Choir brood vessel', hull: 0.4, shield: 0.55, diff: 'commander' }], goal: { type: 'escort', convoy: 'Long Lantern · Colony ship', hunter: true },
-      choice: ['Hold the Juniper quarantine line', 'Fall back to Meridian with the refugees'], flags: ['quarantine_held', 'refugees_withdrawn'] }
+      choice: ['Hold the Juniper quarantine line', 'Fall back to Meridian with the refugees'], flags: ['quarantine_held', 'refugees_withdrawn'] },
+    // Act finales: a boss flagship with escorts, fought in phases. Each phase starts when the boss's hull falls past `at`
+    // and can bring in more ships, restore its shields, unlock a weapon held back until then, raise a damage-soaking
+    // lattice that holds while its node ships live, or speed up a living hull's regrowth (see fleet-controller.js).
+    { id: 8, act: 1, system: 'grimhold', name: 'The Pyre at Grimhold', enemy: 'pyre', captain: 'Commodore Ingrid Halloran', kind: 'Ash Fleet dreadnought', reward: 1500,
+      objective: 'Destroy the Ash Fleet flagship Pyre and end the renegade fleet.',
+      brief: 'Every stolen transponder, every mine field and every bribed pirate leads back to Grimhold and the dreadnought Pyre. Commodore Ingrid Halloran was a Navy officer once; she taught half the frontier fleet. She will not surrender, and she will not fight alone.',
+      intel: 'A Warden-class dreadnought rebuilt as a fortress: siege cannons, flak, missiles and mines. Expect the pirate clans to answer her call, and a final firestorm when she is desperate.',
+      hud: 'Destroy the dreadnought Pyre', support: 1,
+      enemies: [{ cls: 'pyre', name: 'ASF Pyre · Commodore Halloran' }, { cls: 'scrapjaw', name: 'Ash Fleet escort', hull: 0.45, shield: 0.6, diff: 'commander' }],
+      goal: { type: 'boss' },
+      boss: { title: 'ASF PYRE', phases: [
+        { name: 'Fortress', note: 'Siege cannons and minefields' },
+        { at: 0.65, name: 'The clans answer', line: 'Every clan in the Narrows owes me a debt. I am calling it in.', shields: true,
+          spawn: [{ cls: 'scrapjaw', name: 'Clan raider', hull: 0.35, shield: 0.55, diff: 'commander' }, { cls: 'scrapjaw', name: 'Clan raider', hull: 0.35, shield: 0.55, diff: 'commander' }] },
+        { at: 0.3, name: 'Scorched earth', line: 'If I cannot hold the Reach, nobody will. All batteries, fire at will.', unlock: ['inferno'] }] },
+      ends: { boss_destroyed: ['The Pyre is burning', 'Commodore Halloran’s flagship broke apart over Grimhold. Without her, the Ash Fleet is finished.'] },
+      choice: ['Search the wreck for Halloran’s logs', 'Offer her surviving crews amnesty'], flags: ['halloran_logs', 'ash_amnesty'] },
+    { id: 9, act: 2, system: 'halcyon', name: 'The Arbiter', enemy: 'arbiter', captain: 'THE ARBITER', kind: 'Directorate core warship', reward: 1900,
+      objective: 'Destroy the Arbiter, the warship that carries the Directorate’s mind.',
+      brief: 'With the Midway relay silent, the Directorate has nowhere left to hide its mind. It has put it in a ship. The Arbiter surfaced at the Halcyon relay an hour ago, and every machine in the Belt has turned to face it.',
+      intel: 'A huge Seraph-pattern warship with heavy shields, beam arrays and a railgun. When pressed it raises a shield lattice held up by node ships: destroy the nodes or your guns barely scratch it. At the end it charges a spinal lance.',
+      hud: 'Destroy the Arbiter', support: 1,
+      enemies: [{ cls: 'arbiter', name: 'THE ARBITER' }, { cls: 'seraph', name: 'Directorate sentinel', hull: 0.4, shield: 0.6, diff: 'commander' }],
+      goal: { type: 'boss' },
+      boss: { title: 'THE ARBITER', phases: [
+        { name: 'Overwatch', note: 'Beam arrays and railgun' },
+        { at: 0.6, name: 'Shield lattice', line: 'Lattice engaged. Your weapons are now statistically irrelevant.', lattice: 0.2,
+          spawn: [{ cls: 'seraph', name: 'Lattice node', hull: 0.32, shield: 0.5, diff: 'commander', lattice: true }, { cls: 'seraph', name: 'Lattice node', hull: 0.32, shield: 0.5, diff: 'commander', lattice: true }] },
+        { at: 0.3, name: 'Judgement', line: 'Calculation complete. Executing.', shields: true, unlock: ['judgement'] }] },
+      ends: { boss_destroyed: ['The Arbiter is silent', 'The Directorate’s mind went dark with its ship. Across the Belt, the machines have stopped moving.'] },
+      choice: ['Salvage the Arbiter’s core', 'Destroy every trace of it'], flags: ['arbiter_salvaged', 'arbiter_destroyed'] },
+    { id: 10, act: 3, system: 'verdant', name: 'Mother of the Bloom', enemy: 'mother', captain: 'The Bloom-Mother', kind: 'Wraith brood-mother', reward: 2400,
+      objective: 'Destroy the Bloom-Mother before the Wraith brood can spread beyond Verdant.',
+      brief: 'Verdant was a green world before the Wraith came. Now it is a nursery, and something vast is tending it. Every bioship in the Reach grew from what is in orbit there. Kill it and the Wraith stop growing.',
+      intel: 'A Wraith many times the size of the Cantor. Its brood guards it, its spores fill the sky, and its hull grows back faster the more it is hurt. Keep firing: every pause gives it time to heal.',
+      hud: 'Destroy the Bloom-Mother', support: 1,
+      enemies: [{ cls: 'mother', name: 'The Bloom-Mother' }, { cls: 'wraith', name: 'Brood guardian', hull: 0.45, shield: 0.6, diff: 'commander' }],
+      goal: { type: 'boss' },
+      boss: { title: 'THE BLOOM-MOTHER', phases: [
+        { name: 'The nursery', note: 'Plasma and spore swarms' },
+        { at: 0.65, name: 'The brood wakes', line: '...the song swells, and the green answers it.',
+          spawn: [{ cls: 'wraith', name: 'Wraith brood', hull: 0.3, shield: 0.5, diff: 'commander' }, { cls: 'wraith', name: 'Wraith brood', hull: 0.3, shield: 0.5, diff: 'commander' }] },
+        { at: 0.35, name: 'Regrowth', line: '...a low note, felt more than heard. The wounds are closing.', regen: 2.5, unlock: ['storm'] }] },
+      ends: { boss_destroyed: ['The Bloom is dying', 'The Bloom-Mother came apart in Verdant’s upper atmosphere. The brood ships are drifting, and the green is turning brown.'] },
+      choice: ['Burn the nursery from orbit', 'Quarantine Verdant and study it'], flags: ['verdant_burned', 'verdant_quarantined'] }
   ];
   const storyById = Object.fromEntries(STORY.map(m => [m.id, m]));
 
@@ -182,43 +227,43 @@
   // ---------------- station missions ----------------
   // Hand-written side missions, posted at one starbase from their act onwards.
   const SIDE = [
-    { id: 'a1-deserter', act: 1, station: 'meridian', system: 'vostok', name: 'The Deserter', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 460,
+    { id: 'a1-deserter', act: 1, station: 'meridian', system: 'vostok', name: 'The Deserter', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 460, support: 0,
       brief: 'An Ash Fleet signals officer wants to come home, and she is bringing the fleet’s codebooks with her. Her shuttle is hiding in the Vostok yards with a hunter between it and the jump beacon.',
       objective: 'Escort the shuttle Kittiwake to the jump beacon, or destroy the hunter.', intel: 'A Revenant hunter. It will try to mine the shuttle’s route.',
       enemies: [{ cls: 'revenant', name: 'Ash Fleet hunter', hull: 0.55, shield: 0.7 }], goal: { type: 'escort', convoy: 'Shuttle Kittiwake · Defector', hunter: true } },
-    { id: 'a1-salvage', act: 1, station: 'peregrine', system: 'driftwall', name: 'Salvage Rights', giver: 'Harbourmaster Ines Kaur', reward: 420,
+    { id: 'a1-salvage', act: 1, station: 'peregrine', system: 'driftwall', name: 'Salvage Rights', giver: 'Harbourmaster Ines Kaur', reward: 420, support: 1,
       brief: 'Two scavenger crews are cutting apart a Navy frigate wreck in the Driftwall fields. The wreck still has its logs aboard, and the Exchange would rather the Navy read them than the clans.',
       objective: 'Destroy both scavenger raiders.', intel: 'Light Scrapjaw hulls stripped for speed. They will try to box you in.',
       enemies: [{ cls: 'scrapjaw', name: 'Scavenger Rook', hull: 0.42, shield: 0.6 }, { cls: 'scrapjaw', name: 'Scavenger Lark', hull: 0.42, shield: 0.6, diff: 'commander' }], goal: { type: 'destroy' } },
-    { id: 'a1-emberfall', act: 1, station: 'tarn', system: 'emberfall', name: 'The Emberfall Lift', giver: 'Commodore Aris Penn', reward: 480,
+    { id: 'a1-emberfall', act: 1, station: 'tarn', system: 'emberfall', name: 'The Emberfall Lift', giver: 'Commodore Aris Penn', reward: 480, support: 0,
       brief: 'A refugee transport is trying to leave Emberfall before the Ash Fleet seals the system. An interdictor is already waiting for it. Penn cannot spare a ship; you are the ship.',
       objective: 'Escort the MV Hearthstone to the jump beacon, or destroy the interdictor.', intel: 'A Revenant interdictor laying mines across the transport’s path.',
       enemies: [{ cls: 'revenant', name: 'Ash Fleet interdictor', hull: 0.6, shield: 0.7 }], goal: { type: 'escort', convoy: 'MV Hearthstone · Refugee transport', hunter: true } },
-    { id: 'a1-ledger', act: 1, station: 'peregrine', system: 'scour', name: 'The Scour Ledger', giver: 'Factor Odile Marsh', reward: 520,
+    { id: 'a1-ledger', act: 1, station: 'peregrine', system: 'scour', name: 'The Scour Ledger', giver: 'Factor Odile Marsh', reward: 520, support: 1,
       brief: 'A smuggler called the Ledger keeps the books for every stolen Navy part sold at Scour. Kill the ship and the market loses its memory. The Exchange will pay handsomely for that.',
       objective: 'Destroy the smuggler ship Ledger.', intel: 'An armed Revenant conversion. Missile salvos at range, mines when chased.',
       enemies: [{ cls: 'revenant', name: 'The Ledger', hull: 0.78, shield: 0.8 }], goal: { type: 'destroy' } },
-    { id: 'a2-scout', act: 2, station: 'meridian', system: 'northpoint', name: 'Eyes on Northpoint', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 520,
+    { id: 'a2-scout', act: 2, station: 'meridian', system: 'northpoint', name: 'Eyes on Northpoint', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 520, support: 0,
       brief: 'A Directorate scout has been mapping the northern approaches to Meridian for a week. Whatever it learns goes straight back to the machines. Make sure it learns nothing more.',
       objective: 'Destroy the machine scout.', intel: 'A light Seraph scout. Fast shields, thin hull, and a railgun it will use from extreme range.',
       enemies: [{ cls: 'seraph', name: 'Directorate scout', hull: 0.6, shield: 0.75 }], goal: { type: 'destroy' } },
-    { id: 'a2-survey', act: 2, station: 'elysia', system: 'thalos', name: 'Dead Reckoning', giver: 'Dr. Halima Oduya', reward: 560,
+    { id: 'a2-survey', act: 2, station: 'elysia', system: 'thalos', name: 'Dead Reckoning', giver: 'Dr. Halima Oduya', reward: 560, support: 1,
       brief: 'Elysia’s survey buoys can triangulate the machine signal if they get eighty seconds of quiet. A machine hunter is already sweeping Thalos for them. Give them their eighty seconds.',
       objective: 'Hold the survey area for 80 seconds, or destroy the machine hunter.', intel: 'A Seraph hunter. It keeps its distance and works on your shields with beams.',
       enemies: [{ cls: 'seraph', name: 'Directorate hunter', hull: 0.7, shield: 0.8 }], goal: { type: 'survive', seconds: 80, label: 'SURVEY BUOYS // TRIANGULATING' } },
-    { id: 'a2-static', act: 2, station: 'juniper', system: 'citrine', name: 'Static on the Ring', giver: 'Portmaster Tobias Grail', reward: 600,
+    { id: 'a2-static', act: 2, station: 'juniper', system: 'citrine', name: 'Static on the Ring', giver: 'Portmaster Tobias Grail', reward: 600, support: 1,
       brief: 'Machine pickets have parked over the Citrine supply lanes and every freighter that passes them loses its navigation. Juniper’s portmaster wants them gone before the ring runs out of food.',
       objective: 'Destroy both machine pickets.', intel: 'Two light Seraph pickets. Close the range quickly and they come apart.',
       enemies: [{ cls: 'seraph', name: 'Picket LATTICE-2', hull: 0.5, shield: 0.65 }, { cls: 'seraph', name: 'Picket LATTICE-5', hull: 0.5, shield: 0.65, diff: 'commander' }], goal: { type: 'destroy' } },
-    { id: 'a3-stowaway', act: 3, station: 'meridian', system: 'innerpost', name: 'Stowaway', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 640,
+    { id: 'a3-stowaway', act: 3, station: 'meridian', system: 'innerpost', name: 'Stowaway', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 640, support: 0,
       brief: 'A freighter out of Juniper arrived at Innerpost with something growing in its hold. The something has left the freighter. It is the first Wraith inside Navy space, and it must be the last.',
       objective: 'Destroy the Wraith before it reaches the core worlds.', intel: 'A young bioship, hungry and fast-growing. Its hull regenerates when it is not under fire.',
       enemies: [{ cls: 'wraith', name: 'Innerpost stowaway', hull: 0.6, shield: 0.7 }], goal: { type: 'destroy' } },
-    { id: 'a3-quarantine', act: 3, station: 'juniper', system: 'bloom', name: 'Quarantine Line', giver: 'Portmaster Tobias Grail', reward: 700,
+    { id: 'a3-quarantine', act: 3, station: 'juniper', system: 'bloom', name: 'Quarantine Line', giver: 'Portmaster Tobias Grail', reward: 700, support: 1,
       brief: 'Wraith spawn are budding off the wreckage at Bloom. If they reach the Juniper lanes, the ring has to be abandoned. Burn the nursery out while it is still small.',
       objective: 'Destroy both Wraith spawn.', intel: 'Two young bioships. Their hulls regrow, so finish one before you turn to the next.',
       enemies: [{ cls: 'wraith', name: 'Wraith spawn', hull: 0.45, shield: 0.6 }, { cls: 'wraith', name: 'Wraith spawn', hull: 0.45, shield: 0.6, diff: 'commander' }], goal: { type: 'destroy' } },
-    { id: 'a3-lastlight', act: 3, station: 'elysia', system: 'mire', name: 'Last Light', giver: 'Dr. Halima Oduya', reward: 760,
+    { id: 'a3-lastlight', act: 3, station: 'elysia', system: 'mire', name: 'Last Light', giver: 'Dr. Halima Oduya', reward: 760, support: 0,
       brief: 'The research vessel Lantern Moth went into Mire to sample the Wraith and has been hiding in the debris for two days. Bring her and her samples home.',
       objective: 'Escort the RV Lantern Moth to the jump beacon, or destroy the Wraith stalking her.', intel: 'A mature Wraith. Expect spore salvos aimed at the slower ship.',
       enemies: [{ cls: 'wraith', name: 'Mire stalker', hull: 0.75, shield: 0.8 }], goal: { type: 'escort', convoy: 'RV Lantern Moth · Research vessel', hunter: true } }
@@ -329,9 +374,13 @@
     scrapjaw: { cls: 'scrapjaw', name: 'Corsair escort' }, revenant: { cls: 'scrapjaw', name: 'Ash Fleet escort' },
     seraph: { cls: 'seraph', name: 'Directorate drone' }, wraith: { cls: 'wraith', name: 'Wraith brood' }
   };
+  // Not every fight is matched: a spec's `support` caps how many ships the enemy may add (story operations and station
+  // missions set it); for generated fights it is drawn from the encounter id, so some stay outnumbered.
+  function supportCap(spec) { return Number.isInteger(spec.support) ? spec.support : hash(String(spec.id)) % MAX_FLEET; }
   function reinforcements(spec, fleetSize) {
-    const want = Math.min(MAX_FLEET, Math.max(1, fleetSize)), have = spec.enemies.length, sup = SUPPORT[spec.enemies[0].cls] || SUPPORT.scrapjaw, out = [];
-    for (let i = have; i < want; i++) out.push({ cls: sup.cls, name: sup.name, hull: 0.42, shield: 0.6, diff: 'commander', support: true });
+    const want = Math.min(MAX_FLEET, Math.max(1, fleetSize)), have = spec.enemies.length, add = Math.min(Math.max(0, want - have), supportCap(spec));
+    const sup = SUPPORT[spec.enemies[0].cls] || SUPPORT[{ pyre: 'revenant', arbiter: 'seraph', mother: 'wraith' }[spec.enemies[0].cls]] || SUPPORT.scrapjaw, out = [];
+    for (let i = 0; i < add; i++) out.push({ cls: sup.cls, name: sup.name, hull: 0.42, shield: 0.6, diff: 'commander', support: true });
     return out;
   }
 
@@ -340,14 +389,15 @@
   // Everything the battle page needs to stage a fight, as plain JSON (it travels in the save under `launch`).
   function encounter(src) {
     const story = storyById[src.id] === src, sys = byId[src.system] || byId.kestrel;
-    const label = story ? 'OPERATION ' + String(src.id).padStart(2, '0') : src.kind === 'side' ? 'STATION MISSION' : src.kind === 'intercept' ? 'INTERCEPTION' : (CONTRACT_TYPES[src.type] || { label: 'Contract' }).label.toUpperCase() + ' CONTRACT';
+    const label = story && src.boss ? 'ACT ' + ACTS[src.act - 1].numeral + ' FINALE' : story ? 'OPERATION ' + String(src.id).padStart(2, '0') : src.kind === 'side' ? 'STATION MISSION' : src.kind === 'intercept' ? 'INTERCEPTION' : (CONTRACT_TYPES[src.type] || { label: 'Contract' }).label.toUpperCase() + ' CONTRACT';
     const lead = src.enemies[0], foe = foeFor(sys, src.act || 1);
     return {
       id: story ? 'story:' + src.id : src.id, kind: story ? 'story' : src.kind, story: story ? src.id : null, system: sys.id,
       title: src.name, label, objective: src.hud || src.objective, reward: src.reward || 0,
       env: story && src.id <= 5 ? src.id : ENV_BY_REGION[sys.region] || 0, gate: src.goal.type === 'escort',
       hail: story ? src.id : { name: lead.name, faction: foe.group, line: src.taunt || HAILS[lead.cls] },
-      enemies: src.enemies.map(e => Object.assign({}, e)), goal: Object.assign({}, src.goal), ends: src.ends || null
+      enemies: src.enemies.map(e => Object.assign({}, e)), goal: Object.assign({}, src.goal), ends: src.ends || null,
+      support: Number.isInteger(src.support) ? src.support : null, boss: src.boss && typeof src.boss === 'object' ? JSON.parse(JSON.stringify(src.boss)) : null
     };
   }
   const HAILS = {
@@ -363,7 +413,7 @@
     ACTS, STORY, STORY_ORDER, storyById, actOf, storyUnlocked, storyAvailable, openStory,
     STATIONS, nearestStation, SIDE, sideById, sideMissions,
     CONTRACT_TYPES, contracts, hostile, rollInterception, interception, fleeChance,
-    ENV_BY_REGION, encounter, storyEncounter,
+    ENV_BY_REGION, encounter, storyEncounter, supportCap,
     MAX_FLEET, HULL_PRICES, SHIP_NAMES, sellPrice, nextShipName, deployed, fleetFleeChance, reinforcements
   });
 })(typeof window !== 'undefined' ? window : globalThis);

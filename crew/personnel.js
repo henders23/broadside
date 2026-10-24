@@ -36,9 +36,12 @@
     4:{id:'oracle',name:'ORACLE-9',faction:'Autonomous Directorate',title:'AUTONOMOUS PURSUIT INTELLIGENCE',line:'Unknown human platform: your presence is statistically unacceptable.',portrait:5},
     5:{id:'cantor',name:'The Cantor',faction:'Wraith',title:'UNKNOWN BIOLOGICAL ENTITY',line:'...harmonic emission detected. No comprehensible translation.',portrait:null,asset:'cantor.svg',tactics:'A living vessel with regenerative hull and homing spores.'},
     6:{id:'vigil',name:'VIGIL Array',faction:'Autonomous Directorate',title:'DISTRIBUTED PICKET INTELLIGENCE',line:'Picket nodes synchronised. Human platform reclassified: obstruction.',portrait:null,tactics:'Two pickets sharing one mind: they hold range together and alternate railgun shots.'},
-    7:{id:'choir',name:'The Choir',faction:'Wraith',title:'BROOD CHORUS',line:'...the harmonic splits into two voices, then three. It is louder than at Harrow.',portrait:null,asset:'cantor.svg',tactics:'A bioship and its brood hunt the slowest ship in the system first.'}
+    7:{id:'choir',name:'The Choir',faction:'Wraith',title:'BROOD CHORUS',line:'...the harmonic splits into two voices, then three. It is louder than at Harrow.',portrait:null,asset:'cantor.svg',tactics:'A bioship and its brood hunt the slowest ship in the system first.'},
+    8:{id:'halloran',name:'Commodore Ingrid Halloran',faction:'Ash Fleet',title:'COMMANDER OF THE ASH FLEET',line:'You fly well, captain. I should know. I wrote the manual you learned from.',portrait:null,tactics:'Fights from a fortress dreadnought, calls the pirate clans when pressed, and turns every gun loose at the end.'},
+    9:{id:'arbiter',name:'THE ARBITER',faction:'Autonomous Directorate',title:'DIRECTORATE CORE INTELLIGENCE',line:'Every outcome has been modelled. In none of them do you leave.',portrait:5,tactics:'Shields up behind a lattice of node ships, then a spinal lance when the numbers turn against it.'},
+    10:{id:'mother',name:'The Bloom-Mother',faction:'Wraith',title:'MOTHER OF THE BROOD',line:'...one note, so low the hull hums with it. Everything green in the system turns toward you.',portrait:null,asset:'cantor.svg',tactics:'Guarded by her brood, filling the sky with spores, and healing faster the more she is hurt.'}
   };
-  const leads={1:'renn',2:'okoye',3:'varro',4:'renn',5:'sato',6:'okoye',7:'varro'};
+  const leads={1:'renn',2:'okoye',3:'varro',4:'renn',5:'sato',6:'okoye',7:'varro',8:'vale',9:'renn',10:'sato'};
   const briefLines={
     1:'Civilian beacons are cutting out. One raider is trying to drive the convoy into the rocks.',
     2:'The mine pattern matches a navy doctrine manual, but these signal codes were deleted years ago.',
@@ -46,7 +49,10 @@
     4:'That frequency is correcting for us before we change course. Something is predicting our intentions.',
     5:'Its hull is alive. We are here to record what we can, not prove we can kill it.',
     6:'Two ships, one set of decisions. Break the link between them and they are just two thin hulls.',
-    7:'Eleven thousand people on one ship. Whatever happens to us, the Lantern reaches that beacon.'
+    7:'Eleven thousand people on one ship. Whatever happens to us, the Lantern reaches that beacon.',
+    8:'The Pyre is twice our tonnage and she knows every trick we do. Keep the damage-control teams close, captain.',
+    9:'Its shields lean on those node ships. Kill the nodes and the numbers stop working for it.',
+    10:'The longer this takes, the more of it grows back. We go in, we keep firing, and we do not stop.'
   };
   function portrait(person, extra=''){
     if(person && person.asset){

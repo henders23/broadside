@@ -6,11 +6,11 @@ const create=ctx.window.BroadsideFleet.create,GATE=ctx.window.BroadsideFleet.GAT
 class V3{constructor(x=0,y=0,z=0){this.x=x;this.y=y;this.z=z}length(){return Math.hypot(this.x,this.y,this.z)}}
 function fixture(missionId,encounter,escortCount=0){
  const ships=[],events=[],game={ending:false};
- const makeShip=(key,team)=>{const s={key,team,name:key,alive:true,C:{hull:100,shield:50},hull:100,sh:[50,50,50,50],cap:[50,50,50,50],groups:[{type:'torpedo'}],pos:new V3(),step:3,ai:{side:1},target:null,fireQ:[]};ships.push(s);return s};
+ const makeShip=(key,team)=>{const s={key,team,name:key,alive:true,C:{hull:100,shield:50},hull:100,sh:[50,50,50,50],cap:[50,50,50,50],groups:[{type:'torpedo',id:'torp'},{type:'missile',id:'inferno'},{type:'lance',id:'judgement'},{type:'missile',id:'storm'}],pos:new V3(),step:3,ai:{side:1},target:null,fireQ:[]};ships.push(s);return s};
  const player=makeShip('bastion','p'),allies=Array.from({length:escortCount},(_,i)=>{const a=makeShip('sabre','p');a.name='Escort '+(i+1);return a;}),boss=makeShip('scrapjaw','e');let selected=boss,outcome=null,modelBuilt=false;
  const fleet=create({missionId,encounter,allies,makeShip,placeShip:(s,p)=>{s.pos=p},ships,player,primaryEnemy:boss,
   getSelected:()=>selected,setSelected:s=>selected=s,DIFF:{commander:{react:.8}},
-  endGame:r=>{outcome=r;game.ending=true},showMsg:m=>events.push(m),game,V3,
+  endGame:r=>{outcome=r;game.ending=true},showMsg:m=>events.push(m),hail:h=>events.push('HAIL '+h.line),game,V3,
   buildFreighter:()=>{modelBuilt=true}});
  fleet.setup();
  return {fleet,ships,player,allies,boss,events,game,selected:()=>selected,outcome:()=>outcome,modelBuilt:()=>modelBuilt};
@@ -86,4 +86,28 @@ function fixture(missionId,encounter,escortCount=0){
  f.fleet.tick(9.1);assert.equal(e1.target,f.player);assert.equal(e2.target,esc);
  assert.equal(fixture(2,null,0).fleet.setOrder('defend'),false,'no orders without escorts');
 }
-console.log('Campaign fleet contract tests passed (11 scenarios).');
+{
+ // The Pyre: clans arrive at 65%, the inferno salvo unlocks at 30%, and the fight ends with the boss.
+ const f=fixture(8),foes=()=>f.ships.filter(s=>s.team==='e'&&s.alive),inferno=f.boss.groups.find(g=>g.id==='inferno');
+ assert.equal(foes().length,2);assert.equal(inferno.locked,true,'inferno held back');assert.equal(f.fleet.boss.phase,0);
+ f.boss.sh=[1,1,1,1];f.boss.hull=64;f.fleet.tick(.1);
+ assert.equal(f.fleet.boss.phase,1);assert.equal(foes().length,4,'two clan raiders join');assert.equal(f.boss.sh[0],f.boss.cap[0],'shields restored');
+ assert.ok(f.events.some(e=>e.startsWith('HAIL Every clan')),'Halloran hails');assert.ok(f.fleet.status().includes('PHASE 2 OF 3'));
+ f.boss.hull=29;f.fleet.tick(.1);assert.equal(f.fleet.boss.phase,2);assert.equal(inferno.locked,false,'inferno unlocked');
+ f.boss.alive=false;f.fleet.onDestroyed(f.boss);assert.equal(f.outcome(),'win');assert.equal(f.game.campaignOutcome,'boss_destroyed','escorts still alive, boss dead: won');
+}
+{
+ // The Arbiter: the lattice soaks damage until both nodes are destroyed.
+ const f=fixture(9);f.boss.hull=59;f.fleet.tick(.1);
+ assert.equal(f.boss.dmgTaken,.2);assert.equal(f.fleet.boss.lattice,true);
+ const nodes=f.ships.filter(s=>s.latticeNode);assert.equal(nodes.length,2);
+ nodes[0].alive=false;f.fleet.onDestroyed(nodes[0]);f.fleet.tick(.1);assert.equal(f.boss.dmgTaken,.2,'one node left');
+ nodes[1].alive=false;f.fleet.onDestroyed(nodes[1]);f.fleet.tick(.1);assert.equal(f.boss.dmgTaken,1,'lattice down');
+ f.boss.hull=20;f.fleet.tick(.1);assert.equal(f.boss.groups.find(g=>g.id==='judgement').locked,false);
+}
+{
+ // The Bloom-Mother: a big hit can cross two phases at once.
+ const f=fixture(10);f.boss.hull=30;f.fleet.tick(.1);
+ assert.equal(f.fleet.boss.phase,2);assert.equal(f.boss.regenK,2.5);assert.equal(f.ships.filter(s=>s.name==='Wraith brood').length,2);
+}
+console.log('Campaign fleet contract tests passed (14 scenarios).');

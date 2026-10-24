@@ -51,6 +51,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .num{font-variant-numeric:tabular-nums;color:var(--text)}
 #own{left:max(14px,env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));width:250px}
 #foe{right:max(14px,env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:230px}
+#bossbar{position:absolute;top:calc(188px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(560px,60vw);z-index:5;pointer-events:none}#bossbar .bt{display:flex;justify-content:space-between;gap:12px;font-size:11px;letter-spacing:.16em;color:#ffd0a0;text-transform:uppercase;margin-bottom:5px}#bossbar .bt b{font-weight:700}#bossbar .bb{position:relative;height:10px;background:rgba(255,91,79,.15);border:1px solid rgba(255,140,110,.5)}#bossbar .bb i{position:absolute;inset:0;background:linear-gradient(90deg,#ff5b4f,#ffb36b);transform-origin:left}#bossbar .bb .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:#ffe3c4}#bossbar.lattice .bb i{background:linear-gradient(90deg,#6fd0ff,#cfefff)}#bossbar.lattice .bt span{color:#9fd8ff}
 #escorts{right:max(14px,env(safe-area-inset-right,0px));top:calc(300px + env(safe-area-inset-top,0px));width:230px;pointer-events:auto}#esc-list{display:flex;flex-direction:column;gap:7px}.esc{display:flex;flex-direction:column;gap:3px}.esc .en{display:flex;justify-content:space-between;gap:8px;font-size:11px}.esc .en b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.esc .en span{color:var(--dim,#9ab)}.esc.lost{opacity:.45}.esc small{font-size:10px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.escbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.escbtns button{font:inherit;font-size:10px;letter-spacing:.06em;padding:5px 2px;background:#0a1b2a;border:1px solid #2f485c;color:#e1eaf2;cursor:pointer}.escbtns button.on{border-color:#f0c27c;color:#f0d3a4;background:#173044}
 .shieldbox{display:grid;grid-template-columns:118px 1fr;gap:10px;align-items:center}
 .shieldbox canvas{width:118px;height:118px;display:block}
@@ -274,6 +275,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div id="tacwrap"><canvas id="tac" aria-label="Tactical plot"></canvas><span class="sec">Tactical · <kbd>Tab</kbd> enlarge</span></div>
     <div id="tacfull" hidden><canvas id="tacF" aria-label="Tactical plot, enlarged"></canvas><span class="sec">Tactical plot · heading up · <kbd>Tab</kbd> to close</span></div>
 
+    <div id="bossbar" hidden aria-live="polite"><div class="bt"><b id="boss-name"></b><span id="boss-phase"></span></div><div class="bb" id="boss-track"><i id="boss-fill"></i></div></div>
     <div class="panel" id="escorts" hidden aria-label="Escort orders">
       <div class="ptitle"><b>Escorts</b><small id="esc-order">—</small></div>
       <div id="esc-list"></div>
@@ -603,6 +605,30 @@ const CLASSES = {
     intel: 'Minelayer. It keeps you on its quarter and drops proximity mines astern, so chasing it means flying through them. Watch the plot for red mine markers.'
   }
 };
+// Act bosses (campaign only): an existing hull scaled up and re-armed. Weapons a later phase unlocks are listed
+// in the encounter's boss phases (crew/campaign-data.js) and stay silent until crew/fleet-controller.js frees them.
+function bossClass(key, base, o) {
+  const B = CLASSES[base], k = o.modelScale, sc = p => p.map(v => v * k), arm = w => ({ ...w, guns: w.guns.map(sc) });
+  CLASSES[key] = { ...B, ...o.stats, key, name: o.name, cls: o.cls, enemyOnly: true, boss: true, model: B.model || base, modelScale: k, tint: o.tint || B.tint,
+    hullE: { c: sc(B.hullE.c), r: sc(B.hullE.r) }, shieldE: { c: sc(B.shieldE.c), r: sc(B.shieldE.r) }, engines: B.engines.map(sc), glow: B.glow * k,
+    weapons: [...B.weapons.map(w => arm({ ...w, ...(o.boost[w.id] || {}) })), ...o.extra.map(arm)], intel: o.intel };
+}
+bossClass('pyre', 'revenant', { name: 'Pyre', cls: 'Ash Fleet dreadnought', modelScale: 1.4, tint: [0.42, 0.24, 0.22],
+  stats: { hull: 9500, shield: 950, regen: 34, vmax: 34, accel: 1.8, turn: deg(4.2), pref: 1600, beam: 120 },
+  boost: { missiles: { salvo: 10 }, port: { dmg: 26 }, stbd: { dmg: 26 }, mines: { reload: 4, ammo: 24 } },
+  extra: [{ ...CLASSES.warden.weapons.find(w => w.id === 'siege'), key: '' },
+    { ...CLASSES.revenant.weapons.find(w => w.id === 'missiles'), id: 'inferno', label: 'Inferno salvo', sub: 'torp', salvo: 16, reload: 9, dmg: 70, col: [4, 1.6, 0.3] }],
+  intel: 'The Ash Fleet flagship: a dreadnought fortress with siege cannons, flak, missiles and mines. Stay off its bow and out of its wake.' });
+bossClass('arbiter', 'seraph', { name: 'Arbiter', cls: 'Directorate core warship', modelScale: 1.6, tint: [0.82, 0.92, 1.15],
+  stats: { hull: 7000, shield: 1300, regen: 60, vmax: 50, accel: 3, turn: deg(6), pref: 2800 },
+  boost: { rail: { dmg: 320, reload: 9 }, beams: { dps: 120 } },
+  extra: [{ ...CLASSES.halberd.weapons.find(w => w.id === 'lance'), id: 'judgement', label: 'Judgement lance', key: '', dps: 800, guns: [[0, 2, -128]] }],
+  intel: 'The Directorate mind in a hull: heavy, fast-recharging shields, beam arrays and a railgun. Its shield lattice only falls when the node ships do.' });
+bossClass('mother', 'wraith', { name: 'Bloom-Mother', cls: 'Wraith brood-mother', modelScale: 1.8, tint: [0.85, 1.1, 0.85],
+  stats: { hull: 8500, shield: 760, regen: 34, hullRegen: 26, vmax: 46, accel: 3, turn: deg(6.5), pref: 1900 },
+  boost: { plasma: { dmg: 85 }, spores: { salvo: 10 } },
+  extra: [{ ...CLASSES.wraith.weapons.find(w => w.id === 'spores'), id: 'storm', label: 'Spore storm', salvo: 20, reload: 9, dmg: 40 }],
+  intel: 'The mother of the Wraith. Plasma, spore swarms and a hull that regrows faster the more it is hurt. Never let up.' });
 const SUBS = ['engines', 'shields', 'reactor', 'port', 'stbd', 'fore', 'torp'];
 const SUBNAME = { engines: 'Engines', shields: 'Shield generator', reactor: 'Reactor', port: 'Port battery', stbd: 'Stbd battery', fore: '', torp: 'Torpedo bay' };
 const FACING_SUBS = [['fore', 'torp', 'shields'], ['engines', 'reactor', 'shields'], ['port', 'shields', 'reactor'], ['stbd', 'shields', 'engines']];
@@ -1099,6 +1125,7 @@ function prep(gltf, scale, rotY) {
 const modelKey = C => C.model || C.key;   // enemy variants can reuse another class's hull
 function instanceModel(key) {
   const C = CLASSES[key], m = templates[modelKey(C)].clone(true);
+  if (C.modelScale) m.scale.multiplyScalar(C.modelScale);   // bosses are bigger copies of an existing hull
   m.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); lookMaterial(o.material, C); o.material.userData.base = o.material.color.clone(); } });
   return m;
 }
@@ -1392,7 +1419,7 @@ function startGame() {
   clearWorld(); battleEnvironment.configure(campaignMission ? campaignMission.env : 0, { gate: !!(campaignMission && campaignMission.gate) }); display.visible = false;
   const campaignSave = campaignMission ? readCampaignSave() : null, fleetRecs = campaignShips(campaignSave), flagRec = fleetRecs[0] || null;
   const pk = flagRec ? flagRec.ship : choice.ship;
-  const others = Object.keys(CLASSES).filter(k => k !== pk);
+  const others = Object.keys(CLASSES).filter(k => k !== pk && !CLASSES[k].boss);
   const ek = campaignMission && CLASSES[campaignMission.enemies[0].cls] ? campaignMission.enemies[0].cls : others[Math.floor(Math.random() * others.length)];
   const fitted = rec => rec && window.BroadsideUpgrades ? window.BroadsideUpgrades.apply(CLASSES[rec.ship], rec.upgrades) : CLASSES[rec ? rec.ship : pk];
   player = makeShip(pk, 'p', flagRec ? fitted(flagRec) : CLASSES[pk]); enemy = makeShip(ek, 'e');
@@ -1419,7 +1446,7 @@ function startGame() {
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
     encounter:campaignMission,allies,makeShip,placeShip,ships,player,primaryEnemy:enemy,
     getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
-    DIFF,endGame,showMsg,game,V3,buildFreighter:ship=>battleEnvironment.buildFreighter(ship)
+    DIFF,endGame,showMsg,hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>battleEnvironment.buildFreighter(ship)
   }):null;
   fleet?.setup();
   bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,getTarget:()=>player.target,showMsg,facings:FACINGS,levels:window.BroadsideExperience&&campaignSave?window.BroadsideExperience.levels(campaignSave.officers):null}) : null;
@@ -1433,7 +1460,8 @@ function startGame() {
   renderer.compile(scene, camera);
   $('campaign-objective').hidden = !campaignMission;
   // A plain one-on-one fight needs no contact line; escorts, timers, surrenders and pincers do.
-  $('fleet-objective').hidden = !fleet || (fleet.spec.goal.type === 'destroy' && fleet.spec.enemies.length < 2 && !allies.length);
+  $('fleet-objective').hidden = !fleet || !!fleet.boss || (fleet.spec.goal.type === 'destroy' && fleet.spec.enemies.length < 2 && !allies.length);
+  $('bossbar').hidden = !fleet?.boss; if (fleet?.boss) buildBossBar();
   $('escorts').hidden = !allies.length; escortHudT = 0;
   $('escort-hold').hidden = !fleet?.convoy;
   $('escort-hold').textContent='HOLD CONVOY [H]';
@@ -1527,6 +1555,7 @@ function damage(s, dmg, kind, local, src) {
   if (!s.alive || (game && game.ending && s.isWinner)) return;
   if (bridge && s.team === 'e' && src === player) dmg *= bridge.attackMultiplier();
   if (bridge && s === player && src?.team === 'e') dmg *= bridge.defenseMultiplier();
+  if (s.dmgTaken != null) dmg *= s.dmgTaken;   // a boss behind its shield lattice
   const u = localUnit(s, local, _du); const f = facingOfUnit(u);
   const mult = SHIELD_MULT[kind] || 1;
   let hullD = dmg; const t = game.time;
@@ -1670,7 +1699,7 @@ function powerUpdate(s) {
 }
 function repairsUpdate(s, dt) {
   if (!s.alive) return;
-  if (s.C.hullRegen && game.time - Math.max(...s.hitT) > 3) s.hull = Math.min(s.C.hull, s.hull + s.C.hullRegen * dt);   // living hulls knit when not under fire
+  if (s.C.hullRegen && game.time - Math.max(...s.hitT) > 3) s.hull = Math.min(s.maxHull || s.C.hull, s.hull + s.C.hullRegen * (s.regenK || 1) * dt);   // living hulls knit when not under fire, up to their own size
   if (s.repair && s.sub[s.repair] >= 100) s.repair = null;
   let k = s.repair;
   if (!k) { let lo = 100; for (const n of SUBS) if (s.sub[n] < lo) { lo = s.sub[n]; k = n; } }
@@ -2068,6 +2097,7 @@ function aiUpdate(s, dt) {
   }
   // weapons
   for (const g of s.groups) {
+    if (g.locked) continue;   // held back for a later boss phase
     if (g.type === 'battery' || g.type === 'missile') {
       if (g.charge >= 1 && inArc(s, g, t.pos)) { g.holdT += dt; if (g.holdT > D.hold) { fireGroup(s, g); g.holdT = 0; } } else g.holdT = 0;
     } else if (g.type === 'beam') { if (g.charge >= 1 && inArc(s, g, t.pos)) fireGroup(s, g); }
@@ -2455,6 +2485,21 @@ const tmarkPool = [];
 let hudT = 0;
 const _sc = {}, _tp = {};
 const _brE = {}, _brP = {};
+// Boss bar: the boss's hull with ticks where its phases begin, the current phase, and the lattice when it is up.
+function buildBossBar() {
+  const B = fleet.boss, track = $('boss-track');
+  $('boss-name').textContent = B.title;
+  for (const t of [...track.querySelectorAll('.tick')]) t.remove();
+  for (const p of B.phases.slice(1)) { const t = document.createElement('span'); t.className = 'tick'; t.style.left = (p.at * 100).toFixed(1) + '%'; track.append(t); }
+  drawBossBar();
+}
+function drawBossBar() {
+  const B = fleet && fleet.boss; if (!B) return;
+  const f = Math.max(0, B.ship.hull / (B.ship.maxHull || B.ship.C.hull));
+  $c('boss-fill').style.transform = `scaleX(${f.toFixed(3)})`;
+  setT($c('boss-phase'), B.ship.alive ? `Phase ${B.phase + 1} of ${B.phases.length} · ${B.phases[B.phase].name}${B.lattice ? ' · lattice up: destroy the nodes' : ''}` : 'Destroyed');
+  $c('bossbar').classList.toggle('lattice', B.lattice);
+}
 // Escort panel: each escort's hull and target, and the standing order (U focus, I defend, O free).
 const ESCORT_KEYS = { KeyU: 'focus', KeyI: 'defend', KeyO: 'free' };
 const escHtml = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -2469,6 +2514,7 @@ for (const b of document.querySelectorAll('.escbtns button')) b.addEventListener
 function updateHud(dt) {
   if ((state !== 'playing' && state !== 'paused') || !player) return;
   if (fleet && fleet.allies.length) { escortHudT -= dt; if (escortHudT <= 0) { escortHudT = 0.25; drawEscorts(); } }
+  if (fleet && fleet.boss) drawBossBar();
   const P = player, E = enemy;
   setT($c('foe-name'),E.name);setT($c('foe-cls'),E.C.cls);
   camera.updateMatrixWorld();

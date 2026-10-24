@@ -9,10 +9,11 @@ const GATE=Object.freeze({x:570,y:0,z:-1550,radius:340});
 // free picks the hostile nearest the escort itself.
 const ORDERS=Object.freeze({focus:'Focus my target',defend:'Defend the flagship',free:'Engage freely'});
 
-function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnemy,allies=[],getSelected,setSelected,DIFF,endGame,showMsg,game,V3,buildFreighter}){
+function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnemy,allies=[],getSelected,setSelected,DIFF,endGame,showMsg,hail,game,V3,buildFreighter}){
  const spec=encounter||(missionId&&root.BroadsideCampaign?root.BroadsideCampaign.storyEncounter(Number(missionId)):null)||{enemies:[],goal:{type:'destroy'}};
  const goal=spec.goal||{type:'destroy'},extras=[];
- let convoy=null,held=false,phase='transit',retargetTimer=0,noticeStage=0,elapsed=0,hostileCount=1,order='focus',escortT=0,spreadT=4;
+ let convoy=null,held=false,phase='transit',retargetTimer=0,noticeStage=0,elapsed=0,hostileCount=1,order='focus',escortT=0,spreadT=4,bossPhase=0;
+ const boss=spec.boss&&spec.boss.phases?{...spec.boss,ship:primaryEnemy}:null;
  const hostile=()=>ships.filter(s=>s.team==='e'&&s.alive);
  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
@@ -56,17 +57,43 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    extras.push(convoy);
   }
   // Further hostiles come in from alternating flanks so a pair works as a pincer.
-  list.slice(1).forEach((e,i)=>{
-   const ship=makeShip(e.cls,'e'),side=i%2?1:-1;
-   ship.name=e.name||ship.name;
-   scale(ship,e);
-   ship.ai={diff:DIFF[e.diff]||DIFF.commander||DIFF.captain,side,flankOffset:side*27,shT:3,pwT:0,mode:'close',sideT:0};
-   ship.target=player;
-   placeShip(ship,new V3(side*(2100+i*250),90,-1500-i*400),Math.PI);
-   extras.push(ship);
-  });
+  list.slice(1).forEach((e,i)=>{const side=i%2?1:-1;addHostile(e,side,new V3(side*(2100+i*250),90,-1500-i*400));});
   if(list.length>1){primaryEnemy.ai.flankOffset=26;primaryEnemy.ai.side=1;}
   hostileCount=Math.max(1,list.length);
+  // A boss holds back the weapons its later phases unlock.
+  if(boss){
+   const held=new Set(boss.phases.flatMap(p=>p.unlock||[]));
+   for(const g of primaryEnemy.groups)if(held.has(g.id))g.locked=true;
+   primaryEnemy.isBoss=true;
+  }
+ }
+ function addHostile(e,side,pos){
+  const ship=makeShip(e.cls,'e');
+  ship.name=e.name||ship.name;
+  scale(ship,e);
+  if(e.lattice)ship.latticeNode=true;
+  ship.ai={diff:DIFF[e.diff]||DIFF.commander||DIFF.captain,side,flankOffset:side*27,shT:3,pwT:0,mode:'close',sideT:0};
+  ship.target=player;
+  placeShip(ship,pos,Math.PI);
+  extras.push(ship);
+  return ship;
+ }
+ // Boss phases: each begins when the boss's hull falls past its threshold.
+ function enterPhase(i){
+  const p=boss.phases[i],b=boss.ship;bossPhase=i;
+  showMsg(boss.title+' · '+p.name,3.5);
+  if(p.line)hail?.({name:b.name,faction:spec.hail&&spec.hail.faction||'',line:p.line});
+  (p.spawn||[]).forEach((e,k)=>{const side=k%2?1:-1;addHostile(e,side,new V3(b.pos.x+side*800,b.pos.y+60,b.pos.z+300));hostileCount++;});
+  if(p.shields)b.sh=b.cap.slice();
+  for(const g of b.groups)if((p.unlock||[]).includes(g.id))g.locked=false;
+  if(p.lattice)b.dmgTaken=p.lattice;
+  if(p.regen)b.regenK=p.regen;
+ }
+ function bossTick(){
+  const b=boss.ship;if(!b.alive)return;
+  const f=b.hull/(b.maxHull||b.C.hull);
+  while(bossPhase+1<boss.phases.length&&f<=boss.phases[bossPhase+1].at)enterPhase(bossPhase+1);
+  if(b.dmgTaken<1&&!hostile().some(s=>s.latticeNode)){b.dmgTaken=1;showMsg('Lattice down · '+b.name+' is exposed',3);}
  }
  function toggleHold(){
   if(!convoy?.alive||game.ending)return false;
@@ -112,6 +139,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   if(ship===player){finish('lose','flagship_lost');return;}
   if(ship.civilian){finish('lose','convoy_lost');return;}
   if(ship.team==='p'){showMsg(ship.name+' disabled · escort out of the fight',3);return;}
+  if(boss&&ship===boss.ship){finish('win','boss_destroyed');return;}
   const alive=hostile();
   if(!alive.length){finish('win',convoy?.alive?'escort_saved':hostileCount>1?'fleet_destroyed':'enemy_destroyed');return;}
   if(getSelected()===ship||!getSelected()?.alive){
@@ -127,6 +155,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   if(goal.type==='surrender'&&primaryEnemy.alive&&player.alive&&primaryEnemy.hull<=primaryEnemy.C.hull*(goal.at||.28)){
    finish('win','surrender');game.endT=.35;return;
   }
+  if(boss)bossTick();
   if(goal.type==='survive'&&player.alive&&elapsed>=(goal.seconds||100)){
    finish('win','extracted');game.endT=.35;return;
   }
@@ -173,11 +202,12 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    const s=Math.min(goal.seconds||100,Math.floor(elapsed));
    return (goal.label||'HOLD FAST')+' · '+s+' / '+(goal.seconds||100)+' SECONDS · '+contacts;
   }
+  if(boss){const p=boss.phases[bossPhase];return boss.title+' · PHASE '+(bossPhase+1)+' OF '+boss.phases.length+' · '+p.name.toUpperCase()+(boss.ship.dmgTaken<1?' · LATTICE UP: DESTROY THE NODES':'')+' · '+contacts;}
   if(goal.type==='surrender')return 'FORCE SURRENDER BELOW '+Math.round((goal.at||.28)*100)+'% HULL · '+contacts;
   return 'CONTACTS · '+contacts+(n>1?' · J CYCLE TARGET':'');
  }
 
- return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,get order(){return order},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed}};
+ return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,get order(){return order},get boss(){return boss?{title:boss.title,phase:bossPhase,phases:boss.phases.map(p=>({name:p.name,at:p.at||1})),ship:boss.ship,lattice:boss.ship.dmgTaken<1}:null},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed}};
 }
 root.BroadsideFleet=Object.freeze({create,GATE,ORDERS});
 

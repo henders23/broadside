@@ -6,7 +6,7 @@ Updated: 24 October 2026.
 
 **Broadside** is a game about captaining a warship. The player directly manages one vessel's heading, throttle, firing arcs, directional shields, reactor allocation, torpedoes, subsystems and tactical decisions. The campaign adds persistent consequences, a cast of officers and up to two escorts, but the escorts take standing orders rather than direct control: it does not become a fleet strategy game.
 
-The campaign is being built out into a three-act grand campaign in four milestones. **Milestone 1 is in:** three acts, seven story operations, five starbases with mission boards (hand-written station missions and generated contracts), repairs and refits only at starbases, interceptions in hostile space, and one data-driven encounter system behind every battle. **Milestone 2 is in:** a fleet of up to three ships with per-ship damage, upgrades and names, a choice of flagship, and 3 v 3 battles with escort orders. Still to come: a boss battle at the end of each act (milestone 3), and reputation, captured hulls, recruitable officers, a codex, save slots and difficulty (milestone 4).
+The campaign is being built out into a three-act grand campaign in four milestones. **Milestone 1 is in:** three acts, seven story operations, five starbases with mission boards (hand-written station missions and generated contracts), repairs and refits only at starbases, interceptions in hostile space, and one data-driven encounter system behind every battle. **Milestone 2 is in:** a fleet of up to three ships with per-ship damage, upgrades and names, a choice of flagship, and 3 v 3 battles with escort orders. **Milestone 3 is in:** a boss battle closing each act. Still to come: reputation, captured hulls, recruitable officers, a codex, save slots and difficulty (milestone 4).
 
 ## Map and world
 
@@ -56,8 +56,32 @@ Skirmish mode still launches from the original title screen and remains independ
 | II | 6 | Midway | VIGIL Array: two Seraph pickets | Destroy both | 760 |
 | III | 5 | Harrow | The Cantor (Wraith) | Survive 100 seconds, or destroy | 900 |
 | III | 7 | Nex | The Choir (Wraith) + brood vessel | Escort the Long Lantern to the beacon, or destroy both | 980 |
+| I finale | 8 | Grimhold | Commodore Ingrid Halloran, dreadnought Pyre + escort | Destroy the boss | 1,500 |
+| II finale | 9 | Halcyon | The Arbiter + sentinel | Destroy the boss | 1,900 |
+| III finale | 10 | Verdant | The Bloom-Mother + brood guardian | Destroy the boss | 2,400 |
 
-Operations unlock in story order (1, 2, 3, 4, 6, 5, 7); the numbers 1–5 are kept from the original five so older saves stay valid. Post-battle choices set named flags for future narrative use. Campaign failure tows the flagship to the nearest starbase with a recovery cost and damaged hull; it is not permanent death.
+Operations unlock in story order (1, 2, 3, 8, 4, 6, 9, 5, 7, 10); the numbers 1–5 are kept from the original five so older saves stay valid. An act ends with its finale, so a save that had finished operations 1–3 before milestone 3 is back in Act I until it beats the Pyre.
+
+## Act finales
+
+- Each finale is a story operation with a `boss` block (`crew/campaign-data.js`): a title for the boss bar and three phases. Phase 1 runs from the start; each later phase begins when the boss's hull falls past its `at` fraction and can:
+  - `spawn` more ships beside the boss;
+  - restore its `shields`;
+  - `unlock` a weapon group held back until then;
+  - raise a `lattice`: the boss takes only that fraction of damage while any ship spawned with `lattice: true` lives;
+  - multiply a living hull's `regen`.
+- Phases also send a hail from the boss, and a hit big enough to cross two thresholds runs both. The goal type `boss` is won when the boss is destroyed, whatever escorts remain.
+- | Boss | Built on | Scale | Hull / shields | Phase 2 | Phase 3 |
+  | --- | --- | --- | --- | --- | --- |
+  | Pyre | Revenant (Warden hull), adds the Warden's siege cannons | 1.4× | 9,500 / 950 | 65%: two clan raiders, shields restored | 30%: inferno salvo (16 missiles) |
+  | Arbiter | Seraph, adds a spinal lance | 1.6× | 7,000 / 1,300 | 60%: two lattice nodes, 20% damage taken until they die | 30%: shields restored, Judgement lance |
+  | Bloom-Mother | Wraith | 1.8× | 8,500 / 760, regrows 26 a second | 65%: two brood ships | 35%: regrowth ×2.5, spore storm (20 spores) |
+- Boss classes are built by `bossClass()` in `index.html`: the base class's model scaled by `modelScale` (hit ellipsoids, gun and engine positions scale with it), new stats, boosted weapons and extra ones. They are enemy-only and never appear in skirmish.
+- The battle HUD shows a boss bar (hull, phase marks, current phase, lattice state) in place of the contact line. The map, arrival card, briefing (with a list of the phases) and HUD label the operation **Act N finale**.
+
+## Uneven fights
+
+- Not every battle is matched to the fleet. Each encounter's `support` caps how many support ships the enemy adds against escorts: story operations and station missions set it (Thorne and the Cantor always fight alone; ORACLE-9 can bring two drones), and generated contracts and interceptions draw 0, 1 or 2 from the encounter id. Post-battle choices set named flags for future narrative use. Campaign failure tows the flagship to the nearest starbase with a recovery cost and damaged hull; it is not permanent death.
 
 ## Starbases, station missions and contracts
 
@@ -80,7 +104,7 @@ Operations unlock in story order (1, 2, 3, 4, 6, 5, 7); the numbers 1–5 are ke
 - The battle page builds the flagship as the player's ship and each escort as a friendly AI ship (team `p`, `captain` difficulty) with its own upgrades, hull, subsystems and torpedoes, formed up either side of the flagship.
 - Standing orders, set with **U**, **I** and **O** or the Escorts panel (each escort's hull and current target): **focus my target** (the flagship's selected enemy), **defend the flagship** (the hostile attacking the flagship, nearest first) and **engage freely** (the hostile nearest each escort). `crew/fleet-controller.js` re-picks escort targets once a second.
 - Hostiles re-pick targets every nine seconds among the player's ships, nearest first with a bias toward the flagship; an escort mission's lead hunter keeps chasing the convoy.
-- Enemies are topped up to match the player's fleet, up to three: `reinforcements()` adds light support ships of the lead enemy's kind (Corsair escort, Ash Fleet escort, Directorate drone, Wraith brood). Rewards are unchanged.
+- Enemies may be topped up toward the player's fleet size, up to their `support` cap (see Uneven fights): `reinforcements()` adds light support ships of the lead enemy's kind (Corsair escort, Ash Fleet escort, Directorate drone, Wraith brood). Rewards are unchanged.
 - Losing an escort does not lose the battle; losing the flagship does. Every ship that flew writes its condition back to its record; a disabled escort comes home at 30% hull and the after-action report names it (`pendingResult.lost`).
 - Officer commands still act on the flagship only.
 
@@ -136,9 +160,9 @@ The rebuilt strategic screen was exercised in headless Chromium (SwiftShader Web
 
 ## Recommended next milestones
 
-1. **Boss battles (milestone 3)** — A unique boss at the end of each act, with escorts, phases and special weapons.
-2. **Depth (milestone 4)** — Faction reputation, capturing hulls, recruitable officers, a codex, save slots and difficulty settings.
-3. **Battle QA and balancing** — Play every operation, station mission and contract type on all four hulls, alone and with escorts. Contract pay, enemy strength, hull prices, reinforcement strength, interception odds and breakaway chances are first-pass numbers.
+1. **Depth (milestone 4)** — Faction reputation, capturing hulls, recruitable officers, a codex, save slots and difficulty settings.
+2. **Battle QA and balancing** — including the three bosses, solo and with a fleet.
+3. **Further QA** — Play every operation, station mission and contract type on all four hulls, alone and with escorts. Contract pay, enemy strength, hull prices, reinforcement strength, interception odds and breakaway chances are first-pass numbers.
 4. **Art pass** — Portraits for the new commanders (VIGIL Array and the Choir use the classified medallion; generated contract captains do too), an authored civilian hull, arrival transitions.
 
 Every milestone should preserve the intentional slow, dangerous, naval feel of Broadside.
@@ -188,4 +212,10 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 
 - Node tests: `tests/fleet-controller.test.js` adds a three-ship fight (reinforcements, each escort order, losing an escort, winning) and fire spreading across the player's ships; `tests/campaign-data.test.js` adds hull prices, ship names, `deployed()`, fleet breakaway odds and reinforcements.
 - Headless Chromium runs covered: commissioning a Sabre (name tidied and shown as text, not HTML), its own systems in the yard, an upgrade fitted to one ship only, per-ship overhaul, a full fleet, switching flagship, reserve and deploy, selling, no buying or selling undocked, and operation 1 flown with three ships: the Harrier as flagship, the Resolute and a Warden as escorts, Vex reinforced to three, the Escorts panel, U/I/O and the buttons, escorts holding hostile targets. Ending the battle wrote each escort's damage back, recovered the disabled one at 30%, and the after-action report named her. Skirmish was checked unchanged. No page errors. The fleet battle was ended by applying damage through the test hook, not played out.
+
+## Grand campaign milestone 3 — QA (24 October 2026)
+
+- Node tests: `tests/campaign-data.test.js` covers the new story order and act boundaries, the finales' phases, and support caps (fixed per story operation, 0–2 for generated fights). `tests/fleet-controller.test.js` runs each boss: the Pyre's clan raiders, restored shields, hail and inferno unlock, and winning with escorts still alive; the Arbiter's lattice holding until both nodes die, then the lance unlocking; and the Bloom-Mother crossing two phases in one hit.
+- Headless Chromium runs covered: the Act I finale on the map, arrival card and briefing (with phases); the Pyre in battle with its boss bar, a lone flagship facing it plus one escort, the inferno salvo locked, phase 2's raiders and phase 3's unlock, destroying it, the end screen, the after-action report, and Act II opening; Halcyon offering the Arbiter after Ghost Frequency, the lattice with its nodes, a 1,000-point hit reduced to 200, the lattice falling with the nodes; the Bloom-Mother and her regrowth phase; three ships against Thorne alone; and a new game leaving one fresh ship with no upgrades or damage, fighting with the stock hull. No page errors. Phases were reached by setting the boss's hull through the test hook; the fights were not played out.
+- Fixed in passing: scaled-down ships with a living hull (Wraith spawn) regrew to the full class hull instead of their own.
 

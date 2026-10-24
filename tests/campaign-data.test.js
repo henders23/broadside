@@ -14,17 +14,20 @@ same([...C.path('meridian', 'vela')], ['meridian', 'kestrel', 'vela']);
 
 // Acts and the story order
 assert.equal(C.ACTS.length, 3);
-same([...C.STORY_ORDER], [1, 2, 3, 4, 6, 5, 7]);
+same([...C.STORY_ORDER], [1, 2, 3, 8, 4, 6, 9, 5, 7, 10]);
 assert.equal(C.actOf([]), 1);
 assert.equal(C.actOf([1, 2]), 1);
-assert.equal(C.actOf([1, 2, 3]), 2);
-assert.equal(C.actOf([1, 2, 3, 4, 6]), 3);
-assert.equal(C.actOf([1, 2, 3, 4, 6, 5, 7]), 4, 'past the last act once everything is done');
+assert.equal(C.actOf([1, 2, 3]), 1, 'Act I ends with its finale');
+assert.equal(C.actOf([1, 2, 3, 8]), 2);
+assert.equal(C.actOf([1, 2, 3, 8, 4, 6, 9]), 3);
+assert.equal(C.actOf([1, 2, 3, 8, 4, 6, 9, 5, 7, 10]), 4, 'past the last act once everything is done');
 assert.equal(C.storyAvailable([], 1), true);
 assert.equal(C.storyAvailable([], 2), false);
-assert.equal(C.storyAvailable([1, 2, 3, 4], 5), false, 'Harrow waits for the Midway relay');
-assert.equal(C.storyAvailable([1, 2, 3, 4], 6), true);
-assert.equal(C.storyAvailable([1, 2, 3, 4, 6], 5), true);
+assert.equal(C.storyAvailable([1, 2, 3], 4), false, 'Act II waits for the Pyre');
+assert.equal(C.storyAvailable([1, 2, 3], 8), true);
+assert.equal(C.storyAvailable([1, 2, 3, 8, 4], 5), false, 'Harrow waits for the Midway relay');
+assert.equal(C.storyAvailable([1, 2, 3, 8, 4], 6), true);
+assert.equal(C.storyAvailable([1, 2, 3, 8, 4, 6, 9], 5), true);
 same(C.openStory([1]).map(m => m.id), [2]);
 for (const m of C.STORY) {
   assert.ok(C.byId[m.system], `story ${m.id} system`);
@@ -101,6 +104,30 @@ assert.equal(C.reinforcements(C.storyEncounter(4), 1).length, 0, 'no support aga
 assert.equal(C.reinforcements(C.storyEncounter(4), 3).length, 2);
 assert.equal(C.reinforcements(C.storyEncounter(2), 3).length, 1, 'Sable already brings a pursuer');
 assert.equal(C.reinforcements(C.storyEncounter(2), 3)[0].name, 'Ash Fleet escort');
-assert.equal(C.reinforcements(C.storyEncounter(5), 2)[0].cls, 'wraith');
+assert.equal(C.reinforcements(C.storyEncounter(7), 3)[0].cls, 'wraith');
+// Not every fight is matched to the fleet
+assert.equal(C.reinforcements(C.storyEncounter(3), 3).length, 0, 'Thorne fights alone');
+assert.equal(C.reinforcements(C.storyEncounter(5), 3).length, 0, 'the Cantor makes first contact alone');
+const caps = new Set(); for (let i = 0; i < 40; i++) caps.add(C.supportCap({ id: 'c:meridian:' + i + ':0' }));
+same([...caps].sort(), [0, 1, 2], 'generated fights draw 0, 1 or 2 support ships');
+assert.equal(C.supportCap({ id: 'x', support: 0 }), 0);
+const gen = C.encounter(C.contracts('meridian', 3, 1)[0]);
+assert.equal(C.reinforcements(gen, 3).length, C.supportCap(gen));
+
+// Act finales: a boss in phases
+for (const [id, act, cls] of [[8, 1, 'pyre'], [9, 2, 'arbiter'], [10, 3, 'mother']]) {
+  const m = C.storyById[id], e = C.storyEncounter(id), last = C.ACTS[act - 1].story;
+  assert.equal(last[last.length - 1], id, `operation ${id} closes act ${act}`);
+  assert.equal(e.enemies[0].cls, cls); assert.equal(e.goal.type, 'boss'); assert.equal(e.label, `ACT ${C.ACTS[act - 1].numeral} FINALE`);
+  assert.ok(e.boss.phases.length === 3 && e.boss.phases[0].at === undefined, 'three phases, the first from the start');
+  assert.ok(e.boss.phases[1].at > e.boss.phases[2].at, 'phase thresholds fall');
+  assert.ok(e.boss.phases.slice(1).every(p => p.line), 'each later phase has a hail line');
+  assert.ok(m.ends.boss_destroyed, 'a closing line');
+  assert.equal(e.enemies.length, 2, 'the boss starts with an escort');
+}
+assert.equal(C.reinforcements(C.storyEncounter(8), 3)[0].name, 'Ash Fleet escort');
+assert.equal(C.storyEncounter(9).boss.phases[1].lattice, 0.2);
+assert.ok(C.storyEncounter(9).boss.phases[1].spawn.every(e => e.lattice));
+assert.deepEqual(plain(C.storyEncounter(10).boss.phases[2].unlock), ['storm']);
 
 console.log('Campaign data tests passed.');

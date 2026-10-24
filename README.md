@@ -25,15 +25,18 @@ The title screen is a live engagement: two AI captains fight a real battle behin
 Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use **Campaign** from the title menu). The existing skirmish mode remains available.
 
 - Code-drawn star chart with **33 clickable systems**, jump lanes and faint borders around each of the six regions. Hover a system to **set course**; the flagship jumps there and a **system arrival** screen shows its details and any operation you can take on. Only operations you can launch now are listed.
-- An opening briefing from **Fleet Admiral Gideon Harlan** (full-screen portrait, Act I orders) when a campaign begins; replay it from **Intel**.
-- **Five linked operations** with named enemies: Captain Kora Vex (Scrapjaw), Commander Orren Sable (Revenant), Captain Garrick Thorne (Scrapjaw), ORACLE-9 (Seraph) and the alien Cantor (Wraith).
+- **Three acts**: *The Long Watch* (pirates and Ash Fleet renegades), *The Machine Signal* (ORACLE-9 and the Directorate) and *The Wraith*. Each opens with a full-screen briefing from **Fleet Admiral Gideon Harlan**; replay the current one from **Intel**.
+- **Seven story operations** with named enemies: Captain Kora Vex, Commander Orren Sable, Captain Garrick Thorne, ORACLE-9, the VIGIL Array, the Cantor and the Choir.
+- **Five starbases** (Meridian, Tarn, Peregrine, Elysia, Juniper) with **mission boards**: ten hand-written station missions that open act by act, and three generated contracts per station (bounty, patrol, escort) that change after every victory. Hold up to four orders at once; fly to the target and engage from its arrival screen.
+- Repairs, rearming and upgrades only at a starbase.
+- Jumps are free, but routes through hostile space can be **intercepted**: fight for salvage, or try to break away (fast hulls and healthy engines get away more often).
 - Persistent campaign save in browser localStorage (key `broadside-campaign-v1`): selected flagship, progress, decisions, hull condition, critical subsystem damage, surviving torpedoes and requisition.
-- Mission three can end in a pirate surrender. The fifth operation can be won by surviving **100 seconds** or destroying the bioship.
-- **Shipyard** showing your flagship's 3D model side-on, with its seven systems (engines, hull, reactor, broadsides, forward weapon, shields, torpedo bay) as slots tied to their hardpoints and battle condition. Each system has three permanent **upgrades** to buy with requisition (21 in all, 260–450 each); they apply in every campaign battle. Hull overhaul, emergency repairs and torpedo resupply are here too.
+- Battles are staged from data: escorts to a jump beacon, timed holds, forced surrenders and two-ship pincers, for story operations and generated work alike.
+- **Shipyard** (works while docked) showing your flagship's 3D model side-on, with its seven systems (engines, hull, reactor, broadsides, forward weapon, shields, torpedo bay) as slots tied to their hardpoints and battle condition. Each system has three permanent **upgrades** to buy with requisition (21 in all, 260–450 each); they apply in every campaign battle. Hull overhaul, emergency repairs and torpedo resupply are here too.
 - **Officers** screen with each bridge officer's dossier, battle command (key, cooldown, effect), service record and field reports, plus the enemy commanders identified so far. Officers start at the bottom of their career (ensigns, and a petty officer for the engineer) and gain **experience** in every engagement, more for each command you give them; each promotion, up to Captain, makes their command stronger and its cooldown shorter, and **Intel** for campaign clues and branching narrative decisions.
-- Completing a mission unlocks the next operation. A mission loss returns you to the sector campaign with a damaged but recoverable flagship rather than deleting the save.
+- Completing a story operation unlocks the next. A loss tows the flagship to the nearest starbase, damaged but recoverable, rather than deleting the save.
 
-The first five operations remain a **campaign vertical slice**, not a finished grand-strategy game. Operation 1 offers a choice between protecting the civilian MV Peregrine until it jumps or destroying the pirate first; Operation 2 includes a two-hostile encounter with coordinated flanking attacks. Every operation has a distinct generated 3D battle environment and themed nebula lighting. Named officer combat abilities (keys 5–9), cycling hostile targets (J), and multiple-contact tactical plots are playable. Full WebGL campaign QA and tuning are still required. `campaign.html` supplies the strategic UI while `index.html?campaign=N` launches the tactical encounters.
+The grand campaign is being built in milestones: acts, starbases and contracts are in; a fleet of up to three ships with escort orders and a boss battle per act are next. Each region has its own generated 3D battle environment and nebula lighting. Named officer combat abilities (keys 5–9), cycling hostile targets (J), and multiple-contact tactical plots are playable. Full WebGL campaign QA and tuning are still required. `campaign.html` supplies the strategic UI, and `index.html?encounter=1` stages the battle it saved (`crew/campaign-data.js` holds the campaign's data).
 
 See [Campaign design and technical notes](docs/CAMPAIGN.md) for current architecture, known limitations and roadmap.
 
@@ -62,7 +65,7 @@ python3 -m http.server 8000
 | T | Torpedo |
 | B | Batteries free: guns fire automatically when loaded and in arc |
 | J | Cycle enemy targets (campaign battles) |
-| H | Hold / resume MV Peregrine (Operation 1; also available as an on-screen button) |
+| H | Hold / resume an escorted convoy (escort missions; also an on-screen button) |
 | 5 / 6 / 7 / 8 / 9 | Bridge officer abilities (campaign battles) |
 | Drag / wheel | Orbit / zoom the camera · C looks toward the enemy |
 | Tab | Enlarged tactical plot |
@@ -70,7 +73,7 @@ python3 -m http.server 8000
 
 ## Fleet encounter regression tests
 
-Run `node tests/fleet-controller.test.js`, `node tests/environment.test.js`, `node tests/upgrades.test.js` and `node tests/experience.test.js` from the repository root. This tests escort success/failure and two-enemy target cycling and completion, without requiring WebGL. The named enemy commanders have four distinct original SVG illustrations in `img/commanders/`, while ORACLE-9 uses the original portrait atlas. The SVG art is illustrated, not photorealistic.
+Run `node tests/fleet-controller.test.js`, `node tests/campaign-data.test.js`, `node tests/environment.test.js`, `node tests/upgrades.test.js` and `node tests/experience.test.js` from the repository root. These test escorts, surrenders, timed holds and two-enemy fights, contract generation, interceptions and act progression, without requiring WebGL. The named enemy commanders have four distinct original SVG illustrations in `img/commanders/`, while ORACLE-9 uses the original portrait atlas. The SVG art is illustrated, not photorealistic.
 
 ## Performance
 

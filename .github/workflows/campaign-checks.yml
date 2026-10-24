@@ -22,3 +22,5 @@ jobs:
         run: node tests/upgrades.test.js
       - name: Run officer experience rules
         run: node tests/experience.test.js
+      - name: Run campaign data rules
+        run: node tests/campaign-data.test.js

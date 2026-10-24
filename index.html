@@ -422,6 +422,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <script src="crew/personnel.js"></script>
 <script src="crew/experience.js"></script>
 <script src="crew/bridge-controller.js"></script>
+<script src="crew/campaign-data.js"></script>
 <script src="crew/fleet-controller.js"></script>
 <script src="crew/battle-environments.js"></script>
 <script src="crew/upgrades.js"></script>
@@ -607,17 +608,16 @@ const DIFF = {
 
 // ---------------- options ----------------
 const choice = { ship: 'bastion', diff: 'captain' };
-// The Shattered Reach uses the existing battle engine for the opening two operations.
+// Campaign battles are staged from an encounter spec (crew/campaign-data.js): campaign.html stores it in the save
+// under `launch` and opens index.html?encounter=1. index.html?campaign=N still opens story operation N.
 const CAMPAIGN_KEY = 'broadside-campaign-v1';
-const CAMPAIGN_OPERATIONS = {
-  1: { enemy: 'scrapjaw', commander: 'Captain Kora Vex', title: 'Distress at Kestrel', objective: 'Defeat Captain Kora Vex and secure the trade lane' },
-  2: { enemy: 'revenant', commander: 'Commander Orren Sable', title: 'The Cinder Wake', objective: 'Defeat the Ash Fleet minelayer and recover the transponder evidence' },
-  3: { enemy: 'scrapjaw', commander: 'Captain Garrick Thorne', title: "The Widow's Toll", objective: 'Force Captain Thorne to surrender or destroy his toll raider' },
-  4: { enemy: 'seraph', commander: 'ORACLE-9', title: 'Ghost Frequency', objective: 'Disable ORACLE-9 and recover its transmission archive' },
-  5: { enemy: 'wraith', commander: 'The Cantor', title: 'The First Bloom', objective: 'Survive 100 seconds of first contact or destroy the bioship' }
-};
-const campaignMissionId = Number(new URLSearchParams(location.search).get('campaign')) || 0;
-const campaignMission = CAMPAIGN_OPERATIONS[campaignMissionId] || null;
+const campaignParams = new URLSearchParams(location.search);
+const campaignMissionId = Number(campaignParams.get('campaign')) || 0;
+const campaignMission = (() => {
+  const C = window.BroadsideCampaign; if (!C) return null;
+  if (campaignParams.has('encounter')) { const save = readCampaignSave(); return save && save.launch && Array.isArray(save.launch.enemies) && save.launch.enemies.length ? save.launch : null; }
+  return campaignMissionId ? C.storyEncounter(campaignMissionId) : null;
+})();
 let bridge = null;
 let fleet = null;
 function readCampaignSave() { try { const v = JSON.parse(localStorage.getItem(CAMPAIGN_KEY) || 'null'); return v && v.version === 1 ? v : null; } catch(e) { return null; } }
@@ -1369,17 +1369,17 @@ function clearWorld() {
 function startGame() {
   attractStop();
   Sfx.init(); Music.play('battle', true);
-  clearWorld(); battleEnvironment.configure(campaignMissionId); display.visible = false;
+  clearWorld(); battleEnvironment.configure(campaignMission ? campaignMission.env : 0, { gate: !!(campaignMission && campaignMission.gate) }); display.visible = false;
   const campaignSave = campaignMission ? readCampaignSave() : null;
   const pk = campaignSave && CLASSES[campaignSave.ship] && !CLASSES[campaignSave.ship].enemyOnly ? campaignSave.ship : choice.ship;
   const others = Object.keys(CLASSES).filter(k => k !== pk);
-  const ek = campaignMission ? campaignMission.enemy : others[Math.floor(Math.random() * others.length)];
+  const ek = campaignMission && CLASSES[campaignMission.enemies[0].cls] ? campaignMission.enemies[0].cls : others[Math.floor(Math.random() * others.length)];
   const upgraded = campaignSave && window.BroadsideUpgrades ? window.BroadsideUpgrades.apply(CLASSES[pk], campaignSave.upgrades) : CLASSES[pk];
   player = makeShip(pk, 'p', upgraded); enemy = makeShip(ek, 'e');
   player.target = enemy; enemy.target = player;
   if (campaignMission) {
     player.name = (campaignSave && campaignSave.shipName) || 'MNS Resolute';
-    enemy.name = campaignMission.commander;
+    enemy.name = campaignMission.enemies[0].name;
     if (campaignSave && typeof campaignSave.hull === 'number') {
       player.hull = Math.round(player.C.hull * clamp(campaignSave.hull, 0.25, 1));
     }
@@ -1395,7 +1395,7 @@ function startGame() {
   enemy.ai = { diff: DIFF[choice.diff], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
   game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [] };
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
-    missionId:campaignMissionId,makeShip,placeShip,ships,player,primaryEnemy:enemy,
+    encounter:campaignMission,makeShip,placeShip,ships,player,primaryEnemy:enemy,
     getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
     DIFF,endGame,showMsg,game,V3,buildFreighter:ship=>battleEnvironment.buildFreighter(ship)
   }):null;
@@ -1410,11 +1410,12 @@ function startGame() {
   sizeCanvases();
   renderer.compile(scene, camera);
   $('campaign-objective').hidden = !campaignMission;
-  $('fleet-objective').hidden = !fleet;
+  // A plain one-on-one fight needs no contact line; escorts, timers, surrenders and pincers do.
+  $('fleet-objective').hidden = !fleet || (fleet.spec.goal.type === 'destroy' && fleet.spec.enemies.length < 2);
   $('escort-hold').hidden = !fleet?.convoy;
   $('escort-hold').textContent='HOLD CONVOY [H]';
-  if (campaignMission) $('campaign-objective').textContent = 'OPERATION 0' + campaignMissionId + ' // ' + campaignMission.objective;
-  bridge?.incomingHail(campaignMissionId);
+  if (campaignMission) $('campaign-objective').textContent = campaignMission.label + ' // ' + campaignMission.objective;
+  bridge?.incomingHail(campaignMission ? campaignMission.hail : 0);
   if(fleet)$('fleet-objective').textContent=fleet.status();
   showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[choice.diff].label, 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
@@ -1441,20 +1442,21 @@ function showOver() {
   rows.push(['Hull left', Math.max(0, Math.round(player.hull))]);
   $('over-stats').innerHTML = rows.map(r => `<div><small>${r[0]}</small><b>${r[1]}</b></div>`).join('');
   $('hud').hidden = true; $('escort-hold').hidden=true; $('over').hidden = false; Sfx.engine(0, false);
-  if (campaignMission && win && game.campaignOutcome === 'escort_extracted') {
-    $('over-word').textContent = 'Convoy extracted';
-    $('over-sub').textContent = 'The MV Peregrine reached the illuminated jump gate. You held the corridor long enough for its civilians to escape.';
-  } else if (campaignMission && win && game.campaignOutcome === 'surrender') {
-    $('over-word').textContent = 'Pirate commander surrendered';
-    $('over-sub').textContent = 'Captain Thorne has powered down his weapons and surrendered the Red Narrows toll lane.';
-  } else if (campaignMission && win && game.campaignOutcome === 'extracted') {
-    $('over-word').textContent = 'First contact survived';
-    $('over-sub').textContent = 'The Cantor remains at large. Your ship has transmitted alien biosignatures and escaped the engagement.';
+  if (campaignMission && win) {
+    const code = game.campaignOutcome, convoy = (fleet?.convoy?.name || 'The convoy').split(' · ')[0], custom = campaignMission.ends && campaignMission.ends[code];
+    const ends = {
+      escort_extracted: ['Convoy extracted', convoy + ' reached the illuminated jump beacon. You held the corridor long enough for it to escape.'],
+      fleet_destroyed: ['Hostiles destroyed', ''],
+      surrender: ['Enemy commander surrendered', enemy.name + ' has powered down weapons and surrendered.'],
+      extracted: ['Objective complete', 'You held on long enough. ' + enemy.name + ' remains at large, but the job is done.']
+    };
+    const pick = custom || ends[code];
+    if (pick) { $('over-word').textContent = pick[0]; $('over-sub').textContent = pick[1]; }
   }
   if (campaignMission) {
     const saved = readCampaignSave();
     if (saved) {
-      saved.pendingResult = { id: campaignMissionId, outcome: win ? 'win' : 'loss', time: Math.round(game.time), tacticalOutcome: game.campaignOutcome || (win ? 'enemy_destroyed' : 'flagship_lost'), officerUses: bridge ? bridge.uses : null };
+      saved.pendingResult = { id: campaignMission.story || campaignMission.id, kind: campaignMission.kind, ref: campaignMission.id, system: campaignMission.system, outcome: win ? 'win' : 'loss', time: Math.round(game.time), tacticalOutcome: game.campaignOutcome || (win ? 'enemy_destroyed' : 'flagship_lost'), officerUses: bridge ? bridge.uses : null };
       // An escort loss is not the destruction of the player's flagship.
       const flagshipSurvived = player.alive && player.hull > 0;
       saved.hull = flagshipSurvived ? clamp(player.hull / player.C.hull, 0.1, 1) : 0.45;
@@ -1466,10 +1468,11 @@ function showOver() {
     }
     $('again').hidden = true;
     $('tomenu').textContent = 'Return to campaign';
-    if(!win&&game.campaignOutcome==='convoy_lost')$('over-sub').textContent='The MV Peregrine has been lost. Return to Meridian, refit, and attempt the escort again.';
-    else if(!win)$('over-sub').textContent='Rescue teams are bringing surviving crew back to Meridian space. Return to the campaign map to regroup.';
-    else if(game.campaignOutcome==='escort_saved')$('over-sub').textContent='The MV Peregrine survived. All hostile vessels have been disabled.';
-    else if(game.campaignOutcome==='fleet_destroyed')$('over-sub').textContent='The minelayer and raider escort are both disabled.';
+    const convoyName = (fleet?.convoy?.name || 'The convoy').split(' · ')[0];
+    if(!win&&game.campaignOutcome==='convoy_lost')$('over-sub').textContent=convoyName+' has been lost. Refit at a starbase and attempt the escort again.';
+    else if(!win)$('over-sub').textContent='Rescue teams are towing the ship to the nearest starbase. Return to the campaign map to regroup.';
+    else if(game.campaignOutcome==='escort_saved')$('over-sub').textContent=convoyName+' survived. All hostile vessels have been disabled.';
+    else if(game.campaignOutcome==='fleet_destroyed')$('over-sub').textContent='Every hostile ship is disabled. Ship damage, subsystem condition and remaining torpedoes have been recorded.';
     else if (!game.campaignOutcome) $('over-sub').textContent = 'Operation secured. Ship damage, subsystem condition and remaining torpedoes have been recorded.';
   }
 }
@@ -2532,27 +2535,6 @@ function updateGame(dt) {
   bridge?.tick(dt);
   fleet?.tick(dt);
   if(fleet&&Math.floor(game.time*4)!==Math.floor((game.time-dt)*4))$('fleet-objective').textContent=fleet.status();
-  if (campaignMission && !game.ending) {
-    if (campaignMissionId === 3 && enemy?.alive && player?.alive && enemy.hull <= enemy.C.hull * .28) {
-      game.campaignOutcome = 'surrender';
-      enemy.target = null; enemy.ai = null; enemy.step = 0;
-      endGame('win'); game.endT = .35;
-      player.isWinner = true;
-    }
-    if (campaignMissionId === 5 && player?.alive) {
-      const second = Math.min(100, Math.floor(game.time));
-      if (game.objectiveSecond !== second) {
-        game.objectiveSecond = second;
-        $('campaign-objective').textContent = 'FIRST CONTACT // HOLD FAST ' + second + ' / 100 SECONDS · SURVIVE TO TRANSMIT';
-      }
-      if (game.time >= 100 && !game.ending) {
-        game.campaignOutcome = 'extracted';
-        enemy.target = null; enemy.ai = null; enemy.step = 0;
-        endGame('win'); game.endT = .35;
-        player.isWinner = true;
-      }
-    }
-  }
   for (const a of asteroids) { a.mesh.rotation.x += a.spin.x * dt; a.mesh.rotation.y += a.spin.y * dt; }
   if (player.alive) playerHelm(dt);
   for (const s of ships) {
@@ -2636,9 +2618,9 @@ async function boot() {
   renderer.compile(scene, camera);
   // Skip the skirmish menu when a campaign operation is launched from the star map.
   if (campaignMission) {
-    const save = readCampaignSave();
-    if (save && !(save.completed || []).includes(campaignMissionId) && (campaignMissionId === 1 || (save.completed || []).includes(campaignMissionId - 1))) startGame();
-    else location.replace('campaign.html');
+    const save = readCampaignSave(), C = window.BroadsideCampaign;
+    const ok = save && (campaignMission.kind !== 'story' || C.storyAvailable(save.completed, campaignMission.story));
+    if (ok) startGame(); else location.replace('campaign.html');
   }
 }
 let last = performance.now();

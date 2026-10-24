@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
-for(const name of ['crew/personnel.js','crew/bridge-controller.js','crew/fleet-controller.js','crew/battle-environments.js','crew/upgrades.js','crew/experience.js']){
+for(const name of ['crew/personnel.js','crew/bridge-controller.js','crew/fleet-controller.js','crew/battle-environments.js','crew/upgrades.js','crew/experience.js','crew/campaign-data.js']){
   const code=fs.readFileSync(name,'utf8');
   new Function(code);
 }
@@ -26,7 +26,9 @@ for(const name of ['vex','thorne']){
 }
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/fleet\.onDestroyed\(s\)/);
-assert.match(html,/battleEnvironment\.configure\(campaignMissionId\)/);
+assert.match(html,/battleEnvironment\.configure\(campaignMission \? campaignMission\.env/);
+assert.match(html,/crew\/campaign-data\.js/);
+assert.match(fs.readFileSync('campaign.html','utf8'),/crew\/campaign-data\.js/);
 assert.match(html,/escort-hold/);
 assert.match(html,/fleet\?\.tick\(dt\)/);
 assert.match(html,/getTarget:\(\)=>player\.target/);

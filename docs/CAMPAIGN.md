@@ -1,12 +1,12 @@
 # The Shattered Reach — campaign implementation and design brief
 
-Updated: 23 October 2026.
+Updated: 24 October 2026.
 
 ## Identity and playable scope
 
 **Broadside** is a game about captaining a warship. The player directly manages one vessel's heading, throttle, firing arcs, directional shields, reactor allocation, torpedoes, subsystems and tactical decisions. The campaign adds persistent consequences and a cast of officers, but does not turn the game into a direct-control fleet strategy game.
 
-The prototype currently has five consecutive story engagements. **Status matters:** missions 1–5 launch in the browser today; mission 3's surrender trigger and mission 5's timed extraction are implemented; escort protection and the first two-enemy engagement are now implemented; surrender negotiations beyond the fixed trigger and more varied operation types are not yet implemented.
+The campaign is being built out into a three-act grand campaign in four milestones. **Milestone 1 is in:** three acts, seven story operations, five starbases with mission boards (hand-written station missions and generated contracts), repairs and refits only at starbases, interceptions in hostile space, and one data-driven encounter system behind every battle. Still to come: a fleet of up to three ships with escort orders (milestone 2), a boss battle at the end of each act (milestone 3), and reputation, captured hulls, recruitable officers, a codex, save slots and difficulty (milestone 4).
 
 ## Map and world
 
@@ -28,38 +28,61 @@ The prototype currently has five consecutive story engagements. **Status matters
 - Prices and effect sizes are first-pass values, chosen so a campaign's rewards (3,130 requisition plus the starting 850) buy roughly a third of the catalogue alongside repairs. They need playtesting.
 - If WebGL or the three.js CDN is unavailable the slots and services still work, and the ship area shows a short notice.
 
-## Opening briefing
+## Act briefings
 
-- **Act I · The Long Watch**: a full-screen briefing from Fleet Admiral Gideon Harlan, Commander of the Frontier Fleet, with his portrait (`img/admiral-harlan.webp`). It sets up the act (the missing merchant ships, the Kestrel warning, stolen Navy hardware) and gives three standing orders.
-- Shown once when a campaign begins (first visit with no progress, or after commissioning a new campaign), recorded as `state.introSeen`; it can be replayed from Intel. Take command or Escape closes it.
+- Each act opens with a full-screen briefing from Fleet Admiral Gideon Harlan, Commander of the Frontier Fleet, with his portrait (`img/admiral-harlan.webp`): **Act I · The Long Watch**, **Act II · The Machine Signal** and **Act III · The Wraith**. The text and three standing orders per act live in `ACTS` in `crew/campaign-data.js`.
+- A briefing shows once, when its act begins (`state.actBriefed` records the highest act briefed; older saves that had seen the Act I briefing count as briefed). Intel replays the current act's briefing. Take command or Escape closes it.
+- Finishing the last story operation of Act III shows a closing message from Harlan; the starbases keep posting work afterwards.
 
 ## Core loop
 
-1. Inspect reachable systems and review mission intelligence.
-2. Open an operation briefing and select the flagship.
-3. Fight using the existing 3D capital-ship combat engine.
-4. Record the result and persistent ship hull, subsystems and ordnance.
-5. Choose the post-mission decision and receive requisition.
-6. Repair/refit at the shipyard and deploy to the next operation.
+1. Jump across the Reach. Jumps are free, but hostile space can spring an interception.
+2. Dock at a starbase to take station missions and contracts, repair, rearm and fit upgrades.
+3. Fly to a story operation or an accepted order and launch it from the system's arrival screen.
+4. Fight using the 3D capital-ship combat engine; hull, subsystems and ordnance carry over.
+5. Collect requisition, officer experience and (for story operations) make the aftermath decision.
+6. Finish an act's story operations to open the next act.
 
 Skirmish mode still launches from the original title screen and remains independent of campaign state.
 
-## Opening operations
+## Story operations
 
-| # | System | Enemy captain | Enemy hull | Win condition | Reward |
+| Act | # | System | Enemy | Win condition | Reward |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Kestrel | Captain Kora Vex | Scrapjaw pirate ram | Defeat pirate and preserve the unarmed MV Peregrine | 420 requisition |
-| 2 | Cinder Wake | Commander Orren Sable | Revenant + Scrapjaw pursuer | Destroy both hostile warships | 540 requisition |
-| 3 | Red Narrows | Captain Garrick Thorne | Scrapjaw pirate ram | Reduce enemy hull to <=28% for surrender, or destroy | 570 requisition |
-| 4 | Halcyon | ORACLE-9 | Seraph beam frigate | Destroy machine frigate | 700 requisition |
-| 5 | Harrow | The Cantor | Wraith bioship | Survive for 100 seconds, or defeat bioship | 900 requisition |
+| I | 1 | Kestrel | Captain Kora Vex (Scrapjaw) | Escort the MV Peregrine to the beacon, or destroy Vex | 420 |
+| I | 2 | Cinder Wake | Commander Orren Sable (Revenant) + Scrapjaw pursuer | Destroy both | 540 |
+| I | 3 | Red Narrows | Captain Garrick Thorne (Scrapjaw) | Force surrender below 28% hull, or destroy | 570 |
+| II | 4 | Halcyon | ORACLE-9 (Seraph) | Destroy | 700 |
+| II | 6 | Midway | VIGIL Array: two Seraph pickets | Destroy both | 760 |
+| III | 5 | Harrow | The Cantor (Wraith) | Survive 100 seconds, or destroy | 900 |
+| III | 7 | Nex | The Choir (Wraith) + brood vessel | Escort the Long Lantern to the beacon, or destroy both | 980 |
 
-Post-battle choices set named flags for future narrative use; they currently do not produce subsequent enemy reactions. Story progress is sequential and is saved locally. Campaign failure returns the player to the strategic map with a recovery cost and damaged hull; it is not permanent death.
+Operations unlock in story order (1, 2, 3, 4, 6, 5, 7); the numbers 1–5 are kept from the original five so older saves stay valid. Post-battle choices set named flags for future narrative use. Campaign failure tows the flagship to the nearest starbase with a recovery cost and damaged hull; it is not permanent death.
+
+## Starbases, station missions and contracts
+
+- Five starbases: **Meridian Fleet Yards** and **Tarn Propulsion Depot** (Navy), **Peregrine Exchange**, **Elysia Research Station** and **Juniper Ringport** (independent). They show as diamonds on the map, and a system's details name its starbase.
+- Repairs, torpedo resupply and upgrade fitting work only while docked at a starbase. Elsewhere the shipyard still shows the ship and its upgrades, explains why it cannot work, and names the nearest starbase.
+- Arriving at a starbase shows its card with **Mission board** and **Shipyard & repairs**. The board has three columns: the station's hand-written missions, its generated contracts, and the orders already accepted (with Abandon).
+- **Station missions** (`SIDE` in `crew/campaign-data.js`): ten hand-written missions, each posted at one starbase from its act onwards, with a named giver, brief, objective and intel. Flying one marks it done (`state.sideDone`).
+- **Contracts**: three per starbase (a bounty, a patrol and an escort), generated from a seed of the station and `state.boardCycle`, which goes up after every victory, so each board posts new work after each win. Targets are within three jumps; bounties and patrols go to hostile space (preferring the act's main enemy), escorts to independent or contested space. Enemy strength and pay scale with the target's threat level and the act.
+- Up to four orders (station missions plus contracts) can be held at once. Accepted contracts are saved whole in `state.contracts`, accepted station missions by id in `state.orders`. Orders show on the map (blue tags), in the list under the map, and as **Engage** cards on the target system's arrival screen. A lost order stays open to retry.
+
+## Interceptions
+
+- Jumping is free. Every system on the route (not counting the start) that is hostile in the current act rolls for an ambush: 6–30% depending on threat. Act I's hostile factions are pirates and renegades; Act II adds the machines and Act III the Wraith.
+- An ambush stops the flagship in that system and cannot be dismissed. **Battle stations** fights one or two ambushers for salvage. **Break away** succeeds with a chance set by the hull (Sabre 80%, Halberd 70%, Bastion 50%, Warden 40%) and engine condition: success costs 3% hull and carries on to the destination; failure costs 6% hull and forces the fight. A pending ambush survives a reload (`state.ambush`).
+
+## Encounters
+
+- Every battle is described by an **encounter spec** built by `encounter()` in `crew/campaign-data.js`: kind (story, side, contract or intercept), label and objective for the HUD, scenery preset, whether to show the jump beacon, the opening hail, the enemy list (class, name, hull and shield scale, AI difficulty) and the goal (`destroy`, `escort` with a convoy name, `survive` for N seconds, or `surrender` below a hull fraction).
+- `campaign.html` saves the spec as `state.launch` and opens `index.html?encounter=1`; `index.html?campaign=N` still opens story operation N. The battle page builds the flagship and the first enemy, and `crew/fleet-controller.js` adds the rest of the hostiles (alternating flanks), any convoy, and decides the result. The surrender and survival objectives moved there from hard-coded checks in `index.html`.
+- The result is saved as `pendingResult` with the encounter's `kind` and `ref`; the campaign pays out, clears the order and refreshes the boards when the player returns.
 
 ## Ship and economy
 
 - Campaign saves use localStorage key `broadside-campaign-v1` and a `version: 1` schema.
-- Save fields include: `ship`, `shipName`, `system`, `completed`, `flags`, `credits`, `hull`, `sub`, `torps`, `attempts`, and `pendingResult`.
+- Save fields include: `ship`, `shipName`, `system`, `completed`, `flags`, `credits`, `hull`, `sub`, `torps`, `attempts`, `pendingResult`, `upgrades`, `officers`, `actBriefed`, `boardCycle`, `orders`, `contracts`, `sideDone`, `launch`, `interceptSeed` and `ambush`. Saves from before the grand campaign gain the new fields on load.
 - Torpedo capacity depends on hull class: Bastion 8, Halberd 6, Sabre 6, Warden 16.
 - Full-hull overhaul costs 6 requisition per lost hull percentage point, rounded up. Emergency repairs cost 100 requisition for up to 15% hull. Torpedoes can be restocked at 25 requisition each.
 - Ship damage and remaining ordnance persist after victory; success or failure results enter a pending after-action state, shown when the player returns to the map.
@@ -84,8 +107,9 @@ These officers now have active battle commands (5–9): Varro shields, Okoye tar
 
 ## Architecture
 
-- `index.html`: Three.js renderer and the original battle engine; a new `?campaign=1` ... `?campaign=5` query launches preselected enemies and applies ship state. It writes the pending battle result and returns to `campaign.html` after the result screen.
-- `campaign.html`: Strategic map, route graph, accessible star hotspots, mission briefings, officer dossiers, shipyard, state persistence, after-action choices and return to skirmish.
+- `crew/campaign-data.js`: the star chart (systems, routes), acts, story operations, starbases, station missions, the contract and interception generators, and `encounter()`. Shared by both pages and the Node tests.
+- `index.html`: Three.js renderer and the battle engine; `?encounter=1` stages the encounter saved in `launch` (and `?campaign=N` a story operation) and applies ship state. It writes the pending battle result and returns to `campaign.html` after the result screen.
+- `campaign.html`: Strategic map, accessible star hotspots, arrival screens, starbase mission boards, interceptions, briefings, officer dossiers, shipyard, state persistence, after-action reports and return to skirmish.
 - `img/campaign-atlas.webp`: The original concept image. No longer displayed; system coordinates are still stored in its 1672 × 941 space.
 
 The original monolithic game script still contains direct player/enemy assumptions. The first fleet extension now permits multiple vessels, retargeting, fleet HUD markers, collision-pair processing and per-mission survival conditions. Remaining code still contains duel-era assumptions; **extend incrementally** and test targeting, projectile collision, AI behaviour and victory conditions before adding larger fleets.
@@ -96,12 +120,11 @@ The rebuilt strategic screen was exercised in headless Chromium (SwiftShader Web
 
 ## Recommended next milestones
 
-1. **Battle QA and balancing** — Play every operation on all four hulls. Confirm damage persistence, loss recovery, mission 3's surrender, mission 5's extraction, torpedo scarcity and navigation.
-2. **Officer portraits and command bridge** — Initial playable stage complete: five individual portraits drawn from one compressed atlas, officer dossiers, briefing reactions, keyboard/button commands and cooldowns. Next: photorealistic portrait replacement and recorded bridge VO; dialogue is still on-screen text.
-3. **Real alternate objectives** — Protect a moving transport, disable an enemy without killing, defend a relay, reach an extraction point. Introduce reusable objective/event logic rather than per-mission conditionals.
-4. **Multiple ships** — Refactor target selection, AI, collision, munition pools and health state to support escorts and fleet elements without breaking the duel.
-5. **Dynamic galaxy** — Add ownership changes, faction movement, reputation, intel unlocks, optional operations and consequences that affect the next mission.
-6. **Art pass** — The map is now natively rendered. Next: dedicated cinematic world/commander artwork, an arrival transition, and the purchasable upgrade system the shipyard slots are laid out for.
+1. **Fleet (grand campaign milestone 2)** — Buy hulls at starbases, keep up to three ships, choose the flagship, per-ship damage, upgrades and names; 3 v 3 battles with the player flying the flagship and ordering two AI escorts (focus my target, defend me, engage freely).
+2. **Boss battles (milestone 3)** — A unique boss at the end of each act, with escorts, phases and special weapons.
+3. **Depth (milestone 4)** — Faction reputation, capturing hulls, recruitable officers, a codex, save slots and difficulty settings.
+4. **Battle QA and balancing** — Play every operation, station mission and contract type on all four hulls. Contract pay, enemy strength, interception odds and breakaway chances are first-pass numbers.
+5. **Art pass** — Portraits for the new commanders (VIGIL Array and the Choir use the classified medallion; generated contract captains do too), an authored civilian hull, arrival transitions.
 
 Every milestone should preserve the intentional slow, dangerous, naval feel of Broadside.
 
@@ -140,3 +163,9 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 - Vex retargets to defend herself when the player intercepts her closely, permitting a tactical diversion. Cinder Wake's minelayer/pursuer now attempt a pincer rather than stacking in a single pursuit line.
 - Officer tactical bonuses now apply across all enemy contacts, not only the originally designated opponent.
 - Automated fleet-state regression, procedural environment lifecycle tests, and static JavaScript syntax checks run through GitHub Actions. Full GPU/WebGL playthroughs, final art acceptance and comprehensive difficulty balancing remain unverified.
+
+## Grand campaign milestone 1 — QA (24 October 2026)
+
+- Node tests: `tests/campaign-data.test.js` covers the map graph, act and unlock order, starbases, station missions per act, contract generation (deterministic per cycle, targets within three jumps, scales in range), interception rules and breakaway odds, and encounter specs. `tests/fleet-controller.test.js` now runs story operations from their specs plus surrender, survival, a generated escort and a two-ship station mission.
+- Headless Chromium (SwiftShader) runs covered: a pre-grand-campaign save migrating; starbase markers and details; the Meridian arrival card and mission board; accepting a contract; the order on the map and in the list; the undocked shipyard; flying to the target, the contract briefing and launching it into a live battle (HUD shows the contract objective); paying out the win and refreshing the board; Peregrine's station missions; an interception that cannot be dismissed, survives a reload and is escaped; a failed breakaway into a live interception battle; a lost fight towing the ship to Peregrine; operation 1 staged from its spec with the convoy control; and the Act II briefing, Act II story operation, station mission and contracts. No page errors. Full battles were not played to the end in the browser; results were injected into the save.
+

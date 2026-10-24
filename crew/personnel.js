@@ -34,15 +34,19 @@
     2:{id:'sable',name:'Commander Orren Sable',faction:'Ash Fleet',title:'THE EXILE',line:'You are trespassing among the dead, captain. Turn back.',portrait:null,asset:'sable.svg',tactics:'Commands a minelayer supported by an Ash Fleet raider.'},
     3:{id:'thorne',name:'Captain Garrick Thorne',faction:'Corsair Clans',title:'THE WIDOWMAKER',line:'Pay the toll, Meridian, or I take it from your wreck.',portrait:null,asset:'thorne.webp',tactics:'May surrender rather than lose his ship.'},
     4:{id:'oracle',name:'ORACLE-9',faction:'Autonomous Directorate',title:'AUTONOMOUS PURSUIT INTELLIGENCE',line:'Unknown human platform: your presence is statistically unacceptable.',portrait:5},
-    5:{id:'cantor',name:'The Cantor',faction:'Wraith',title:'UNKNOWN BIOLOGICAL ENTITY',line:'...harmonic emission detected. No comprehensible translation.',portrait:null,asset:'cantor.svg',tactics:'A living vessel with regenerative hull and homing spores.'}
+    5:{id:'cantor',name:'The Cantor',faction:'Wraith',title:'UNKNOWN BIOLOGICAL ENTITY',line:'...harmonic emission detected. No comprehensible translation.',portrait:null,asset:'cantor.svg',tactics:'A living vessel with regenerative hull and homing spores.'},
+    6:{id:'vigil',name:'VIGIL Array',faction:'Autonomous Directorate',title:'DISTRIBUTED PICKET INTELLIGENCE',line:'Picket nodes synchronised. Human platform reclassified: obstruction.',portrait:null,tactics:'Two pickets sharing one mind: they hold range together and alternate railgun shots.'},
+    7:{id:'choir',name:'The Choir',faction:'Wraith',title:'BROOD CHORUS',line:'...the harmonic splits into two voices, then three. It is louder than at Harrow.',portrait:null,asset:'cantor.svg',tactics:'A bioship and its brood hunt the slowest ship in the system first.'}
   };
-  const leads={1:'renn',2:'okoye',3:'varro',4:'renn',5:'sato'};
+  const leads={1:'renn',2:'okoye',3:'varro',4:'renn',5:'sato',6:'okoye',7:'varro'};
   const briefLines={
     1:'Civilian beacons are cutting out. One raider is trying to drive the convoy into the rocks.',
     2:'The mine pattern matches a navy doctrine manual, but these signal codes were deleted years ago.',
     3:'Thorne values his ship more than his cause. If we can break his nerve, we can take prisoners.',
     4:'That frequency is correcting for us before we change course. Something is predicting our intentions.',
-    5:'Its hull is alive. We are here to record what we can, not prove we can kill it.'
+    5:'Its hull is alive. We are here to record what we can, not prove we can kill it.',
+    6:'Two ships, one set of decisions. Break the link between them and they are just two thin hulls.',
+    7:'Eleven thousand people on one ship. Whatever happens to us, the Lantern reaches that beacon.'
   };
   function portrait(person, extra=''){
     if(person && person.asset){

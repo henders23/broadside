@@ -32,6 +32,10 @@ function create({THREE,scene,sky,planet,rockMat,rebakeSky}){
   }
   function sceneKestrel(){
     station(-3400,180,-2850,0x4e9de3);
+    jumpGate();
+  }
+  // The illuminated jump beacon an escorted convoy has to reach (crew/fleet-controller.js GATE).
+  function jumpGate(){
     const m=material(0x486078),lit=material(0x82cfea,0x139fff),amber=material(0xb7a17c,0x7d4c1d);
     const p=new THREE.Group();p.position.set(570,0,-1550);group.add(p);
     hoop(p,0,0,0,308,lit);hoop(p,0,0,-20,274,amber);
@@ -97,7 +101,7 @@ function create({THREE,scene,sky,planet,rockMat,rebakeSky}){
     for(const m of materials)m.dispose();materials.length=0;
     scene.fog=savedFog;rockMat.color.copy(savedRock);
   }
-  function configure(id){
+  function configure(id,opts={}){
     clear();const preset=PRESETS[id]||PRESETS[0];
     for(const [key,values] of [['nebBlue',preset.blue],['nebRed',preset.red],['sunTint',preset.sun]])
       if(sky.material.uniforms[key])sky.material.uniforms[key].value.set(...values);
@@ -106,9 +110,10 @@ function create({THREE,scene,sky,planet,rockMat,rebakeSky}){
     if(id===2||id===5)planet.position.x*=-1;
     if(id===4)planet.position.y=7000;
     scene.fog=preset.fog?new THREE.FogExp2(preset.rock,preset.fog):savedFog;
-    if(id){
+    if(id||opts.gate){
       group=new THREE.Group();group.name=preset.name;scene.add(group);
       if(id===1)sceneKestrel();else if(id===2)sceneCinder();else if(id===3)sceneNarrows();else if(id===4)sceneRelay();else if(id===5)sceneBloom();
+      if(opts.gate&&id!==1)jumpGate();
     }
     rebakeSky();return preset.name;
   }

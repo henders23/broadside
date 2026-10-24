@@ -4,9 +4,9 @@ Updated: 24 October 2026.
 
 ## Identity and playable scope
 
-**Broadside** is a game about captaining a warship. The player directly manages one vessel's heading, throttle, firing arcs, directional shields, reactor allocation, torpedoes, subsystems and tactical decisions. The campaign adds persistent consequences and a cast of officers, but does not turn the game into a direct-control fleet strategy game.
+**Broadside** is a game about captaining a warship. The player directly manages one vessel's heading, throttle, firing arcs, directional shields, reactor allocation, torpedoes, subsystems and tactical decisions. The campaign adds persistent consequences, a cast of officers and up to two escorts, but the escorts take standing orders rather than direct control: it does not become a fleet strategy game.
 
-The campaign is being built out into a three-act grand campaign in four milestones. **Milestone 1 is in:** three acts, seven story operations, five starbases with mission boards (hand-written station missions and generated contracts), repairs and refits only at starbases, interceptions in hostile space, and one data-driven encounter system behind every battle. Still to come: a fleet of up to three ships with escort orders (milestone 2), a boss battle at the end of each act (milestone 3), and reputation, captured hulls, recruitable officers, a codex, save slots and difficulty (milestone 4).
+The campaign is being built out into a three-act grand campaign in four milestones. **Milestone 1 is in:** three acts, seven story operations, five starbases with mission boards (hand-written station missions and generated contracts), repairs and refits only at starbases, interceptions in hostile space, and one data-driven encounter system behind every battle. **Milestone 2 is in:** a fleet of up to three ships with per-ship damage, upgrades and names, a choice of flagship, and 3 v 3 battles with escort orders. Still to come: a boss battle at the end of each act (milestone 3), and reputation, captured hulls, recruitable officers, a codex, save slots and difficulty (milestone 4).
 
 ## Map and world
 
@@ -68,6 +68,22 @@ Operations unlock in story order (1, 2, 3, 4, 6, 5, 7); the numbers 1–5 are ke
 - **Contracts**: three per starbase (a bounty, a patrol and an escort), generated from a seed of the station and `state.boardCycle`, which goes up after every victory, so each board posts new work after each win. Targets are within three jumps; bounties and patrols go to hostile space (preferring the act's main enemy), escorts to independent or contested space. Enemy strength and pay scale with the target's threat level and the act.
 - Up to four orders (station missions plus contracts) can be held at once. Accepted contracts are saved whole in `state.contracts`, accepted station missions by id in `state.orders`. Orders show on the map (blue tags), in the list under the map, and as **Engage** cards on the target system's arrival screen. A lost order stays open to retry.
 
+## The fleet
+
+- Saves hold every ship in `state.ships` (`id`, `ship` class, `shipName`, `hull`, `sub`, `torps`, `upgrades`, `reserve`) and the flagship's id in `state.flag`. Single-ship saves are converted on load.
+- Up to three ships (`MAX_FLEET` in `crew/campaign-data.js`). The shipyard's fleet column lists them with their role (flagship, escort, reserve) and has a **Commission a hull** slot while docked. The hull market sells all four player hulls (Sabre 1,100, Halberd 1,250, Bastion 1,500, Warden 1,700); a name is suggested and can be changed. The selected ship can be made flagship, renamed, moved to reserve or deployed, and (docked, not the flagship) sold for half its hull price; upgrades are not refunded.
+- The rest of the shipyard (3D model, system slots, upgrades and services) works on the ship selected in the fleet column.
+- `deployed(ships, flag)` decides who flies: the flagship, then up to two ships not in reserve. Breaking away from an ambush uses the slowest, most damaged deployed ship's odds, and costs every deployed ship the hull.
+
+## Fleet battles
+
+- The battle page builds the flagship as the player's ship and each escort as a friendly AI ship (team `p`, `captain` difficulty) with its own upgrades, hull, subsystems and torpedoes, formed up either side of the flagship.
+- Standing orders, set with **U**, **I** and **O** or the Escorts panel (each escort's hull and current target): **focus my target** (the flagship's selected enemy), **defend the flagship** (the hostile attacking the flagship, nearest first) and **engage freely** (the hostile nearest each escort). `crew/fleet-controller.js` re-picks escort targets once a second.
+- Hostiles re-pick targets every nine seconds among the player's ships, nearest first with a bias toward the flagship; an escort mission's lead hunter keeps chasing the convoy.
+- Enemies are topped up to match the player's fleet, up to three: `reinforcements()` adds light support ships of the lead enemy's kind (Corsair escort, Ash Fleet escort, Directorate drone, Wraith brood). Rewards are unchanged.
+- Losing an escort does not lose the battle; losing the flagship does. Every ship that flew writes its condition back to its record; a disabled escort comes home at 30% hull and the after-action report names it (`pendingResult.lost`).
+- Officer commands still act on the flagship only.
+
 ## Interceptions
 
 - Jumping is free. Every system on the route (not counting the start) that is hostile in the current act rolls for an ambush: 6–30% depending on threat. Act I's hostile factions are pirates and renegades; Act II adds the machines and Act III the Wraith.
@@ -120,11 +136,10 @@ The rebuilt strategic screen was exercised in headless Chromium (SwiftShader Web
 
 ## Recommended next milestones
 
-1. **Fleet (grand campaign milestone 2)** — Buy hulls at starbases, keep up to three ships, choose the flagship, per-ship damage, upgrades and names; 3 v 3 battles with the player flying the flagship and ordering two AI escorts (focus my target, defend me, engage freely).
-2. **Boss battles (milestone 3)** — A unique boss at the end of each act, with escorts, phases and special weapons.
-3. **Depth (milestone 4)** — Faction reputation, capturing hulls, recruitable officers, a codex, save slots and difficulty settings.
-4. **Battle QA and balancing** — Play every operation, station mission and contract type on all four hulls. Contract pay, enemy strength, interception odds and breakaway chances are first-pass numbers.
-5. **Art pass** — Portraits for the new commanders (VIGIL Array and the Choir use the classified medallion; generated contract captains do too), an authored civilian hull, arrival transitions.
+1. **Boss battles (milestone 3)** — A unique boss at the end of each act, with escorts, phases and special weapons.
+2. **Depth (milestone 4)** — Faction reputation, capturing hulls, recruitable officers, a codex, save slots and difficulty settings.
+3. **Battle QA and balancing** — Play every operation, station mission and contract type on all four hulls, alone and with escorts. Contract pay, enemy strength, hull prices, reinforcement strength, interception odds and breakaway chances are first-pass numbers.
+4. **Art pass** — Portraits for the new commanders (VIGIL Array and the Choir use the classified medallion; generated contract captains do too), an authored civilian hull, arrival transitions.
 
 Every milestone should preserve the intentional slow, dangerous, naval feel of Broadside.
 
@@ -168,4 +183,9 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 
 - Node tests: `tests/campaign-data.test.js` covers the map graph, act and unlock order, starbases, station missions per act, contract generation (deterministic per cycle, targets within three jumps, scales in range), interception rules and breakaway odds, and encounter specs. `tests/fleet-controller.test.js` now runs story operations from their specs plus surrender, survival, a generated escort and a two-ship station mission.
 - Headless Chromium (SwiftShader) runs covered: a pre-grand-campaign save migrating; starbase markers and details; the Meridian arrival card and mission board; accepting a contract; the order on the map and in the list; the undocked shipyard; flying to the target, the contract briefing and launching it into a live battle (HUD shows the contract objective); paying out the win and refreshing the board; Peregrine's station missions; an interception that cannot be dismissed, survives a reload and is escaped; a failed breakaway into a live interception battle; a lost fight towing the ship to Peregrine; operation 1 staged from its spec with the convoy control; and the Act II briefing, Act II story operation, station mission and contracts. No page errors. Full battles were not played to the end in the browser; results were injected into the save.
+
+## Grand campaign milestone 2 — QA (24 October 2026)
+
+- Node tests: `tests/fleet-controller.test.js` adds a three-ship fight (reinforcements, each escort order, losing an escort, winning) and fire spreading across the player's ships; `tests/campaign-data.test.js` adds hull prices, ship names, `deployed()`, fleet breakaway odds and reinforcements.
+- Headless Chromium runs covered: commissioning a Sabre (name tidied and shown as text, not HTML), its own systems in the yard, an upgrade fitted to one ship only, per-ship overhaul, a full fleet, switching flagship, reserve and deploy, selling, no buying or selling undocked, and operation 1 flown with three ships: the Harrier as flagship, the Resolute and a Warden as escorts, Vex reinforced to three, the Escorts panel, U/I/O and the buttons, escorts holding hostile targets. Ending the battle wrote each escort's damage back, recovered the disabled one at 30%, and the after-action report named her. Skirmish was checked unchanged. No page errors. The fleet battle was ended by applying damage through the test hook, not played out.
 

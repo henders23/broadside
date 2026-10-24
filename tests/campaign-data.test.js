@@ -86,4 +86,21 @@ same(JSON.parse(JSON.stringify(k)), k);
 const xi = C.encounter(x);
 assert.equal(xi.label, 'INTERCEPTION'); assert.equal(xi.env, 3);
 
+// The fleet: prices, names, who deploys, ambush odds and enemy reinforcements
+assert.equal(C.MAX_FLEET, 3);
+for (const k of ['sabre', 'halberd', 'bastion', 'warden']) assert.equal(C.sellPrice(k), C.HULL_PRICES[k] / 2);
+assert.equal(C.nextShipName(['MNS Resolute']), 'MNS Valiant');
+assert.equal(C.nextShipName(['MNS Valiant', 'MNS Harrier']), 'MNS Steadfast');
+const ships = [{ id: 'a', ship: 'bastion' }, { id: 'b', ship: 'sabre', reserve: true }, { id: 'c', ship: 'warden', sub: { engines: 50 } }, { id: 'd', ship: 'halberd' }];
+same(C.deployed(ships, 'b').map(s => s.id), ['b', 'a', 'c'], 'flagship first even from reserve, then up to two escorts');
+same(C.deployed(ships, 'a').map(s => s.id), ['a', 'c', 'd'], 'reserve ships stay behind');
+same(C.deployed(ships, 'missing').map(s => s.id), ['a', 'c', 'd'], 'unknown flagship falls back to the first ship');
+assert.equal(C.fleetFleeChance([ships[0]]), C.fleeChance('bastion', 100));
+assert.equal(C.fleetFleeChance([ships[0], ships[2]]), C.fleeChance('warden', 50), 'the slowest, most damaged ship sets the odds');
+assert.equal(C.reinforcements(C.storyEncounter(4), 1).length, 0, 'no support against a lone flagship');
+assert.equal(C.reinforcements(C.storyEncounter(4), 3).length, 2);
+assert.equal(C.reinforcements(C.storyEncounter(2), 3).length, 1, 'Sable already brings a pursuer');
+assert.equal(C.reinforcements(C.storyEncounter(2), 3)[0].name, 'Ash Fleet escort');
+assert.equal(C.reinforcements(C.storyEncounter(5), 2)[0].cls, 'wraith');
+
 console.log('Campaign data tests passed.');

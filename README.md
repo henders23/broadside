@@ -28,15 +28,17 @@ Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use 
 - **Three acts**: *The Long Watch* (pirates and Ash Fleet renegades), *The Machine Signal* (ORACLE-9 and the Directorate) and *The Wraith*. Each opens with a full-screen briefing from **Fleet Admiral Gideon Harlan**; replay the current one from **Intel**.
 - **Seven story operations** with named enemies: Captain Kora Vex, Commander Orren Sable, Captain Garrick Thorne, ORACLE-9, the VIGIL Array, the Cantor and the Choir.
 - **Five starbases** (Meridian, Tarn, Peregrine, Elysia, Juniper) with **mission boards**: ten hand-written station missions that open act by act, and three generated contracts per station (bounty, patrol, escort) that change after every victory. Hold up to four orders at once; fly to the target and engage from its arrival screen.
-- Repairs, rearming and upgrades only at a starbase.
+- **A fleet of up to three ships.** Commission new hulls at any starbase (Sabre 1,100, Halberd 1,250, Bastion 1,500, Warden 1,700 requisition), name them, make any one the flagship, hold one in reserve, or sell one back for half its price. Every ship keeps its own damage, torpedoes and upgrades.
+- **Fleet battles, up to 3 v 3.** You fly the flagship; your escorts fly under the AI and follow your standing order: **U** focus my target, **I** defend the flagship, **O** engage freely (also buttons on the Escorts panel). Bring escorts and the enemy brings support ships too. A disabled escort is towed home at 30% hull rather than lost.
+- Repairs, rearming, upgrades and buying or selling ships only at a starbase.
 - Jumps are free, but routes through hostile space can be **intercepted**: fight for salvage, or try to break away (fast hulls and healthy engines get away more often).
 - Persistent campaign save in browser localStorage (key `broadside-campaign-v1`): selected flagship, progress, decisions, hull condition, critical subsystem damage, surviving torpedoes and requisition.
 - Battles are staged from data: escorts to a jump beacon, timed holds, forced surrenders and two-ship pincers, for story operations and generated work alike.
-- **Shipyard** (works while docked) showing your flagship's 3D model side-on, with its seven systems (engines, hull, reactor, broadsides, forward weapon, shields, torpedo bay) as slots tied to their hardpoints and battle condition. Each system has three permanent **upgrades** to buy with requisition (21 in all, 260–450 each); they apply in every campaign battle. Hull overhaul, emergency repairs and torpedo resupply are here too.
+- **Shipyard** (works while docked) with a fleet column to pick a ship, showing the selected ship's 3D model side-on, with its seven systems (engines, hull, reactor, broadsides, forward weapon, shields, torpedo bay) as slots tied to their hardpoints and battle condition. Each system has three permanent **upgrades** to buy with requisition (21 in all, 260–450 each); they apply in every campaign battle. Hull overhaul, emergency repairs and torpedo resupply are here too.
 - **Officers** screen with each bridge officer's dossier, battle command (key, cooldown, effect), service record and field reports, plus the enemy commanders identified so far. Officers start at the bottom of their career (ensigns, and a petty officer for the engineer) and gain **experience** in every engagement, more for each command you give them; each promotion, up to Captain, makes their command stronger and its cooldown shorter, and **Intel** for campaign clues and branching narrative decisions.
 - Completing a story operation unlocks the next. A loss tows the flagship to the nearest starbase, damaged but recoverable, rather than deleting the save.
 
-The grand campaign is being built in milestones: acts, starbases and contracts are in; a fleet of up to three ships with escort orders and a boss battle per act are next. Each region has its own generated 3D battle environment and nebula lighting. Named officer combat abilities (keys 5–9), cycling hostile targets (J), and multiple-contact tactical plots are playable. Full WebGL campaign QA and tuning are still required. `campaign.html` supplies the strategic UI, and `index.html?encounter=1` stages the battle it saved (`crew/campaign-data.js` holds the campaign's data).
+The grand campaign is being built in milestones: acts, starbases, contracts and the three-ship fleet are in; a boss battle at the end of each act is next. Each region has its own generated 3D battle environment and nebula lighting. Named officer combat abilities (keys 5–9), cycling hostile targets (J), and multiple-contact tactical plots are playable. Full WebGL campaign QA and tuning are still required. `campaign.html` supplies the strategic UI, and `index.html?encounter=1` stages the battle it saved (`crew/campaign-data.js` holds the campaign's data).
 
 See [Campaign design and technical notes](docs/CAMPAIGN.md) for current architecture, known limitations and roadmap.
 
@@ -65,6 +67,7 @@ python3 -m http.server 8000
 | T | Torpedo |
 | B | Batteries free: guns fire automatically when loaded and in arc |
 | J | Cycle enemy targets (campaign battles) |
+| U / I / O | Escort orders: focus my target / defend the flagship / engage freely (campaign battles with escorts) |
 | H | Hold / resume an escorted convoy (escort missions; also an on-screen button) |
 | 5 / 6 / 7 / 8 / 9 | Bridge officer abilities (campaign battles) |
 | Drag / wheel | Orbit / zoom the camera · C looks toward the enemy |

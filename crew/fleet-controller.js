@@ -2,14 +2,17 @@
 'use strict';
 
 // Campaign-only encounter logic, driven by an encounter spec from crew/campaign-data.js. Pure enough to test without WebGL.
-// The battle page creates the flagship and the first enemy; this adds the rest of the hostiles, any convoy,
-// and decides when the fight is won or lost.
+// The battle page creates the flagship, its escorts and the first enemy; this adds the rest of the hostiles
+// (topped up to match the player's fleet), any convoy, flies the escorts to their orders, and decides the result.
 const GATE=Object.freeze({x:570,y:0,z:-1550,radius:340});
+// Escort orders: focus fires on the flagship's target, defend goes for whatever is nearest the flagship,
+// free picks the hostile nearest the escort itself.
+const ORDERS=Object.freeze({focus:'Focus my target',defend:'Defend the flagship',free:'Engage freely'});
 
-function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnemy,getSelected,setSelected,DIFF,endGame,showMsg,game,V3,buildFreighter}){
+function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnemy,allies=[],getSelected,setSelected,DIFF,endGame,showMsg,game,V3,buildFreighter}){
  const spec=encounter||(missionId&&root.BroadsideCampaign?root.BroadsideCampaign.storyEncounter(Number(missionId)):null)||{enemies:[],goal:{type:'destroy'}};
  const goal=spec.goal||{type:'destroy'},extras=[];
- let convoy=null,held=false,phase='transit',retargetTimer=0,noticeStage=0,elapsed=0,hostileCount=1;
+ let convoy=null,held=false,phase='transit',retargetTimer=0,noticeStage=0,elapsed=0,hostileCount=1,order='focus',escortT=0,spreadT=4;
  const hostile=()=>ships.filter(s=>s.team==='e'&&s.alive);
  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
@@ -23,10 +26,11 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
  function stopHostiles(){
   for(const ship of hostile()){ship.ai=null;ship.target=null;ship.step=0;ship.fireQ=[];}
  }
+ const escorts=()=>allies.filter(s=>s.alive);
  function finish(outcome,code){
   if(game.ending)return;
   game.campaignOutcome=code;
-  if(outcome==='win'){player.isWinner=true;if(convoy?.alive)convoy.isWinner=true;}
+  if(outcome==='win'){player.isWinner=true;if(convoy?.alive)convoy.isWinner=true;for(const a of escorts())a.isWinner=true;}
   else if(player.alive)player.isWinner=true;
   stopHostiles();
   endGame(outcome);
@@ -34,7 +38,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   game.endT=.8;
  }
  function setup(){
-  const list=spec.enemies||[];
+  const base=spec.enemies||[],extra=allies.length&&root.BroadsideCampaign&&base.length?root.BroadsideCampaign.reinforcements(spec,allies.length+1):[],list=[...base,...extra];
   if(list[0]){primaryEnemy.name=list[0].name||primaryEnemy.name;scale(primaryEnemy,list[0]);}
   if(goal.type==='escort'){
    convoy=makeShip('sabre','p');
@@ -58,7 +62,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    scale(ship,e);
    ship.ai={diff:DIFF[e.diff]||DIFF.commander||DIFF.captain,side,flankOffset:side*27,shT:3,pwT:0,mode:'close',sideT:0};
    ship.target=player;
-   placeShip(ship,new V3(side*2100,90,-1500-i*400),Math.PI);
+   placeShip(ship,new V3(side*(2100+i*250),90,-1500-i*400),Math.PI);
    extras.push(ship);
   });
   if(list.length>1){primaryEnemy.ai.flankOffset=26;primaryEnemy.ai.side=1;}
@@ -77,10 +81,37 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   setSelected(next);player.target=next;
   showMsg('Target selected: '+next.name,1.8);
  }
+ function setOrder(next){
+  if(!ORDERS[next]||!allies.length||game.ending)return false;
+  order=next;escortT=0;
+  showMsg('Escorts: '+ORDERS[next].toLowerCase(),2);
+  return true;
+ }
+ // Escorts pick their targets once a second according to the standing order.
+ function steerEscorts(){
+  const foes=hostile();if(!foes.length)return;
+  const near=(from,list)=>list.reduce((b,s)=>!b||distance(s.pos,from)<distance(b.pos,from)?s:b,null);
+  for(const a of escorts()){
+   let t=null;
+   if(order==='focus')t=getSelected()?.alive&&getSelected().team==='e'?getSelected():null;
+   else if(order==='defend'){const onUs=foes.filter(f=>f.target===player);t=near(player.pos,onUs.length?onUs:foes);}
+   t=t||near(a.pos,foes);
+   a.target=t;
+  }
+ }
+ // Hostiles spread their fire: each picks the nearest of the player's ships, leaning towards the flagship.
+ function spreadFire(){
+  const ours=[player,...escorts()].filter(s=>s.alive);if(ours.length<2)return;
+  for(const h of hostile()){
+   if(convoy?.alive&&h===primaryEnemy&&goal.hunter!==false)continue;
+   h.target=ours.reduce((b,s)=>{const d=distance(s.pos,h.pos)*(s===player?.75:1);return d<b.d?{s,d}:b;},{s:player,d:Infinity}).s;
+  }
+ }
  function onDestroyed(ship){
   if(game.ending)return;
   if(ship===player){finish('lose','flagship_lost');return;}
   if(ship.civilian){finish('lose','convoy_lost');return;}
+  if(ship.team==='p'){showMsg(ship.name+' disabled · escort out of the fight',3);return;}
   const alive=hostile();
   if(!alive.length){finish('win',convoy?.alive?'escort_saved':hostileCount>1?'fleet_destroyed':'enemy_destroyed');return;}
   if(getSelected()===ship||!getSelected()?.alive){
@@ -125,7 +156,11 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   if(player.alive&&(!getSelected()||!getSelected().alive)){
    const next=hostile()[0];if(next){setSelected(next);player.target=next;}
   }
-  for(const ship of hostile())if(!ship.target?.alive)ship.target=player.alive?player:convoy?.alive?convoy:null;
+  if(allies.length){
+   escortT-=dt;if(escortT<=0){escortT=1;steerEscorts();}
+   spreadT-=dt;if(spreadT<=0){spreadT=9;spreadFire();}
+  }
+  for(const ship of hostile())if(!ship.target?.alive)ship.target=player.alive?player:escorts()[0]||(convoy?.alive?convoy:null);
  }
  function status(){
   const n=hostile().length,contacts=n+(n===1?' HOSTILE':' HOSTILES');
@@ -141,8 +176,9 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   if(goal.type==='surrender')return 'FORCE SURRENDER BELOW '+Math.round((goal.at||.28)*100)+'% HULL · '+contacts;
   return 'CONTACTS · '+contacts+(n>1?' · J CYCLE TARGET':'');
  }
- return {setup,tick,onDestroyed,cycle,toggleHold,status,get spec(){return spec},get convoy(){return convoy},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed}};
+
+ return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,get order(){return order},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed}};
 }
-root.BroadsideFleet=Object.freeze({create,GATE});
+root.BroadsideFleet=Object.freeze({create,GATE,ORDERS});
 
 })(typeof window!=='undefined'?window:globalThis);

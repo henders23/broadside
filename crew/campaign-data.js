@@ -310,6 +310,31 @@
   const FLEE = { sabre: 0.8, halberd: 0.7, bastion: 0.5, warden: 0.4 };
   function fleeChance(ship, engines) { return round((FLEE[ship] || 0.5) * (0.55 + 0.45 * Math.max(0, Math.min(100, engines == null ? 100 : engines)) / 100)); }
 
+  // ---------------- the fleet ----------------
+  // Hulls for sale at every starbase. A ship sells back for half its hull price; upgrades are not refunded.
+  const MAX_FLEET = 3;
+  const HULL_PRICES = { sabre: 1100, halberd: 1250, bastion: 1500, warden: 1700 };
+  const SHIP_NAMES = ['MNS Valiant', 'MNS Harrier', 'MNS Steadfast', 'MNS Vigilant', 'MNS Corvid', 'MNS Lantern', 'MNS Indomitable', 'MNS Swiftsure', 'MNS Aurelian', 'MNS Kestrel'];
+  const sellPrice = cls => Math.round((HULL_PRICES[cls] || 1000) / 2);
+  function nextShipName(taken) { const t = new Set(taken); return SHIP_NAMES.find(n => !t.has(n)) || 'MNS Escort ' + (t.size + 1); }
+  // The ships that fly: the flagship first, then up to two escorts not held in reserve.
+  function deployed(ships, flag) {
+    const f = ships.find(s => s.id === flag) || ships[0];
+    return f ? [f, ...ships.filter(s => s !== f && !s.reserve)].slice(0, MAX_FLEET) : [];
+  }
+  // A fleet slips an ambush only as well as its slowest ship.
+  function fleetFleeChance(list) { return list.length ? Math.min(...list.map(s => fleeChance(s.ship, (s.sub || {}).engines))) : 0; }
+  // When the player brings escorts, the enemy brings support too: hostiles are topped up to match, up to three.
+  const SUPPORT = {
+    scrapjaw: { cls: 'scrapjaw', name: 'Corsair escort' }, revenant: { cls: 'scrapjaw', name: 'Ash Fleet escort' },
+    seraph: { cls: 'seraph', name: 'Directorate drone' }, wraith: { cls: 'wraith', name: 'Wraith brood' }
+  };
+  function reinforcements(spec, fleetSize) {
+    const want = Math.min(MAX_FLEET, Math.max(1, fleetSize)), have = spec.enemies.length, sup = SUPPORT[spec.enemies[0].cls] || SUPPORT.scrapjaw, out = [];
+    for (let i = have; i < want; i++) out.push({ cls: sup.cls, name: sup.name, hull: 0.42, shield: 0.6, diff: 'commander', support: true });
+    return out;
+  }
+
   // ---------------- encounter specs ----------------
   const ENV_BY_REGION = { 'Meridian Core': 0, 'Kestrel Verge': 1, 'Ash Marches': 2, 'Red Narrows': 3, 'Halcyon Belt': 4, 'Harrow Expanse': 5 };
   // Everything the battle page needs to stage a fight, as plain JSON (it travels in the save under `launch`).
@@ -338,6 +363,7 @@
     ACTS, STORY, STORY_ORDER, storyById, actOf, storyUnlocked, storyAvailable, openStory,
     STATIONS, nearestStation, SIDE, sideById, sideMissions,
     CONTRACT_TYPES, contracts, hostile, rollInterception, interception, fleeChance,
-    ENV_BY_REGION, encounter, storyEncounter
+    ENV_BY_REGION, encounter, storyEncounter,
+    MAX_FLEET, HULL_PRICES, SHIP_NAMES, sellPrice, nextShipName, deployed, fleetFleeChance, reinforcements
   });
 })(typeof window !== 'undefined' ? window : globalThis);

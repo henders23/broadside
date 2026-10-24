@@ -51,6 +51,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .num{font-variant-numeric:tabular-nums;color:var(--text)}
 #own{left:max(14px,env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));width:250px}
 #foe{right:max(14px,env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:230px}
+#escorts{right:max(14px,env(safe-area-inset-right,0px));top:calc(300px + env(safe-area-inset-top,0px));width:230px;pointer-events:auto}#esc-list{display:flex;flex-direction:column;gap:7px}.esc{display:flex;flex-direction:column;gap:3px}.esc .en{display:flex;justify-content:space-between;gap:8px;font-size:11px}.esc .en b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.esc .en span{color:var(--dim,#9ab)}.esc.lost{opacity:.45}.esc small{font-size:10px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.escbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.escbtns button{font:inherit;font-size:10px;letter-spacing:.06em;padding:5px 2px;background:#0a1b2a;border:1px solid #2f485c;color:#e1eaf2;cursor:pointer}.escbtns button.on{border-color:#f0c27c;color:#f0d3a4;background:#173044}
 .shieldbox{display:grid;grid-template-columns:118px 1fr;gap:10px;align-items:center}
 .shieldbox canvas{width:118px;height:118px;display:block}
 .shlist{display:flex;flex-direction:column;gap:3px;font-size:11px}
@@ -273,6 +274,11 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div id="tacwrap"><canvas id="tac" aria-label="Tactical plot"></canvas><span class="sec">Tactical · <kbd>Tab</kbd> enlarge</span></div>
     <div id="tacfull" hidden><canvas id="tacF" aria-label="Tactical plot, enlarged"></canvas><span class="sec">Tactical plot · heading up · <kbd>Tab</kbd> to close</span></div>
 
+    <div class="panel" id="escorts" hidden aria-label="Escort orders">
+      <div class="ptitle"><b>Escorts</b><small id="esc-order">—</small></div>
+      <div id="esc-list"></div>
+      <div class="escbtns"><button type="button" data-o="focus"><kbd>U</kbd> Focus</button><button type="button" data-o="defend"><kbd>I</kbd> Defend</button><button type="button" data-o="free"><kbd>O</kbd> Free</button></div>
+    </div>
     <div class="panel" id="helm">
       <div class="tele" id="tele"><span>Astern</span><span>Stop</span><span>⅓</span><span>⅔</span><span>Full</span></div>
       <div class="rudlbl"><span>◂ PORT <kbd>A</kbd></span><span><kbd>X</kbd> CENTRE</span><span><kbd>D</kbd> STBD ▸</span></div>
@@ -618,8 +624,22 @@ const campaignMission = (() => {
   if (campaignParams.has('encounter')) { const save = readCampaignSave(); return save && save.launch && Array.isArray(save.launch.enemies) && save.launch.enemies.length ? save.launch : null; }
   return campaignMissionId ? C.storyEncounter(campaignMissionId) : null;
 })();
-let bridge = null;
+let bridge = null, escortHudT = 0;
 let fleet = null;
+// The ships a campaign battle deploys: flagship first, then up to two escorts (older saves hold one ship at the top level).
+function campaignShips(save) {
+  if (!save) return [];
+  const list = Array.isArray(save.ships) && save.ships.length ? save.ships : [{ id: 'flag', ship: save.ship, shipName: save.shipName, hull: save.hull, sub: save.sub, torps: save.torps, upgrades: save.upgrades }];
+  const C = window.BroadsideCampaign, out = C ? C.deployed(list, save.flag) : list.slice(0, 1);
+  return out.filter(r => CLASSES[r.ship] && !CLASSES[r.ship].enemyOnly);
+}
+// Hull, subsystem damage and torpedoes carried over from the campaign.
+function applyRecord(s, rec) {
+  if (typeof rec.hull === 'number') s.hull = Math.round(s.C.hull * clamp(rec.hull, 0.25, 1));
+  if (rec.sub) for (const k of SUBS) if (typeof rec.sub[k] === 'number') s.sub[k] = clamp(rec.sub[k], 0, 100);
+  const torps = s.groups.find(g => g.type === 'torpedo');
+  if (torps && Number.isInteger(rec.torps)) torps.ammo = clamp(rec.torps, 0, torps.ammo);
+}
 function readCampaignSave() { try { const v = JSON.parse(localStorage.getItem(CAMPAIGN_KEY) || 'null'); return v && v.version === 1 ? v : null; } catch(e) { return null; } }
 try { const s = JSON.parse(localStorage.getItem('broadside') || '{}'); if (CLASSES[s.ship] && !CLASSES[s.ship].enemyOnly) choice.ship = s.ship; if (DIFF[s.diff]) choice.diff = s.diff; } catch (e) {}
 function saveChoice() { try { localStorage.setItem('broadside', JSON.stringify(choice)); } catch (e) {} }
@@ -1370,32 +1390,34 @@ function startGame() {
   attractStop();
   Sfx.init(); Music.play('battle', true);
   clearWorld(); battleEnvironment.configure(campaignMission ? campaignMission.env : 0, { gate: !!(campaignMission && campaignMission.gate) }); display.visible = false;
-  const campaignSave = campaignMission ? readCampaignSave() : null;
-  const pk = campaignSave && CLASSES[campaignSave.ship] && !CLASSES[campaignSave.ship].enemyOnly ? campaignSave.ship : choice.ship;
+  const campaignSave = campaignMission ? readCampaignSave() : null, fleetRecs = campaignShips(campaignSave), flagRec = fleetRecs[0] || null;
+  const pk = flagRec ? flagRec.ship : choice.ship;
   const others = Object.keys(CLASSES).filter(k => k !== pk);
   const ek = campaignMission && CLASSES[campaignMission.enemies[0].cls] ? campaignMission.enemies[0].cls : others[Math.floor(Math.random() * others.length)];
-  const upgraded = campaignSave && window.BroadsideUpgrades ? window.BroadsideUpgrades.apply(CLASSES[pk], campaignSave.upgrades) : CLASSES[pk];
-  player = makeShip(pk, 'p', upgraded); enemy = makeShip(ek, 'e');
+  const fitted = rec => rec && window.BroadsideUpgrades ? window.BroadsideUpgrades.apply(CLASSES[rec.ship], rec.upgrades) : CLASSES[rec ? rec.ship : pk];
+  player = makeShip(pk, 'p', flagRec ? fitted(flagRec) : CLASSES[pk]); enemy = makeShip(ek, 'e');
+  if (flagRec) player.recId = flagRec.id;
   player.target = enemy; enemy.target = player;
   if (campaignMission) {
-    player.name = (campaignSave && campaignSave.shipName) || 'MNS Resolute';
+    player.name = (flagRec && flagRec.shipName) || 'MNS Resolute';
     enemy.name = campaignMission.enemies[0].name;
-    if (campaignSave && typeof campaignSave.hull === 'number') {
-      player.hull = Math.round(player.C.hull * clamp(campaignSave.hull, 0.25, 1));
-    }
-    if (campaignSave && campaignSave.sub) {
-      for (const k of SUBS) if (typeof campaignSave.sub[k] === 'number') player.sub[k] = clamp(campaignSave.sub[k], 0, 100);
-    }
-    const torps = player.groups.find(g => g.type === 'torpedo');
-    if (torps && campaignSave && Number.isInteger(campaignSave.torps)) torps.ammo = clamp(campaignSave.torps, 0, torps.ammo);
+    if (flagRec) applyRecord(player, flagRec);
   }
   const off = rand(-900, 900);
   placeShip(player, new V3(off * 0.3, 0, 2700), 0);
   placeShip(enemy, new V3(-off, rand(-120, 120), -2700), Math.PI);
+  // Escorts form up either side of the flagship and fly under the AI, following the standing order.
+  const allies = fleetRecs.slice(1).map((rec, i) => {
+    const e = makeShip(rec.ship, 'p', fitted(rec)), side = i ? 1 : -1;
+    e.name = rec.shipName || 'Escort'; e.recId = rec.id; e.escort = true; applyRecord(e, rec);
+    e.ai = { diff: DIFF.captain, side, flankOffset: side * 18, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
+    e.target = enemy; placeShip(e, new V3(off * 0.3 + side * 560, 0, 2950), 0);
+    return e;
+  });
   enemy.ai = { diff: DIFF[choice.diff], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
   game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [] };
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
-    encounter:campaignMission,makeShip,placeShip,ships,player,primaryEnemy:enemy,
+    encounter:campaignMission,allies,makeShip,placeShip,ships,player,primaryEnemy:enemy,
     getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
     DIFF,endGame,showMsg,game,V3,buildFreighter:ship=>battleEnvironment.buildFreighter(ship)
   }):null;
@@ -1411,7 +1433,8 @@ function startGame() {
   renderer.compile(scene, camera);
   $('campaign-objective').hidden = !campaignMission;
   // A plain one-on-one fight needs no contact line; escorts, timers, surrenders and pincers do.
-  $('fleet-objective').hidden = !fleet || (fleet.spec.goal.type === 'destroy' && fleet.spec.enemies.length < 2);
+  $('fleet-objective').hidden = !fleet || (fleet.spec.goal.type === 'destroy' && fleet.spec.enemies.length < 2 && !allies.length);
+  $('escorts').hidden = !allies.length; escortHudT = 0;
   $('escort-hold').hidden = !fleet?.convoy;
   $('escort-hold').textContent='HOLD CONVOY [H]';
   if (campaignMission) $('campaign-objective').textContent = campaignMission.label + ' // ' + campaignMission.objective;
@@ -1457,12 +1480,14 @@ function showOver() {
     const saved = readCampaignSave();
     if (saved) {
       saved.pendingResult = { id: campaignMission.story || campaignMission.id, kind: campaignMission.kind, ref: campaignMission.id, system: campaignMission.system, outcome: win ? 'win' : 'loss', time: Math.round(game.time), tacticalOutcome: game.campaignOutcome || (win ? 'enemy_destroyed' : 'flagship_lost'), officerUses: bridge ? bridge.uses : null };
-      // An escort loss is not the destruction of the player's flagship.
-      const flagshipSurvived = player.alive && player.hull > 0;
-      saved.hull = flagshipSurvived ? clamp(player.hull / player.C.hull, 0.1, 1) : 0.45;
-      saved.sub = flagshipSurvived ? { ...player.sub } : null;
-      const torpGroup = player.groups.find(g => g.type === 'torpedo');
-      saved.torps = flagshipSurvived && torpGroup ? torpGroup.ammo : null;
+      // Every ship that flew writes back its condition; a disabled ship is recovered badly damaged.
+      // (A lost convoy is not the destruction of the player's flagship.)
+      const flown = ships.filter(s => s.team === 'p' && s.recId), lost = [];
+      const record = s => { const alive = s.alive && s.hull > 0, torpGroup = s.groups.find(g => g.type === 'torpedo'); if (!alive && s !== player) lost.push(s.name);
+        return { hull: alive ? clamp(s.hull / s.C.hull, 0.1, 1) : s === player ? 0.45 : 0.3, sub: alive ? { ...s.sub } : null, torps: alive && torpGroup ? torpGroup.ammo : null }; };
+      if (Array.isArray(saved.ships)) { for (const s of flown) { const rec = saved.ships.find(r => r.id === s.recId); if (rec) Object.assign(rec, record(s)); } }
+      else Object.assign(saved, record(player));
+      saved.pendingResult.lost = lost;
       if (!win) saved.credits = Math.max(0, (saved.credits || 0) - 100);
       try { localStorage.setItem(CAMPAIGN_KEY, JSON.stringify(saved)); } catch (e) { console.warn('Could not save campaign outcome', e); }
     }
@@ -2071,6 +2096,7 @@ window.addEventListener('keydown', e => {
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
   if(k==='KeyH'&&fleet?.toggleHold()){$('escort-hold').textContent=fleet.held?'RESUME CONVOY [H]':'HOLD CONVOY [H]';return;}
   if(k==='KeyJ'&&fleet){fleet.cycle();return;}
+  if(fleet&&ESCORT_KEYS[k]&&fleet.setOrder(ESCORT_KEYS[k])){drawEscorts();return;}
   if (k === 'KeyM') Sfx.toggle();
   if (k === 'KeyN') toggleMusic();
   const P = player; if (!P.alive) return;
@@ -2429,8 +2455,20 @@ const tmarkPool = [];
 let hudT = 0;
 const _sc = {}, _tp = {};
 const _brE = {}, _brP = {};
+// Escort panel: each escort's hull and target, and the standing order (U focus, I defend, O free).
+const ESCORT_KEYS = { KeyU: 'focus', KeyI: 'defend', KeyO: 'free' };
+const escHtml = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+function drawEscorts() {
+  if (!fleet || !fleet.allies.length) return;
+  setT($c('esc-order'), window.BroadsideFleet.ORDERS[fleet.order]);
+  $('esc-list').innerHTML = fleet.allies.map(a => { const pct = Math.max(0, Math.round(a.hull / a.C.hull * 100));
+    return `<div class="esc${a.alive ? '' : ' lost'}"><div class="en"><b>${escHtml(a.name)}</b><span>${a.alive ? pct + '%' : 'DISABLED'}</span></div><div class="bar${pct < 25 ? ' crit' : ''}"><i style="transform:scaleX(${pct / 100})"></i></div><small>${a.alive ? (a.target?.alive ? '→ ' + escHtml(a.target.name) : 'Holding') : 'Out of the fight'}</small></div>`; }).join('');
+  for (const b of document.querySelectorAll('.escbtns button')) b.classList.toggle('on', b.dataset.o === fleet.order);
+}
+for (const b of document.querySelectorAll('.escbtns button')) b.addEventListener('click', () => { if (state === 'playing' && fleet?.setOrder(b.dataset.o)) drawEscorts(); });
 function updateHud(dt) {
   if ((state !== 'playing' && state !== 'paused') || !player) return;
+  if (fleet && fleet.allies.length) { escortHudT -= dt; if (escortHudT <= 0) { escortHudT = 0.25; drawEscorts(); } }
   const P = player, E = enemy;
   setT($c('foe-name'),E.name);setT($c('foe-cls'),E.C.cls);
   camera.updateMatrixWorld();

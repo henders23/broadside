@@ -89,13 +89,13 @@
   };
   // Fleet Admiral Harlan, who briefs each act and sends a transmission after every story operation.
   const harlan = {id:'harlan',name:'Fleet Admiral Gideon Harlan',title:'Commander, Frontier Fleet',image:'img/admiral-harlan.webp'};
-  // Original vector commander portraits (docs/ART-BRIEF.md) are the current in-game art.
-  // They can be replaced with commissioned 768x960 WebP paintings in a future art pass.
+  // One compressed WebP contains eight separate photographic portraits. The badges
+  // remain as fallbacks if the sprite is unavailable; CSS selects a single frame.
   const ART = ['adeyemi','fenn','osei','marlow','achterberg','halloran','vigil','choir'];
   function portrait(person, extra=''){
     const html = badge(person, extra);
     if(!person || !ART.includes(person.id)) return html;
-    return html.replace(/<\/span>$/, `<img class="art" src="img/commanders/${person.id}.svg" alt="" onerror="this.remove()"></span>`);
+    return html.replace(/<\/span>$/, `<span class="art-photo art-${person.id}" aria-hidden="true"></span></span>`);
   }
   function badge(person, extra){
     if(person && person.image){

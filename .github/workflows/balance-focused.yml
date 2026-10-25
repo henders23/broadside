@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - tools/balance.mjs
+      - crew/fleet-controller.js
       - .github/workflows/balance-focused.yml
 
 concurrency:

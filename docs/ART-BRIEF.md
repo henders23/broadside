@@ -1,10 +1,10 @@
 # Art and voice production brief
 
-**25 October 2026 status:** all eight named characters now have distinct SVG concept portraits (768 × 960 viewBox) in `img/commanders/<id>.svg`, and `crew/personnel.js` displays them. They are original illustrated/vector portraits, **not yet photorealistic**. The original descriptions below remain the art-direction specification for eventual `*.webp` replacements. Recording Harlan's 13 MP3 transmissions and authoring dedicated station/transport GLB models remain outstanding.
+**25 October 2026 status:** all eight named characters now display distinct **photorealistic generated portraits**, cropped from `img/commanders/photoreal-atlas.webp` (4 × 2; 96 × 120 pixels per tile), through `crew/personnel.js` and `crew/personnel.css`. Earlier 768 × 960-viewBox SVG concept portraits remain as fallbacks in `img/commanders/<id>.svg`. High-resolution per-character WebP masters were generated but are not in GitHub; the current atlas is optimised for the small in-game UI. Harlan's 13 MP3 recordings and dedicated station/transport GLB models remain outstanding.
 
 ## Portraits
 
-For the future photo-real replacement pass, save as WebP, 768 × 960 (4:5), in `img/commanders/` with the file name given. Update `crew/personnel.js` from `.svg` to `.webp` when these have been approved. They should match the existing painted portraits (`vex.webp`, `thorne.webp`, `img/admiral-harlan.webp`): photorealistic, cinematic, chest-up, on a dark starship set, with black Navy uniforms and gold shoulder boards for Navy officers.
+For a future high-resolution per-character replacement pass, save each image as WebP, 768 × 960 (4:5), in `img/commanders/` with the file name given. Replace the atlas mapping in `crew/personnel.js` and `crew/personnel.css` with individual WebP sources when approved. They should match the existing painted portraits (`vex.webp`, `thorne.webp`, `img/admiral-harlan.webp`): photorealistic, cinematic, chest-up, on a dark starship set, with black Navy uniforms and gold shoulder boards for Navy officers.
 
 | File | Character | Prompt |
 | --- | --- | --- |

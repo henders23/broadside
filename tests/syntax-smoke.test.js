@@ -14,7 +14,7 @@ for(const name of ['index.html','campaign.html']){
     if(code.trim())new Function(code);
   }
 }
-for(const name of ['sable','cantor']){
+for(const name of ['sable','cantor','adeyemi','fenn','osei','marlow','achterberg','halloran','vigil','choir']){
   const asset=fs.readFileSync('img/commanders/'+name+'.svg','utf8');
   assert.match(asset,/<svg\s/);
   assert.match(asset,/<\/svg>/);
@@ -24,6 +24,12 @@ for(const name of ['vex','thorne']){
   const head=fs.readFileSync('img/commanders/'+name+'.webp').subarray(0,12).toString('latin1');
   assert.ok(head.startsWith('RIFF')&&head.endsWith('WEBP'),name+'.webp is a WebP image');
 }
+const personnel=fs.readFileSync('crew/personnel.js','utf8'),css=fs.readFileSync('crew/personnel.css','utf8');
+assert.match(personnel,/art-photo art-/);
+assert.match(css,/photoreal-atlas\.webp/);
+const photo=fs.readFileSync('img/commanders/photoreal-atlas.webp');
+assert.equal(photo.toString('latin1',0,4),'RIFF');
+assert.equal(photo.toString('latin1',8,12),'WEBP');
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/fleet\.onDestroyed\(s\)/);
 assert.match(html,/battleEnvironment\.configure\(campaignMission \? campaignMission\.env/);

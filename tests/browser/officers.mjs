@@ -15,7 +15,8 @@ await suite('officers', {}, async ({ page, ctx, base, out, KEY, check, shot, rea
   let st = await read();
   check(st.officers.okoye.xp === 75 + 60 + 45 && st.officers.varro.xp === 60 + 90 && st.officers.okoye.battles === 2, 'experience saved: ' + JSON.stringify(st.officers));
   await p.screenshot({ path: `${out}/xp-after-action.png` });
-  await p.locator('#modalactions button', { hasText: 'Review map' }).click();
+  await p.keyboard.press('Escape');
+  check(await p.locator('#veil').isVisible() && await p.locator('#modalactions button').count() === 2, 'winning story report cannot be dismissed before choosing');
   await p.reload();
   st = await read();
   check(st.officers.okoye.xp === 180, 'reloading before choosing does not award experience twice');

@@ -70,6 +70,11 @@ assert.equal(a.length, 3);
 same(JSON.parse(JSON.stringify(a)), JSON.parse(JSON.stringify(b)));
 assert.notEqual(a.map(x => x.name + x.system).join(), c.map(x => x.name + x.system).join(), 'a new cycle posts new contracts');
 same(a.map(x => x.type), ['bounty', 'patrol', 'escort']);
+const advanced=C.contracts('peregrine',1,2),quarry=advanced.find(x=>x.type==='pursuit');
+assert.ok(quarry,'Act II rotating boards add a pursuit rather than another patrol');
+assert.equal(quarry.goal.type,'pursuit'); assert.equal(quarry.support,0,'pursuit has one quarry, not escort reinforcements');
+assert.ok(quarry.goal.seconds>100&&quarry.goal.at===0.3);
+assert.equal(C.contracts('peregrine',2,2).some(x=>x.type==='patrol'),true,'patrols return on alternating boards');
 for (const station of Object.keys(C.STATIONS)) for (let act = 1; act <= 3; act++) for (const k of C.contracts(station, 7, act)) {
   const j = C.jumps(station, k.system);
   assert.ok(j >= 1 && j <= 3, `${k.id} target within three jumps (${j})`);
@@ -86,7 +91,7 @@ assert.ok(['wraith', 'thrall'].includes(act3.enemy), 'act III bounties out of Ju
   assert.ok(!one.sentinel && !one.thrall && !two.thrall, 'no new hulls before their act');
   assert.ok(two.sentinel > 0.2 * (two.sentinel + two.seraph) && two.sentinel < 0.5 * (two.sentinel + two.seraph), 'a share of Act II machine work is Sentinels');
   assert.ok(three.thrall > 0.25 * (three.thrall + three.wraith), 'a share of Act III Wraith work is Thrall swarms');
-  for (let c = 0; c < 30; c++) for (const st of Object.keys(C.STATIONS)) for (const k of C.contracts(st, c, 3)) if (k.enemy === 'thrall') assert.ok(k.enemies.length >= 3 && k.enemies.every(e => e.cls === 'thrall'), k.id + ' is a pack');
+  for (let c = 0; c < 30; c++) for (const st of Object.keys(C.STATIONS)) for (const k of C.contracts(st, c, 3)) if (k.enemy === 'thrall') assert.ok(k.type === 'pursuit' ? k.enemies.length === 1 : k.enemies.length >= 3 && k.enemies.every(e => e.cls === 'thrall'), k.id + (k.type === 'pursuit' ? ' is one quarry' : ' is a pack'));
 }
 
 // Interceptions only happen in hostile space

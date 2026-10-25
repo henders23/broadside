@@ -70,12 +70,15 @@ function fixture(missionId,encounter,escortCount=0){
  assert.equal(foes().length,3,'ORACLE-9 gets two drones against a three-ship fleet');
  assert.ok(foes().slice(1).every(s=>s.name==='Directorate drone'&&s.hull===42));
  const [a,b]=f.allies,[boss,d1,d2]=foes();
+ assert.equal(a.dmgOut,.55,'AI escorts contribute at 55% weapon strength');
+ assert.equal(b.dmgOut,.55,'second escort scales identically');
+ assert.equal(f.player.dmgOut,undefined,'the human flagship retains full firepower');
  boss.pos=new V3(0,0,-3000);d1.pos=new V3(0,0,400);d2.pos=new V3(5000,0,0);a.pos=new V3(5000,0,100);b.pos=new V3(0,0,0);
- f.fleet.tick(1.1);assert.equal(a.target,f.selected(),'focus: escorts fire on the flagship target');assert.equal(f.fleet.order,'focus');
+ f.fleet.tick(1.1);assert.equal(a.target,f.selected(),'focus: escorts fire on the flagship target');assert.equal(a.orderIntent,'Focusing your target');assert.equal(f.fleet.order,'focus');
  d2.target=f.player;d1.target=b;boss.target=b;assert.equal(f.fleet.setOrder('defend'),true);f.fleet.tick(1.1);
- assert.equal(a.target,d2,'defend: escorts go for the ship attacking the flagship');
+ assert.equal(a.target,d2,'defend: escorts go for the ship attacking the flagship');assert.equal(a.orderIntent,'Intercepting flagship attacker');
  f.fleet.setOrder('free');f.fleet.tick(1.1);assert.equal(a.target,d2,'free: nearest hostile to the escort');assert.equal(b.target,d1);
- assert.equal(f.fleet.order,'free');
+ assert.equal(f.fleet.order,'free');assert.equal(a.orderIntent,'Engaging nearest threat');assert.equal(f.fleet.escortReport().length,2);
  a.alive=false;f.fleet.onDestroyed(a);assert.equal(f.outcome(),null,'losing an escort does not lose the battle');
  for(const s of foes()){s.alive=false;f.fleet.onDestroyed(s);}assert.equal(f.outcome(),'win');assert.equal(b.isWinner,true);
 }

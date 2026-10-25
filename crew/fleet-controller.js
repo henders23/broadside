@@ -24,6 +24,9 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
  // Supporting ships (a lead's wingmen, reinforcements, boss adds) hit at 40% strength unless an entry sets `dmg`;
  // the battle page multiplies every hit a ship lands by its dmgOut.
  const SUPPORT_DMG=.4;
+ // NPC-controlled escorts deal less than a human-led flagship. Two escorts should
+ // create resilience and tactical choices, not overwhelm bosses without player input.
+ const ESCORT_DMG=.55;
  function scale(ship,e,lead){
   if(!e)return;
   ship.dmgOut=Number.isFinite(e.dmg)?e.dmg:lead?1:SUPPORT_DMG;
@@ -46,6 +49,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   game.endT=.8;
  }
  function setup(){
+  for(const wing of allies) wing.dmgOut=(Number.isFinite(wing.dmgOut)?wing.dmgOut:1)*ESCORT_DMG;
   const base=spec.enemies||[],extra=allies.length&&root.BroadsideCampaign&&base.length?root.BroadsideCampaign.reinforcements(spec,allies.length+1):[],list=[...base,...extra];
   if(list[0]){primaryEnemy.name=list[0].name||primaryEnemy.name;scale(primaryEnemy,list[0],true);}
   if(goal.type==='escort'){
@@ -148,11 +152,16 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   const foes=hostile();if(!foes.length)return;
   const near=(from,list)=>list.reduce((b,s)=>!b||distance(s.pos,from)<distance(b.pos,from)?s:b,null);
   for(const a of escorts()){
-   let t=null;
-   if(order==='focus')t=getSelected()?.alive&&getSelected().team==='e'?getSelected():null;
-   else if(order==='defend'){const onUs=foes.filter(f=>f.target===player);t=near(player.pos,onUs.length?onUs:foes);}
+   let t=null,reason='Engaging nearest contact';
+   if(order==='focus'){t=getSelected()?.alive&&getSelected().team==='e'?getSelected():null;if(t)reason='Focusing your target';}
+   else if(order==='defend'){
+     const onUs=foes.filter(f=>f.target===player);
+     t=near(player.pos,onUs.length?onUs:foes);
+     reason=onUs.length?'Intercepting flagship attacker':'Covering flagship';
+   }else if(order==='free'){reason='Engaging nearest threat';}
    t=t||near(a.pos,foes);
    a.target=t;
+   a.orderIntent=reason;
   }
  }
  // Hostiles spread their fire: each picks the nearest of the player's ships, leaning towards the flagship.
@@ -268,7 +277,12 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   return 'CONTACTS · '+contacts+(n>1?' · J CYCLE TARGET':'');
  }
 
- return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,get order(){return order},get boss(){return boss?{title:boss.title,phase:bossPhase,phases:boss.phases.map(p=>({name:p.name,at:p.at||1})),ship:boss.ship,lattice:boss.ship.dmgTaken<1}:null},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get station(){return station},get quarry(){return quarry},get wave(){return wave},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed}};
+ // Show measurable ally contributions rather than treating escorts as invisible damage bonuses.
+ function escortReport(){return allies.map(a=>({
+   name:a.name,alive:!!a.alive,damage:Math.round(a.stats?.dealt||0),taken:Math.round(a.stats?.taken||0),
+   shots:a.stats?.shots||0,hits:a.stats?.hits||0,orderIntent:a.orderIntent||'Awaiting orders'
+ }));}
+ return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,escortReport,get order(){return order},get boss(){return boss?{title:boss.title,phase:bossPhase,phases:boss.phases.map(p=>({name:p.name,at:p.at||1})),ship:boss.ship,lattice:boss.ship.dmgTaken<1}:null},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get station(){return station},get quarry(){return quarry},get wave(){return wave},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed}};
 }
 root.BroadsideFleet=Object.freeze({create,GATE,ORDERS});
 

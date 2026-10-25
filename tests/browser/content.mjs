@@ -1,13 +1,11 @@
 // The first-battle tutorial, boss entrances, special-weapon warnings and trophies, the defend and pursuit missions,
 // and the art and voice files that are picked up when they exist.
 // Run: node tests/browser/content.mjs (or tests/browser/run.mjs for every suite).
-import { readFileSync } from 'node:fs';
 import { suite } from './harness.mjs';
 
 await suite('content', { random: 0.99 }, async ({ page, ctx, base, KEY, check, shot, read, patch, playing }) => {
-  // Every voice clip the campaign tries to play is recorded; a stand-in portrait is served for Adeyemi.
+  // Observe Harlan's requested voice clips; authored vector art is served by the repository.
   await ctx.addInitScript(() => { window.__audio = []; const A = window.Audio; window.Audio = function (src) { window.__audio.push(src); return new A(src); }; });
-  await ctx.route('**/img/commanders/adeyemi.webp', r => r.fulfill({ body: readFileSync(new URL('../../img/commanders/vex.webp', import.meta.url)), contentType: 'image/webp' }));
   const S = (f, a) => page.evaluate(f, a);
   const fresh = async (extra = {}) => {
     await page.goto(base + '/campaign.html');
@@ -129,10 +127,12 @@ await suite('content', { random: 0.99 }, async ({ page, ctx, base, KEY, check, s
   await page.goto(base + '/campaign.html'); await page.waitForTimeout(1200);
   check((await page.textContent('#modaltitle')) === 'Quarry escaped' && (await page.textContent('#modalbody')).includes('jumped out'), 'the report says it got away');
 
-  // --- Portraits: a painted portrait is drawn over the badge once its file exists
+  // --- Portraits: both commissioned officers display their own illustrated portraits
   await S(() => { closeModal(); const P = window.BroadsidePersonnel; openModal('Test', 'X', txCard(P.recruits[0], 'K', 'Hello') + txCard(P.recruits[1], 'K', 'Hi'), [{ label: 'Close', run: close }]); });
   await page.waitForTimeout(1000);
-  const art = await S(() => [...document.querySelectorAll('#modalbody img.art')].map(i => ({ src: i.getAttribute('src'), w: i.naturalWidth })));
-  check(art.length === 1 && art[0].src === 'img/commanders/adeyemi.webp' && art[0].w > 0, 'Adeyemi’s portrait shows; Fenn keeps his badge: ' + JSON.stringify(art));
+  const art = await S(() => [...document.querySelectorAll('#modalbody .art-photo')].map(i => ({ cls: i.className, bg: getComputedStyle(i).backgroundImage })));
+  check(art.length===2 && art[0].cls.includes('art-adeyemi') && art[1].cls.includes('art-fenn') && art.every(x=>x.bg.includes('photoreal-atlas.webp')), 'Both recruits display unique positions of the photographic portrait atlas: '+JSON.stringify(art));
+  const loaded = await S(async () => { const i = new Image(); i.src='img/commanders/photoreal-atlas.webp'; await i.decode(); return [i.naturalWidth,i.naturalHeight]; });
+  check(loaded[0]===384 && loaded[1]===240,'photoreal sprite decodes in browser: '+loaded.join('x'));
   await shot('c08-portraits');
 });

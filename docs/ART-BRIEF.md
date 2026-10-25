@@ -1,13 +1,15 @@
 # Art, voice and models still to make
 
-Everything Broadside still needs from an artist or a generator: eight portraits, thirteen voice clips for Fleet Admiral Harlan, and one ship model (the Bloom-Mother). The other seven models below arrived in October 2026 and are in the game; their prompts are kept for reference.
+Still needed: thirteen voice clips for Fleet Admiral Harlan, and one ship model (the Bloom-Mother). The portraits and the other seven models below are in the game; their prompts are kept for reference.
 
-- **Portraits and voice** are picked up automatically once the files exist. Each portrait is drawn over the character's badge, and each voice clip plays when its transmission opens (and stops when it closes). Until then the characters show an initials or faction badge, and Harlan's transmissions are text only. They could not be generated earlier because the ElevenLabs account had run out of credits.
-- **Ship models** need a small code change each when they arrive (file, scale, rotation, hit and shield ellipsoids, gun and engine positions in `crew/ships.js`). Until then those ships reuse another hull, as listed below.
+**25 October 2026 status:** all eight named characters now display distinct **photorealistic generated portraits**, cropped from `img/commanders/photoreal-atlas.webp` (4 × 2; 96 × 120 pixels per tile), through `crew/personnel.js` and `crew/personnel.css`. Earlier 768 × 960-viewBox SVG concept portraits remain as fallbacks in `img/commanders/<id>.svg`. High-resolution per-character WebP masters were generated but are not in GitHub; the current atlas is optimised for the small in-game UI. Harlan's 13 MP3 recordings and dedicated station/transport GLB models remain outstanding.
+
+- **Voice** is picked up automatically once the files exist: each clip plays when its transmission opens (and stops when it closes). Until then Harlan's transmissions are text only.
+- **Ship models** need a small code change each when they arrive (file, length and proportions in `crew/ships.js`; `refit()` fits the hit and shield ellipsoids and the gun and engine mounts).
 
 ## Portraits
 
-Save as WebP, 768 × 960 (4:5), in `img/commanders/` with the file name given. They should match the existing painted portraits (`vex.webp`, `thorne.webp`, `img/admiral-harlan.webp`): photorealistic, cinematic, chest-up, on a dark starship set, with black Navy uniforms and gold shoulder boards for Navy officers.
+For a future high-resolution per-character replacement pass, save each image as WebP, 768 × 960 (4:5), in `img/commanders/` with the file name given. Replace the atlas mapping in `crew/personnel.js` and `crew/personnel.css` with individual WebP sources when approved. They should match the existing painted portraits (`vex.webp`, `thorne.webp`, `img/admiral-harlan.webp`): photorealistic, cinematic, chest-up, on a dark starship set, with black Navy uniforms and gold shoulder boards for Navy officers.
 
 | File | Character | Prompt |
 | --- | --- | --- |

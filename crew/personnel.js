@@ -89,13 +89,13 @@
   };
   // Fleet Admiral Harlan, who briefs each act and sends a transmission after every story operation.
   const harlan = {id:'harlan',name:'Fleet Admiral Gideon Harlan',title:'Commander, Frontier Fleet',image:'img/admiral-harlan.webp'};
-  // Painted portraits still to come (docs/ART-BRIEF.md). Each tries img/commanders/<id>.webp over its badge and
-  // falls back to the badge when the file is not there yet, so dropping the file in is all it takes.
+  // One compressed WebP contains eight separate photographic portraits. The badges
+  // remain as fallbacks if the sprite is unavailable; CSS selects a single frame.
   const ART = ['adeyemi','fenn','osei','marlow','achterberg','halloran','vigil','choir'];
   function portrait(person, extra=''){
     const html = badge(person, extra);
     if(!person || !ART.includes(person.id)) return html;
-    return html.replace(/<\/span>$/, `<img class="art" src="img/commanders/${person.id}.webp" alt="" onerror="this.remove()"></span>`);
+    return html.replace(/<\/span>$/, `<span class="art-photo art-${person.id}" aria-hidden="true"></span></span>`);
   }
   function badge(person, extra){
     if(person && person.image){

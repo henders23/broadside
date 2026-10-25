@@ -1,5 +1,7 @@
 # Balance
 
+**25 October 2026 focused update:** The three-stage Captain comparison found that AI escorts at full power made almost every tested two-ship fleet battle an automatic win. NPC escorts now deal **55%** of their class's weapon damage (the human flagship remains at full damage). See [the focused three-stage analysis](BALANCE_FOCUSED_2026-10-25.md) for all 96 comparable runs per setting, revised win rates, Halberd targeting diagnosis and limitations. The older results below describe **historical** settings and must not be mistaken for post-adjustment rates.
+
 `tools/balance.mjs` flies every story operation and act finale in headless Chromium with the AI at the flagship's helm, many times over, faster than real time, and records the results in [balance-results.json](balance-results.json). The numbers below are from the last tuning pass (October 2026, 4 runs of each fight).
 
 ```sh

@@ -54,7 +54,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #coach{position:absolute;right:calc(20px + env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);width:min(330px,36vw);z-index:6;padding:14px 16px;border:1px solid #9fd8ff66;border-right:3px solid #9fd8ff;border-radius:10px;background:linear-gradient(120deg,rgba(8,24,38,.92),rgba(4,10,18,.85));box-shadow:0 10px 30px #0009;animation:coachin .4s ease}#coach[hidden]{display:none}#coach small{display:block;font-size:10px;letter-spacing:.22em;color:#9fd8ff;text-transform:uppercase}#coach b{display:block;margin:4px 0 6px;font-size:17px;color:#f4e6cc}#coach p{margin:0 0 10px;font-size:12.5px;line-height:1.55;color:#c9d8e4}#coach .ck{display:flex;justify-content:space-between;align-items:center;gap:8px}#coach kbd:empty{visibility:hidden}#coach button{pointer-events:auto;background:none;border:1px solid #ffffff33;color:#c9d8e4;border-radius:999px;padding:4px 10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}@keyframes coachin{from{opacity:0;transform:translate(12px,-50%)}}
 #bosscard{position:absolute;inset:0;z-index:7;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:16vh;gap:6px;text-align:center;background:linear-gradient(#000 0 9vh,transparent 9vh calc(100% - 9vh),#000 calc(100% - 9vh));opacity:0}#bosscard[hidden]{display:none}#bosscard small{font-size:12px;letter-spacing:.42em;color:#ffb36b;text-transform:uppercase}#bosscard b{font-size:clamp(34px,6vw,72px);letter-spacing:.18em;color:#ffe3c4;text-shadow:0 0 28px #ff5b4f99;font-weight:800}#bosscard span{font-size:14px;letter-spacing:.2em;color:#e9d2bd;text-transform:uppercase}#bosscard em{margin-top:10px;font-style:normal;font-size:10px;letter-spacing:.3em;color:#ffffff66;text-transform:uppercase}#bossbar.warn .bt span{color:#ff6b5f;animation:bosswarn .5s steps(2) infinite}@keyframes bosswarn{50%{opacity:.35}}
 #bossbar{position:absolute;top:calc(188px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(560px,60vw);z-index:5;pointer-events:none}#bossbar .bt{display:flex;justify-content:space-between;gap:12px;font-size:11px;letter-spacing:.16em;color:#ffd0a0;text-transform:uppercase;margin-bottom:5px}#bossbar .bt b{font-weight:700}#bossbar .bb{position:relative;height:10px;background:rgba(255,91,79,.15);border:1px solid rgba(255,140,110,.5)}#bossbar .bb i{position:absolute;inset:0;background:linear-gradient(90deg,#ff5b4f,#ffb36b);transform-origin:left}#bossbar .bb .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:#ffe3c4}#bossbar.lattice .bb i{background:linear-gradient(90deg,#6fd0ff,#cfefff)}#bossbar.lattice .bt span{color:#9fd8ff}
-#escorts{right:max(14px,env(safe-area-inset-right,0px));top:calc(300px + env(safe-area-inset-top,0px));width:230px;pointer-events:auto}#esc-list{display:flex;flex-direction:column;gap:7px}.esc{display:flex;flex-direction:column;gap:3px}.esc .en{display:flex;justify-content:space-between;gap:8px;font-size:11px}.esc .en b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.esc .en span{color:var(--dim,#9ab)}.esc.lost{opacity:.45}.esc small{font-size:10px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.escbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.escbtns button{font:inherit;font-size:10px;letter-spacing:.06em;padding:5px 2px;background:#0a1b2a;border:1px solid #2f485c;color:#e1eaf2;cursor:pointer}.escbtns button.on{border-color:#f0c27c;color:#f0d3a4;background:#173044}
+#escorts{right:max(14px,env(safe-area-inset-right,0px));top:calc(300px + env(safe-area-inset-top,0px));width:230px;pointer-events:auto}#esc-list{display:flex;flex-direction:column;gap:7px}.esc{display:flex;flex-direction:column;gap:3px}.esc .en{display:flex;justify-content:space-between;gap:8px;font-size:11px}.esc .en b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.esc .en span{color:var(--dim,#9ab)}.esc.lost{opacity:.45}.esc small{font-size:10px;opacity:.82;white-space:normal;line-height:1.3;overflow:visible}.escbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.escbtns button{font:inherit;font-size:10px;letter-spacing:.06em;padding:5px 2px;background:#0a1b2a;border:1px solid #2f485c;color:#e1eaf2;cursor:pointer}.escbtns button.on{border-color:#f0c27c;color:#f0d3a4;background:#173044}
 .shieldbox{display:grid;grid-template-columns:118px 1fr;gap:10px;align-items:center}
 .shieldbox canvas{width:118px;height:118px;display:block}
 .shlist{display:flex;flex-direction:column;gap:3px;font-size:11px}
@@ -1377,6 +1377,10 @@ function showOver() {
   const t = game.time, mm = Math.floor(t / 60), ss = Math.floor(t % 60);
   const rows = [['Battle time', mm + ':' + String(ss).padStart(2, '0')], ['Damage dealt', Math.round(st.dealt)], ['Damage taken', Math.round(st.taken)], ['Gun accuracy', acc + '%'], ['Torpedo hits', st.torpHits]];
   if (player.groups.some(g => g.type === 'lance')) rows.push(['Lance damage', Math.round(st.lanceDmg)]);
+  if (fleet?.allies.length) {
+    const er=fleet.escortReport();
+    rows.push(['Escort damage', er.reduce((n,a)=>n+a.damage,0)], ['Escorts surviving', er.filter(a=>a.alive).length+' / '+er.length]);
+  }
   rows.push(['Hull left', Math.max(0, Math.round(player.hull))]);
   $('over-stats').innerHTML = rows.map(r => `<div><small>${r[0]}</small><b>${r[1]}</b></div>`).join('');
   $('hud').hidden = true; $('escort-hold').hidden=true; $('over').hidden = false; Sfx.engine(0, false);
@@ -1405,6 +1409,7 @@ function showOver() {
       if (Array.isArray(saved.ships)) { for (const s of flown) { const rec = saved.ships.find(r => r.id === s.recId); if (rec) Object.assign(rec, record(s)); } }
       else Object.assign(saved, record(player));
       saved.pendingResult.lost = lost;
+      if(fleet?.allies.length)saved.pendingResult.escortReport=fleet.escortReport();
       if (fleet?.convoy) saved.pendingResult.convoyHull = fleet.convoy.alive ? Math.round(1000 * clamp(fleet.convoy.hull / (fleet.convoy.C.hull * 0.65), 0, 1)) / 1000 : 0;   // carried into a convoy run's next leg
       // Wrecks the salvage crews can claim: destroyed capturable hostiles, or a commander who surrendered.
       if (win) saved.pendingResult.wrecks = ships.filter(s => s.team === 'e' && s.C.capturable && !s.isBoss && (!s.alive || game.campaignOutcome === 'surrender' && s === enemy))
@@ -2462,7 +2467,7 @@ function drawEscorts() {
   if (!fleet || !fleet.allies.length) return;
   setT($c('esc-order'), window.BroadsideFleet.ORDERS[fleet.order]);
   $('esc-list').innerHTML = fleet.allies.map(a => { const pct = Math.max(0, Math.round(a.hull / a.C.hull * 100));
-    return `<div class="esc${a.alive ? '' : ' lost'}"><div class="en"><b>${escHtml(a.name)}</b><span>${a.alive ? pct + '%' : 'DISABLED'}</span></div><div class="bar${pct < 25 ? ' crit' : ''}"><i style="transform:scaleX(${pct / 100})"></i></div><small>${a.alive ? (a.target?.alive ? '→ ' + escHtml(a.target.name) : 'Holding') : 'Out of the fight'}</small></div>`; }).join('');
+    return `<div class="esc${a.alive ? '' : ' lost'}"><div class="en"><b>${escHtml(a.name)}</b><span>${a.alive ? pct + '%' : 'DISABLED'}</span></div><div class="bar${pct < 25 ? ' crit' : ''}"><i style="transform:scaleX(${pct / 100})"></i></div><small>${a.alive ? escHtml(a.orderIntent||'Awaiting target') : 'Out of the fight'}</small><small>${a.alive ? (a.target?.alive?'Target: '+escHtml(a.target.name):'No contact') : ''}</small></div>`; }).join('');
   for (const b of document.querySelectorAll('.escbtns button')) b.classList.toggle('on', b.dataset.o === fleet.order);
 }
 for (const b of document.querySelectorAll('.escbtns button')) b.addEventListener('click', () => { if (state === 'playing' && fleet?.setOrder(b.dataset.o)) drawEscorts(); });
@@ -2531,8 +2536,13 @@ function updateHud(dt) {
       st = off ? 'OFFLINE' : g.ammo <= 0 ? 'EMPTY' : `${g.ammo} LEFT · ${loaded}/${g.tubesT.length} TUBES` + (inA ? '' : ' · NO ARC'); ready = !off && loaded > 0 && g.ammo > 0 && inA;
     } else if (g.type === 'lance') {
       frac = g.beamT > 0 ? g.beamT / g.dur : g.charge; firing = g.beamT > 0;
-      st = off ? 'OFFLINE' : firing ? 'FIRING' : g.charge < 1 ? 'CHARGING ' + Math.ceil((1 - g.charge) * g.chargeT / (e.wpn * (0.3 + 0.7 * subEff(P, g)))) + ' s' : inA ? 'READY · ON TARGET' : 'CHARGED · AIM THE BOW';
-      ready = !off && g.charge >= 1 && inA;
+      // Firing arc and actual beam intersection differ at long range: never promise a hit on angle alone.
+      const muzzle=g.mounts[0]?.local;
+      const beamOrigin=muzzle ? muzzle.clone().applyMatrix4(P.obj.matrixWorld) : null;
+      const rayT=beamOrigin && E.alive ? rayEllipsoid(E,E.C.shieldE,beamOrigin,P.fwd) : -1;
+      const clearShot=inA && rayT >= 0 && rayT <= g.range;
+      st = off ? 'OFFLINE' : firing ? 'FIRING' : g.charge < 1 ? 'CHARGING ' + Math.ceil((1 - g.charge) * g.chargeT / (e.wpn * (0.3 + 0.7 * subEff(P, g)))) + ' s' : clearShot ? 'READY · BEAM ON TARGET' : inA ? 'CHARGED · BEAM WILL MISS' : dist >= g.range ? 'CHARGED · OUT OF RANGE' : 'CHARGED · '+Math.round(Math.abs(brE.b))+'° OFF BOW';
+      ready = !off && g.charge >= 1 && clearShot;
     } else {
       frac = g.charge;
       st = off ? 'OFFLINE' : g.charge < 1 ? 'LOADING' : inA ? 'READY · IN ARC' : 'LOADED · NO ARC';
@@ -2694,7 +2704,7 @@ if (location.search.includes('sim')) window.__sim = {
     campaignMission = spec; startGame();
     game.tally = {};
     player.ai = { diff: DIFF.captain, side: 1, shT: 2, pwT: 0, mode: 'close', sideT: 0 }; player.target = enemy;
-    const lead = enemy, dt = 1 / 30; let pick = 0, cmd = 0;
+    const lead = enemy, dt = 1 / 30; let pick = 0, cmd = 0, lanceReady = 0, lanceAligned = 0;
     while (state === 'playing' && game.time < maxTime) {
       // Pick targets as a sensible captain would: lattice nodes first, then the nearest hostile, the lead counting as further off.
       if ((pick -= dt) <= 0) { pick = 2; const foes = ships.filter(s => s.team === 'e' && s.alive), nodes = foes.filter(s => s.latticeNode);
@@ -2702,10 +2712,21 @@ if (location.search.includes('sim')) window.__sim = {
         const w = s => player.pos.distanceTo(s.pos) * (s === lead ? 1.4 : 1), t = (nodes.length ? nodes : hunters.length ? hunters : foes).sort((a, b) => w(a) - w(b))[0]; if (t) player.target = t; }
       // Officer commands once the fight is hurting, as a captain would: each is tried when ready and refuses when pointless.
       if (bridge && (cmd -= dt) <= 0) { cmd = 3; if (player.hull < player.C.hull * 0.85 || player.sh.some((v, i) => v < player.cap[i] * 0.5)) for (const k of ['Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9']) bridge.activateByKey(k); }
+      // Separate lance availability from the AI pilot's ability to align the bow.
+      const lance = player.groups.find(g=>g.type==='lance');
+      if (lance && lance.charge>=1 && lance.beamT<=0) {
+        lanceReady += dt;
+        if (player.target?.alive && inArc(player,lance,player.target.pos)) lanceAligned += dt;
+      }
       updateGame(dt); fire.update(dt); smoke.update(dt);
     }
     const out = { outcome: game.outcome || 'timeout', code: game.campaignOutcome || null, time: Math.round(game.time), hull: player.alive ? Math.max(0, player.hull / player.C.hull) : 0,
-      foes: ships.filter(s => s.team === 'e' && s.alive).length, foeHull: lead.alive ? Math.max(0, lead.hull / lead.maxHull) : 0, tally: game.tally };
+      foes: ships.filter(s => s.team === 'e' && s.alive).length, foeHull: lead.alive ? Math.max(0, lead.hull / lead.maxHull) : 0, tally: game.tally, mission: spec.id, shipClass: player.key, fleetSize: 1+(fleet?.allies.length||0),
+      accuracy: player.stats.shots ? player.stats.hits/player.stats.shots : null,
+      shots: player.stats.shots, hits: player.stats.hits, lanceDamage: Math.round(player.stats.lanceDmg),
+      escortDamage: fleet?.escortReport().reduce((n,a)=>n+a.damage,0)||0,
+      lanceReadySeconds: Math.round(lanceReady), lanceAlignedSeconds: Math.round(lanceAligned),
+      lanceAlignment: lanceReady ? lanceAligned/lanceReady : null };
     if (state === 'playing') { game.ending = true; state = 'over'; }
     return out;
   }

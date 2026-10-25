@@ -397,13 +397,13 @@
   const CONTRACT_TYPES = {
     bounty: { label: 'Bounty', verb: 'Destroy' },
     patrol: { label: 'Patrol', verb: 'Clear' },
-    escort: { label: 'Escort', verb: 'Escort' }
+    escort: { label: 'Escort', verb: 'Escort' }, pursuit: { label: 'Pursuit', verb: 'Disable' }
   };
   const SHIP_WORD = { scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship', sentinel: 'lance frigate', thrall: 'swarm' };
   function contractFor(type, station, sys, act, r, id) {
     const k = contractBase(type, station, sys, act, r, id), alt = foeFor(sys, act).alt;
     // A Thrall swarm comes as a pack: the contract's ships, topped up to the pack size, at nearly full strength (they are small).
-    if (k.enemy === 'thrall') {
+    if (k.enemy === 'thrall' && k.type !== 'pursuit') {
       for (const e of k.enemies) { e.hull = round(Math.min(1, e.hull + 0.35)); e.shield = round(Math.min(1, e.shield + 0.3)); }
       while (k.enemies.length < alt.pack) k.enemies.push({ cls: 'thrall', name: 'Thrall', hull: 0.8, shield: 0.8, diff: 'commander' });
       k.intel = `A Wraith swarm of ${k.enemies.length} Thralls. Small, fast and thin-hulled; they close to ram. Break the pack apart.`;
@@ -430,6 +430,15 @@
         objective: 'Destroy both hostile ships.', intel: `Two light ${foe.group} ${ship}s working as a pair.`,
         enemies: [{ cls: foe.cls, name: `${foe.group} lead`, hull: round(s * 0.62), shield: round(s * 0.75) }, { cls: foe.cls, name: `${foe.group} wingman`, hull: round(s * 0.55), shield: round(s * 0.7), diff: 'commander' }], goal: { type: 'destroy' } });
     }
+    if (type === 'pursuit') {
+      const who = pick(r, foe.names);
+      return Object.assign(base, { name: 'Pursuit: ' + who, captain: who, reward: 300 + 65 * lvl + 110 * (a - 1),
+        brief: who + ' is carrying stolen navigation data out of ' + sys.name + '. Catch the ' + ship + ' before its jump drive spools up; the intelligence is needed intact.',
+        objective: 'Disable the quarry below 30% hull before it jumps.',
+        intel: 'Quarry fleeing at reduced engine power. 115-second jump window. Disable rather than destroy.',
+        enemies: [{ cls: foe.cls, name: who, hull: round(Math.min(1, s + 0.25)), shield: round(Math.min(1, s + 0.25)) }],
+        goal: { type: 'pursuit', seconds: 115, at: 0.3, speed: 0.8 }, support: 0 });
+    }
     const convoy = pick(r, CONVOYS);
     return Object.assign(base, { name: `Escort: ${convoy}`, captain: `${foe.group} ${ship}`, reward: 240 + 65 * lvl + 90 * (a - 1),
       brief: `The ${convoy} is waiting in ${sys.name} for a jump window, and a ${foe.group} ${ship} is waiting for it. See her through to the beacon.`,
@@ -441,8 +450,8 @@
     const r = rng(hash(station + ':' + cycle)), a = Math.min(act, 3), out = [];
     const near = SYSTEMS.filter(s => { const j = jumps(station, s.id); return j >= 1 && j <= 3; });
     const main = near.filter(s => ACTS[a - 1].main.includes(s.faction)), foes = near.filter(s => hostile(s, a));
-    const targets = { bounty: main.length ? main : foes, patrol: near.filter(s => hostile(s, a) || s.faction === 'Contested'), escort: near.filter(s => s.faction === 'Independent' || s.faction === 'Contested') };
-    for (const [i, type] of ['bounty', 'patrol', 'escort'].entries()) {
+    const targets = { bounty: main.length ? main : foes, patrol: near.filter(s => hostile(s, a) || s.faction === 'Contested'), pursuit: main.length ? main : foes, escort: near.filter(s => s.faction === 'Independent' || s.faction === 'Contested') };
+    for (const [i, type] of (a >= 2 && cycle % 2 === 1 ? ['bounty', 'pursuit', 'escort'] : ['bounty', 'patrol', 'escort']).entries()) {
       const pool = targets[type].length ? targets[type] : near.filter(s => s.faction !== 'Navy');
       if (!pool.length) continue;
       out.push(contractFor(type, station, pick(r, pool), a, r, `c:${station}:${cycle}:${i}`));
@@ -555,7 +564,7 @@
     let next = clock || 0;
     if (actFront && act <= 3) {
       if (region === actFront && win) next = 0;
-      else if (++next >= PUSHBACK.every) { move(actFront, -PUSHBACK.by, 'pushback'); next = 0; }
+      else if (region !== actFront && ++next >= PUSHBACK.every) { move(actFront, -PUSHBACK.by, 'pushback'); next = 0; }
     }
     return { fronts: out, clock: next, changes };
   }

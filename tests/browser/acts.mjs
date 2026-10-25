@@ -67,7 +67,7 @@ await suite('acts', { random: 0.99 }, async ({ page, base, KEY, check, shot, rea
   await shot('a04-leg-report');
   await page.locator('#modalactions button', { hasText: 'Continue' }).click(); await page.waitForTimeout(500);
   st = await read();
-  check(st.legs['a2-lifeline'].leg === 1 && Math.abs(st.legs['a2-lifeline'].hull - 0.6) < 0.02 && st.credits === 0 && st.orders.includes('a2-lifeline') && !st.sideDone.includes('a2-lifeline'), 'on to leg 2, no pay yet: ' + JSON.stringify(st.legs));
+  check(st.legs['a2-lifeline'].leg === 1 && Math.abs(st.legs['a2-lifeline'].hull - 0.6) < 0.02 && st.credits === 0 && st.orders.includes('a2-lifeline') && !st.sideDone.includes('a2-lifeline') && !(st.rep||{}).juniper, 'on to leg 2, no pay or reputation yet: ' + JSON.stringify(st.legs));
   check(await S(() => activeOrders().find(o => o.id === 'a2-lifeline').system) === 'citrine', 'the order now points at Citrine');
   // leg 2 starts with the damage
   await battle("C.encounter({ ...C.sideLeg(C.sideById['a2-lifeline'], s.legs['a2-lifeline']), kind: 'side' }, ctx)");
@@ -83,7 +83,7 @@ await suite('acts', { random: 0.99 }, async ({ page, base, KEY, check, shot, rea
   check(r.title === 'Mission complete' && /Reward:\s*\d+/.test(r.body), 'the last leg completes the mission');
   await page.locator('#modalactions button', { hasText: 'Continue' }).click(); await page.waitForTimeout(500);
   st = await read();
-  check(st.sideDone.includes('a2-lifeline') && !st.orders.includes('a2-lifeline') && !st.legs['a2-lifeline'] && st.credits > 0, 'paid, and the run is closed');
+  check(st.sideDone.includes('a2-lifeline') && !st.orders.includes('a2-lifeline') && !st.legs['a2-lifeline'] && st.credits > 0 && st.rep.juniper === 10, 'paid and standing granted once, and the run is closed');
 
   // --- A failed leg sends the run back to the start
   await fresh({ completed: [1, 2, 3, 8, 4, 6, 9], actBriefed: 3, system: 'nex', orders: ['a3-lastships'], legs: { 'a3-lastships': { leg: 1, hull: 0.5 } } });

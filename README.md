@@ -47,7 +47,7 @@ Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use 
 - **Claim wrecks.** After a victory, tow home a defeated Scrapjaw, Revenant or Seraph and refit it for a Navy helm (650–800 requisition, joins in reserve damaged), then fly it like any other ship. Impound Thorne's Scrapjaw, the Widow, if he surrenders.
 - **Officers for hire**, one at each starbase, each with a new battle command (Rally the Crew, Overcharge, Hull Patch, Burn Hard, Jamming Field). Assign who serves at each post on the Officers screen; the rest wait in reserve.
 - **Codex** of ships, factions, people, places and a captain's guide, opening as the campaign reveals them.
-- Eight original SVG concept portraits for the five recruited officers and three enemy commanders are now included in `img/commanders/` and display in dossiers and briefings. The [art brief](docs/ART-BRIEF.md) specifies a future photorealistic WebP replacement pass. Harlan's transmissions are still text until recorded MP3s are supplied to `voice/`.
+- Eight generated photoreal character portraits are now integrated through a compact [WebP contact-sheet atlas](img/commanders/photoreal-atlas.webp) for the five recruits and three enemy commanders. The existing SVG portraits remain in the repo as fallback/concept assets. Harlan's transmissions still need MP3 recordings.
 - **Three save slots** and a **difficulty** per campaign (Ensign, Captain, Admiral): enemy skill, hull and damage, ambush rate and pay. **Saves** on the campaign bar switches, starts or deletes campaigns.
 - Jumps are free, but routes through hostile space can be **intercepted**: fight for salvage, or try to break away (fast hulls and healthy engines get away more often).
 - Persistent campaign save in browser localStorage (key `broadside-campaign-v1`): selected flagship, progress, decisions, hull condition, critical subsystem damage, surviving torpedoes and requisition.
@@ -142,9 +142,9 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 
 ### Artwork and audio status
 
-**Eight original vector portrait illustrations have been added and wired into the game** (`img/commanders/*.svg`, 768 × 960 aspect ratio). These are distinct interim **illustrated** portraits rather than the photorealistic WebP paintings requested in the [art brief](docs/ART-BRIEF.md). The source brief is retained for a later visual-quality pass.
+**Eight photoreal character images have been generated and integrated** into the game via one optimised WebP atlas at `img/commanders/photoreal-atlas.webp` (4 columns × 2 rows, each in-game tile 96 × 120 pixels). `crew/personnel.js` and `crew/personnel.css` select each character independently. The earlier SVG illustrations remain as fallback/source art. Full-resolution masters were generated separately but are **not committed** to this repository; for future high-resolution dossier use, export individual 768 × 960 WebP files as specified in the [art brief](docs/ART-BRIEF.md).
 
-- **Illustrated portraits now included**, in `img/commanders/`:
+- **Photographic portrait subjects included in the atlas**, in `img/commanders/`:
   - the hired officers: `adeyemi.svg`, `fenn.svg`, `osei.svg`, `marlow.svg`, `achterberg.svg`;
   - the enemy commanders: `halloran.svg` (Act I finale), `vigil.svg` (Operation 6), `choir.svg` (Operation 7).
 - **Still missing: Harlan's voice**, one MP3 per transmission in `voice/`: `harlan-1.mp3` to `harlan-9.mp3` (after each story operation), `harlan-act1.mp3` to `harlan-act3.mp3` (act briefings) and `harlan-end.mp3` (the ending). The lines are in `NARRATIVE` and `ACTS[].briefing` in `crew/campaign-data.js`.

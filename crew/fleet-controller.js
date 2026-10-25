@@ -24,6 +24,9 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
  // Supporting ships (a lead's wingmen, reinforcements, boss adds) hit at 40% strength unless an entry sets `dmg`;
  // the battle page multiplies every hit a ship lands by its dmgOut.
  const SUPPORT_DMG=.4;
+ // NPC-controlled escorts deal less than a human-led flagship. Two escorts should
+ // create resilience and tactical choices, not overwhelm bosses without player input.
+ const ESCORT_DMG=.7;
  function scale(ship,e,lead){
   if(!e)return;
   ship.dmgOut=Number.isFinite(e.dmg)?e.dmg:lead?1:SUPPORT_DMG;
@@ -46,6 +49,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   game.endT=.8;
  }
  function setup(){
+  for(const wing of allies) wing.dmgOut=(Number.isFinite(wing.dmgOut)?wing.dmgOut:1)*ESCORT_DMG;
   const base=spec.enemies||[],extra=allies.length&&root.BroadsideCampaign&&base.length?root.BroadsideCampaign.reinforcements(spec,allies.length+1):[],list=[...base,...extra];
   if(list[0]){primaryEnemy.name=list[0].name||primaryEnemy.name;scale(primaryEnemy,list[0],true);}
   if(goal.type==='escort'){

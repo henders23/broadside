@@ -20,7 +20,7 @@ function dutyOf(id){return onDuty().find(c=>c.id===id)||null;}
 function slotOf(o){return RECRUITS.includes(o)?o.post:o.id;}
 function postTitle(o){return RECRUITS.includes(o)?o.postName:o.post;}
 function reserves(){const duty=new Set(onDuty().map(c=>c.id));return [...CREW,...state.hired.map(id=>RECRUITS.find(r=>r.id===id)).filter(Boolean)].filter(c=>!duty.has(c.id));}
-function leadFor(m){return onDuty().find(c=>c.slot===Personnel.leads[m.id])||leadFor(m);}
+function leadFor(m){const duty=onDuty();return duty.find(c=>c.slot===Personnel.leads[m.id])||duty[0];}
 function commanderByMission(n){return Personnel.commanders[n]}
 function newShip(id,ship,shipName){return {id,ship,shipName,hull:1,sub:null,torps:null,upgrades:[],reserve:false};}
 function initial(){let pick='bastion';try{const v=JSON.parse(localStorage.getItem('broadside')||'{}');if(shipChoices.includes(v.ship))pick=v.ship;}catch(e){}return {version:1,ships:[newShip('s1',pick,'MNS Resolute')],flag:'s1',shipSeq:1,system:'meridian',completed:[],flags:{},credits:850,attempts:0,pendingResult:null,introSeen:false,officers:{},actBriefed:0,boardCycle:0,orders:[],contracts:[],sideDone:[],launch:null,interceptSeed:0,ambush:null,difficulty:'captain',rep:{},updated:0,met:[],visited:['meridian'],codexRead:[],crew:{},hired:[],fronts:Campaign.startFronts(),frontClock:0};}

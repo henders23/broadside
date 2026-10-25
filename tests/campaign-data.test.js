@@ -91,7 +91,7 @@ assert.ok(['wraith', 'thrall'].includes(act3.enemy), 'act III bounties out of Ju
   assert.ok(!one.sentinel && !one.thrall && !two.thrall, 'no new hulls before their act');
   assert.ok(two.sentinel > 0.2 * (two.sentinel + two.seraph) && two.sentinel < 0.5 * (two.sentinel + two.seraph), 'a share of Act II machine work is Sentinels');
   assert.ok(three.thrall > 0.25 * (three.thrall + three.wraith), 'a share of Act III Wraith work is Thrall swarms');
-  for (let c = 0; c < 30; c++) for (const st of Object.keys(C.STATIONS)) for (const k of C.contracts(st, c, 3)) if (k.enemy === 'thrall') assert.ok(k.enemies.length >= 3 && k.enemies.every(e => e.cls === 'thrall'), k.id + ' is a pack');
+  for (let c = 0; c < 30; c++) for (const st of Object.keys(C.STATIONS)) for (const k of C.contracts(st, c, 3)) if (k.enemy === 'thrall') assert.ok(k.type === 'pursuit' ? k.enemies.length === 1 : k.enemies.length >= 3 && k.enemies.every(e => e.cls === 'thrall'), k.id + (k.type === 'pursuit' ? ' is one quarry' : ' is a pack'));
 }
 
 // Interceptions only happen in hostile space

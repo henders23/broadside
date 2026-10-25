@@ -142,13 +142,13 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 
 ### Artwork and audio still needed
 
-These could not be generated yet (the ElevenLabs account ran out of credits). The game already looks for each file and uses it as soon as it is added; until then the character shows an initials or faction badge, and Harlan's transmissions are text only. Prompts, sizes and the voice description are in [docs/ART-BRIEF.md](docs/ART-BRIEF.md).
+Prompts, sizes, file names and Harlan's full script are in [docs/ART-BRIEF.md](docs/ART-BRIEF.md). The portraits and voice could not be generated yet (the ElevenLabs account ran out of credits); the game already looks for each of those files and uses it as soon as it is added. Until then the character shows an initials or faction badge, and Harlan's transmissions are text only.
 
 - **Eight portraits**, WebP at 768 × 960, in the style of `vex.webp`, `thorne.webp` and `img/admiral-harlan.webp`, saved in `img/commanders/` as:
   - the hired officers: `adeyemi.webp`, `fenn.webp`, `osei.webp`, `marlow.webp`, `achterberg.webp`;
   - the enemy commanders: `halloran.webp` (Act I finale), `vigil.webp` (Operation 6), `choir.webp` (Operation 7).
 - **Harlan's voice**, one MP3 per transmission in `voice/`: `harlan-1.mp3` to `harlan-9.mp3` (after each story operation), `harlan-act1.mp3` to `harlan-act3.mp3` (act briefings) and `harlan-end.mp3` (the ending). The lines are in `NARRATIVE` and `ACTS[].briefing` in `crew/campaign-data.js`.
-- Not yet specified: a purpose-built station model for defence missions (they use a Warden hull for now) and an authored civilian transport.
+- **Eight ship and station models**, so enemies stop borrowing the player's hulls: the Revenant and Sentinel (which reuse the Warden and Halberd), the three bosses (scaled-up Warden, Seraph and Wraith), the Thrall (a scaled-down Wraith), a civilian transport and a defence station. These need a small code change each when they arrive.
 
 
 ### Bridge officer commands (campaign)

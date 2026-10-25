@@ -111,6 +111,7 @@ await suite('fleet', {}, async ({ page, ctx, base, out, KEY, check, shot, read, 
   await page.waitForTimeout(800);
   const targets = await page.evaluate(() => window.__sim.fleet.allies.map(a => a.target && a.target.team));
   check(targets.every(t => t === 'e'), 'escorts have hostile targets');
+  check((await page.textContent('#esc-list')).includes('Engaging nearest threat'), 'escort HUD explains why its targets were selected');
   await shot('f04-fleet-battle');
 
   // Damage an escort, disable the other, win, and read the save
@@ -126,7 +127,9 @@ await suite('fleet', {}, async ({ page, ctx, base, out, KEY, check, shot, read, 
   check(Math.abs(byName(e1).hull - 0.6) < 0.02, `${e1} kept her damage: ${byName(e1).hull}`);
   check(byName(e2).hull === 0.3 && byName(e2).sub === null, `${e2} recovered at 30%`);
   check(JSON.stringify(st.pendingResult.lost) === JSON.stringify([e2]), 'the after-action knows who was disabled');
+  check(st.pendingResult.escortReport.length===2 && st.pendingResult.escortReport.some(r=>r.name===e2&&!r.alive), 'after-action saves per-escort contributions and disabled status');
+  check((await page.textContent('#over-stats')).includes('Escort damage'), 'battle-end screen shows escort damage total');
   await page.goto(base + '/campaign.html');
-  check((await page.textContent('#modalbody')).includes('was disabled in the fighting'), 'after-action report mentions the disabled escort');
+  check((await page.textContent('#modalbody')).includes('was disabled in the fighting') && (await page.textContent('#modalbody')).includes('FLEET CONTRIBUTION'), 'after-action report includes lost hulls and measured escort contribution');
   await shot('f06-after-action');
 });

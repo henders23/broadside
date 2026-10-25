@@ -16,9 +16,9 @@ This was a **source-level review**, not a completed human-played WebGL QA campai
 | P1 | **Generated missions repeat the same objectives:** station boards supplied only bounty, patrol and escort contracts; handwritten defences/pursuits provided the later variety. | `crew/campaign-data.js`: in Acts II and III alternate generated patrols with a single-quarry pursuit (115 s, disable below 30% hull, no extra enemy reinforcement). | **Implemented** | Medium |
 | P2 | **Mis-claimed wreck:** salvage buttons numbered only claimable wrecks, while the click handler indexed the entire wreck list. | `claimHtml/claim`: use the original wreck index and reject uncapturable hull types. | **Implemented** | Low |
 | P2 | **Officer lookup recursion:** a missing officer post in the story briefing would recurse forever rather than falling back to the first officer. | `campaign/core.js:leadFor`: resolve duty once and fallback to the active first officer. | **Implemented** | Low |
-| P2 | **Escort orders offer little proof of impact:** focus, defend and free have visible commands but the post-battle report lacks escort assists, targets protected and damage absorbed. | Add an in-combat intent/target line for each escort, brief switch reason, and a battle contribution summary. | **Recommended** | Medium |
+| P2 | **Escort orders offer little proof of impact:** focus, defend and free commands previously showed targets without reasons; reports lacked escort contributions. | In-combat intent labels now explain target selection; battle-end and campaign reports save/show per-escort damage, damage absorbed and losses. Assists and protected targets are still untracked. | **Partially implemented** | Low–medium |
 | P2 | **Unreadable mission silhouettes:** station defences use a Warden hull and civilian convoy uses a disarmed Sabre. | Replace with dedicated station and transport GLBs with distinctive non-combat silhouettes and clear objective lighting. | **Outstanding** | High |
-| P3 | **Missing media:** eight commander portraits and 13 Harlan narration files were listed as absent. | Eight distinct scalable SVG concept portraits now appear in character dossiers; matching photoreal WebP paintings and Harlan MP3s remain production goals. | **Portrait interim art implemented; audio outstanding** | Medium |
+| P3 | **Missing media:** eight commander portraits and 13 Harlan narration files were listed as absent. | Eight generated photoreal pictures have replaced the vector images in dossiers using an optimised WebP atlas; high-resolution per-character masters and Harlan MP3s are still not in the repo. | **Photoreal thumbnail atlas integrated; full-resolution individual assets/audio outstanding** | Medium |
 
 ## Manual WebGL QA checklist
 
@@ -35,8 +35,8 @@ This was a **source-level review**, not a completed human-played WebGL QA campai
 
 **Highest:** telemetry for class/encounter/difficulty/fleet size and defeated reason, followed by 10+ repeated AI runs for disputed matchups and human tests of the Halberd; separate class-control issues from raw damage balance.
 
-**Next:** tactical intent labels on escort status, early warning and intercept prediction for pursuits, and an explicit target-shield/facing cue for the spinal lance.
+**Next:** tactical intent labels on escort status and measurable escort damage are now implemented; continue with pursuit interception warnings, human Halberd aim testing and tuning based on simulator accuracy/lance telemetry.
 
-**Then:** real station and transport hulls, photoreal commander WebP artwork, Harlan voice recordings and complete audio/graphics stress testing.
+**Then:** real station and transport hulls, full-resolution individual commander WebP assets, Harlan voice recordings and complete audio/graphics stress testing.
 
 The existing `tests/browser/` and `tools/balance.mjs` suites remain necessary; the README's note that full WebGL QA and tuning remain outstanding is still accurate.

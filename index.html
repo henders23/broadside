@@ -2523,7 +2523,7 @@ function updateHud(dt) {
       st = off ? 'OFFLINE' : g.ammo <= 0 ? 'EMPTY' : `${g.ammo} LEFT · ${loaded}/${g.tubesT.length} TUBES` + (inA ? '' : ' · NO ARC'); ready = !off && loaded > 0 && g.ammo > 0 && inA;
     } else if (g.type === 'lance') {
       frac = g.beamT > 0 ? g.beamT / g.dur : g.charge; firing = g.beamT > 0;
-      st = off ? 'OFFLINE' : firing ? 'FIRING' : g.charge < 1 ? 'CHARGING ' + Math.ceil((1 - g.charge) * g.chargeT / (e.wpn * (0.3 + 0.7 * subEff(P, g)))) + ' s' : inA ? 'READY · ON TARGET' : 'CHARGED · AIM THE BOW';
+      st = off ? 'OFFLINE' : firing ? 'FIRING' : g.charge < 1 ? 'CHARGING ' + Math.ceil((1 - g.charge) * g.chargeT / (e.wpn * (0.3 + 0.7 * subEff(P, g)))) + ' s' : inA ? 'READY · ON TARGET' : dist >= g.range ? 'CHARGED · OUT OF RANGE' : 'CHARGED · '+Math.round(Math.abs(brE.b))+'° OFF BOW';
       ready = !off && g.charge >= 1 && inA;
     } else {
       frac = g.charge;

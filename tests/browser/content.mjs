@@ -130,7 +130,9 @@ await suite('content', { random: 0.99 }, async ({ page, ctx, base, KEY, check, s
   // --- Portraits: both commissioned officers display their own illustrated portraits
   await S(() => { closeModal(); const P = window.BroadsidePersonnel; openModal('Test', 'X', txCard(P.recruits[0], 'K', 'Hello') + txCard(P.recruits[1], 'K', 'Hi'), [{ label: 'Close', run: close }]); });
   await page.waitForTimeout(1000);
-  const art = await S(() => [...document.querySelectorAll('#modalbody img.art')].map(i => ({ src: i.getAttribute('src'), w: i.naturalWidth })));
-  check(art.length === 2 && art.every(x => x.src.endsWith('.svg') && x.w === 768), 'Adeyemi and Fenn each show a 768-wide portrait: ' + JSON.stringify(art));
+  const art = await S(() => [...document.querySelectorAll('#modalbody .art-photo')].map(i => ({ cls: i.className, bg: getComputedStyle(i).backgroundImage })));
+  check(art.length===2 && art[0].cls.includes('art-adeyemi') && art[1].cls.includes('art-fenn') && art.every(x=>x.bg.includes('photoreal-atlas.webp')), 'Both recruits display unique positions of the photographic portrait atlas: '+JSON.stringify(art));
+  const loaded = await S(async () => { const i = new Image(); i.src='img/commanders/photoreal-atlas.webp'; await i.decode(); return [i.naturalWidth,i.naturalHeight]; });
+  check(loaded[0]===384 && loaded[1]===240,'photoreal sprite decodes in browser: '+loaded.join('x'));
   await shot('c08-portraits');
 });

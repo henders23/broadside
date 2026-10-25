@@ -56,6 +56,10 @@ r = step(r.fronts, 2, { kind: 'contract', win: true, system: 'cinder', act: 1 })
 assert.equal(r.clock, 0, 'a win on the act front resets the push back'); assert.equal(r.fronts['Ash Marches'], -6);
 r = step(r.fronts, 0, { kind: 'story', win: true, system: 'grimhold', boss: true, act: 1 });
 assert.equal(r.fronts['Ash Marches'], 4, 'a finale takes ten'); assert.equal(C.front(r.fronts, 'Ash Marches').name, 'Navy advantage');
+const defendedLoss=step(C.startFronts(),2,{kind:'contract',win:false,system:'cinder',act:1});
+assert.equal(defendedLoss.clock,2,'a failed defence on the act front is not an elsewhere battle');
+assert.equal(defendedLoss.fronts['Ash Marches'],-8,'one loss costs ground without an extra pushback');
+assert.ok(!defendedLoss.changes.some(c=>c.why==='pushback'));
 r = step({ 'Halcyon Belt': 10 }, 0, { kind: 'contract', win: true, system: 'halcyon', act: 2 });
 assert.equal(r.fronts['Halcyon Belt'], 10, 'fronts stop at secured'); assert.equal(r.changes.length, 0);
 assert.equal(step(C.startFronts(), 0, { kind: 'contract', win: true, system: 'meridian', act: 1 }).changes.length, 0, 'fighting in the Core moves no front');

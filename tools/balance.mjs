@@ -66,9 +66,12 @@ for (const r of results) { const k = `${r.side ? r.id + '#' + r.leg : r.id}|${r.
 const table = [...rows.entries()].map(([k, rs]) => { const [id, group, who] = k.split('|'); return { id: rs[0].side ? id : +id, name: rs[0].label || C[id], group, who, runs: rs.length,
   win: rs.filter(r => r.outcome === 'win').length / rs.length, time: Math.round(rs.reduce((a, r) => a + r.time, 0) / rs.length), hull: Math.round(100 * rs.reduce((a, r) => a + r.hull, 0) / rs.length),
   foeHull: Math.round(100 * rs.reduce((a, r) => a + (r.foeHull || 0), 0) / rs.length),
+  accuracy: Math.round(100 * rs.reduce((a,r)=>a+(r.accuracy||0),0)/rs.length),
+  lanceDamage: Math.round(rs.reduce((a,r)=>a+(r.lanceDamage||0),0)/rs.length),
+  escortDamage: Math.round(rs.reduce((a,r)=>a+(r.escortDamage||0),0)/rs.length),
   taken: Object.entries(rs.reduce((a, r) => { for (const [k, v] of Object.entries(r.tally || {})) a[k] = (a[k] || 0) + v / rs.length; return a; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, v]) => k + ' ' + Math.round(v)).join(', '),
   timeouts: rs.filter(r => r.outcome === 'timeout').length, codes: Object.entries(rs.reduce((a, r) => (a[r.code || r.outcome] = (a[r.code || r.outcome] || 0) + 1, a), {})).map(([c, n]) => c + ' ' + n).join(', ') }; });
-for (const t of table) console.log(`${String(t.id).padStart(2)} ${t.name.padEnd(24)} ${t.group.padEnd(24)} ${t.who.padEnd(8)} win ${String(Math.round(t.win * 100)).padStart(3)}%  ${String(t.time).padStart(4)} s  hull ${String(t.hull).padStart(3)}%  foe ${String(t.foeHull).padStart(3)}%  ${t.codes}${process.argv.includes('--taken') ? '  | taken ' + t.taken : ''}`);
+for (const t of table) console.log(`${String(t.id).padStart(2)} ${t.name.padEnd(24)} ${t.group.padEnd(24)} ${t.who.padEnd(8)} win ${String(Math.round(t.win * 100)).padStart(3)}%  ${String(t.time).padStart(4)} s  hull ${String(t.hull).padStart(3)}%  foe ${String(t.foeHull).padStart(3)}%  ${t.codes}  accuracy ${t.accuracy}%  lance ${t.lanceDamage}  escort ${t.escortDamage}${process.argv.includes('--taken') ? '  | taken ' + t.taken : ''}`);
 // A full run replaces docs/balance-results.json; a partial run (--only, --quick) replaces just the rows it flew.
 const file = join(ROOT, 'docs', 'balance-results.json'), key = t => `${t.id}|${t.group}|${t.who}`;
 let merged = table;

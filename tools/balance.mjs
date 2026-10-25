@@ -5,6 +5,8 @@
 //   --only    story operations to fly (default: all ten)     --quick   Captain, solo only (no Ensign, Admiral or fleet rows)
 //   --taken   also print where the flagship's damage came from (boss, lead, supporting ships)
 //   --side    station missions to fly instead, by id (Captain, solo; each leg of a convoy run on its own): --side a2-lifeline,a3-swarm
+//   --focused Captain comparative matrix: four solo classes, two mixed fleets of two and two of three
+//   --output  write isolated result JSON to the given path (avoids overwriting the historical balance table)
 // Needs the same set-up as the browser suites (Playwright and three.js 0.169.0; see tests/browser/harness.mjs).
 import { createServer } from 'node:http';
 import { readFile, writeFile } from 'node:fs/promises';
@@ -14,7 +16,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = normalize(join(dirname(fileURLToPath(import.meta.url)), '..'));
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i < 0 ? d : process.argv[i + 1]; };
-const SIDE = arg('side', '') ? arg('side').split(',') : null, RUNS = Number(arg('runs', 3)), ONLY = arg('only', '') ? arg('only').split(',').map(Number) : null, QUICK = process.argv.includes('--quick');
+const SIDE = arg('side', '') ? arg('side').split(',') : null, RUNS = Number(arg('runs', 3)), ONLY = arg('only', '') ? arg('only').split(',').map(Number) : null, QUICK = process.argv.includes('--quick'), FOCUSED=process.argv.includes('--focused'), OUTPUT=arg('output','');
+if(!Number.isInteger(RUNS)||RUNS<1||RUNS>30){console.error('--runs must be an integer from 1 to 30');process.exit(1);}
 const HULLS = ['bastion', 'halberd', 'sabre', 'warden'];
 
 async function load(spec) { try { return await import(spec.startsWith('/') ? pathToFileURL(spec).href : spec); } catch (e) { return null; } }
@@ -49,7 +52,10 @@ const stories = SIDE ? [] : (ONLY || [1, 2, 3, 8, 4, 6, 9, 5, 7, 10]);
 const SIDES = SIDE ? await page.evaluate(ids => ids.map(id => { const m = window.BroadsideCampaign.sideById[id]; return m && { id, name: m.name, legs: m.legs ? m.legs.length : 1 }; }), SIDE) : [];
 for (const m of SIDES.filter(Boolean)) for (let leg = 0; leg < m.legs; leg++) for (const h of HULLS) plan.push({ id: m.id, side: m.id, leg, label: m.legs > 1 ? `${m.name} ${leg + 1}/${m.legs}` : m.name, fleet: [h], difficulty: 'captain', group: 'solo, Captain' });
 for (const id of stories) for (const h of HULLS) plan.push({ id, fleet: [h], difficulty: 'captain', group: 'solo, Captain' });
-if (!QUICK && !SIDE) for (const id of stories.filter(id => id >= 8)) {
+if (FOCUSED && !SIDE) for (const id of stories) for (const members of [
+  ['halberd','sabre'], ['bastion','sabre'], ['halberd','sabre','warden'], ['bastion','sabre','warden']
+]) plan.push({id,fleet:members,difficulty:'captain',group:members.length+'-ship, Captain'});
+if (!QUICK && !FOCUSED && !SIDE) for (const id of stories.filter(id => id >= 8)) {
   for (const h of HULLS) for (const d of ['ensign', 'admiral']) plan.push({ id, fleet: [h], difficulty: d, group: 'solo, ' + d[0].toUpperCase() + d.slice(1) });
   plan.push({ id, fleet: ['bastion', 'sabre', 'warden'], difficulty: 'captain', group: 'fleet of three, Captain' });
 }
@@ -71,11 +77,11 @@ const table = [...rows.entries()].map(([k, rs]) => { const [id, group, who] = k.
   lanceAlignment: Math.round(100*rs.reduce((a,r)=>a+(r.lanceAlignment||0),0)/rs.length),
   escortDamage: Math.round(rs.reduce((a,r)=>a+(r.escortDamage||0),0)/rs.length),
   taken: Object.entries(rs.reduce((a, r) => { for (const [k, v] of Object.entries(r.tally || {})) a[k] = (a[k] || 0) + v / rs.length; return a; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, v]) => k + ' ' + Math.round(v)).join(', '),
-  timeouts: rs.filter(r => r.outcome === 'timeout').length, codes: Object.entries(rs.reduce((a, r) => (a[r.code || r.outcome] = (a[r.code || r.outcome] || 0) + 1, a), {})).map(([c, n]) => c + ' ' + n).join(', ') }; });
+  fleet: rs[0].fleet, timeouts: rs.filter(r => r.outcome === 'timeout').length, codes: Object.entries(rs.reduce((a, r) => (a[r.code || r.outcome] = (a[r.code || r.outcome] || 0) + 1, a), {})).map(([c, n]) => c + ' ' + n).join(', ') }; });
 for (const t of table) console.log(`${String(t.id).padStart(2)} ${t.name.padEnd(24)} ${t.group.padEnd(24)} ${t.who.padEnd(8)} win ${String(Math.round(t.win * 100)).padStart(3)}%  ${String(t.time).padStart(4)} s  hull ${String(t.hull).padStart(3)}%  foe ${String(t.foeHull).padStart(3)}%  ${t.codes}  accuracy ${t.accuracy}%  lance ${t.lanceDamage}  aligned ${t.lanceAlignment}%  escort ${t.escortDamage}${process.argv.includes('--taken') ? '  | taken ' + t.taken : ''}`);
 // A full run replaces docs/balance-results.json; a partial run (--only, --quick) replaces just the rows it flew.
-const file = join(ROOT, 'docs', 'balance-results.json'), key = t => `${t.id}|${t.group}|${t.who}`;
+const file = OUTPUT ? join(ROOT,OUTPUT) : join(ROOT, 'docs', 'balance-results.json'), key = t => `${t.id}|${t.group}|${t.who}`;
 let merged = table;
-if ((ONLY || QUICK || SIDE) && existsSync(file)) { const old = JSON.parse(readFileSync(file, 'utf8')).table || [], fresh = new Map(table.map(t => [key(t), t])); merged = old.map(t => fresh.get(key(t)) || t); for (const t of table) if (!old.some(o => key(o) === key(t))) merged.push(t); }
+if (!OUTPUT && (ONLY || QUICK || SIDE) && existsSync(file)) { const old = JSON.parse(readFileSync(file, 'utf8')).table || [], fresh = new Map(table.map(t => [key(t), t])); merged = old.map(t => fresh.get(key(t)) || t); for (const t of table) if (!old.some(o => key(o) === key(t))) merged.push(t); }
 await writeFile(file, JSON.stringify({ when: new Date().toISOString(), runs: RUNS, table: merged }, null, 1) + '\n');
 await browser.close(); server.close();

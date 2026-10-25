@@ -25,6 +25,8 @@ await suite('war', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   const tx = await page.evaluate(() => { const r = document.querySelector('#modalbody .tx .crew-portrait').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
   check(tx[0] >= 120 && tx[1] >= 140, 'officer portrait is large: ' + tx.join('×'));
   await shot('w02-after-action');
+  await page.keyboard.press('Escape');
+  check(await page.locator('#veil').isVisible(), 'Escape cannot discard story progression while the choice is pending');
   await page.locator('#modalactions button', { hasText: 'Offer amnesty' }).click();
   st = await read();
   check(st.flags.thorne_amnesty && st.fronts['Red Narrows'] === -2, 'amnesty recorded; Red Narrows moved by 4: ' + st.fronts['Red Narrows']);
@@ -44,7 +46,7 @@ await suite('war', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   await jump('grimhold');
   await page.locator('#arropslist .opcard.boss button', { hasText: 'Open briefing' }).click();
   const brief = await page.textContent('#modalbody');
-  check(brief.includes('WHAT HAS CHANGED') && brief.includes('Thorne’s charts') && brief.includes('only one clan answers'), 'the briefing lists what has changed');
+  check(brief.includes('WHAT HAS CHANGED') && brief.includes('Thorne’s charts') && brief.includes('only one clan answers') && brief.includes('TACTICAL READINESS') && brief.includes('Suggested deployment: 3 ships'), 'the briefing lists consequences and fleet guidance');
   check(await page.locator('#modalbody .tx').count() === 1 && await page.locator('#modalbody .commander-brief .crew-portrait').evaluate(e => e.getBoundingClientRect().width >= 120), 'briefing has the large officer and commander portraits');
   await shot('w04-briefing');
   await page.locator('#modalactions .primary').click();

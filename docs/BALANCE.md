@@ -67,6 +67,8 @@ The new Act II and III missions, flown the same way (Captain, solo, 3 runs per h
 
 Pursuits favour fast hulls by design: the Bastion and the AI-flown Halberd rarely catch the Spore Runner. The Warden struggles to protect a station: it is too slow to reach attackers on the far side.
 
+After the new models arrived (October 2026), which changed the Revenant's, Sentinel's, Thrall's, Pyre's and Arbiter's hit ellipsoids, a 3-run check gave: the Cinder Wake 83%, the Pyre 17%, the Arbiter 17%, the Bloom-Mother 25%, the Halcyon Sightline 92%, and the Swarm at Widow 100% (up from 83%; the slimmer Thrall hull is a different target). Worth a look if the swarm feels easy in play.
+
 ## What changed in this pass
 
 Before it, the AI pilot won no boss fight on any difficulty, even with a fleet, and lost every multi-ship operation (2, 6 and 7) in most hulls. Most of the damage came from supporting ships, which hit as hard as the ships they escorted.

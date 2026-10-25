@@ -77,7 +77,7 @@ await suite('content', { random: 0.99 }, async ({ page, ctx, base, KEY, check, s
   const warn = await S(() => { const s = window.__sim, b = s.fleet.boss.ship, g = b.groups.find(x => x.id === 'inferno'); g.warnAt = null; const first = s.armed(b, g); return { first, at: g.warnAt - s.game.time, label: s.game.bossWarn && s.game.bossWarn.label }; });
   await page.waitForTimeout(400);
   check(warn.first === false && Math.abs(warn.at - 2.6) < 0.05 && warn.label === 'Inferno salvo', 'the inferno salvo charges before it fires: ' + JSON.stringify(warn));
-  check(await S(() => document.getElementById('bossbar').classList.contains('warn') && document.getElementById('boss-phase').textContent.includes('Inferno salvo charging')), 'the boss bar warns the captain');
+  check(await page.waitForFunction(() => document.getElementById('bossbar').classList.contains('warn') && document.getElementById('boss-phase').textContent.includes('Inferno salvo charging'), null, { timeout: 5000 }).then(() => true, () => false), 'the boss bar warns the captain');
   await shot('c04-boss-warning');
   check(await S(() => { const s = window.__sim, b = s.fleet.boss.ship, g = b.groups.find(x => x.id === 'inferno'); s.step(90); return s.armed(b, g); }), 'after the charge the salvo is free to fire');
   await S(() => { const s = window.__sim, b = s.fleet.boss.ship; s.damage(b, 1e6, 'shell', b.pos.clone().set(0, 0, 0), s.player); });

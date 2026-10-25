@@ -23,8 +23,8 @@ await suite('acts', { random: 0.99 }, async ({ page, base, KEY, check, shot, rea
   // --- The Sentinel: a lance frigate on the Halberd hull whose lance warns before it fires
   await fresh({ completed: [1, 2, 3, 8], actBriefed: 2, system: 'halcyon' });
   await battle("C.encounter({ ...C.sideById['a2-sightline'], kind: 'side' }, ctx)");
-  let b = await S(() => { const s = window.__sim, e = s.ships.filter(x => x.team === 'e'); return e.map(x => ({ key: x.key, model: x.C.model, name: x.name, torps: x.groups.some(g => g.type === 'torpedo'), lance: x.groups.find(g => g.id === 'lance')?.special })); });
-  check(b.length === 2 && b.every(x => x.key === 'sentinel' && x.model === 'halberd' && !x.torps && x.lance), 'two Sentinels on the Halberd hull, lances that warn: ' + JSON.stringify(b));
+  let b = await S(() => { const s = window.__sim, e = s.ships.filter(x => x.team === 'e'); return e.map(x => ({ key: x.key, url: x.C.url, name: x.name, torps: x.groups.some(g => g.type === 'torpedo'), lance: x.groups.find(g => g.id === 'lance')?.special })); });
+  check(b.length === 2 && b.every(x => x.key === 'sentinel' && x.url === 'models/sentinel.glb' && !x.torps && x.lance), 'two Sentinels with their own model, lances that warn: ' + JSON.stringify(b));
   const warn = await S(() => { const s = window.__sim, e = s.enemy, g = e.groups.find(x => x.id === 'lance'); g.warnAt = null; const first = s.armed(e, g); return { first, msg: document.getElementById('msg').textContent }; });
   check(warn.first === false && warn.msg.startsWith('Sentinel lance charging'), 'the lance warns before it fires: ' + warn.msg);
   await S(() => window.__sim.step(20)); await page.waitForTimeout(600);

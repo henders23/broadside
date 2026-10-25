@@ -10,7 +10,7 @@ for(const k of Object.keys(CLASSES)){
  const C=CLASSES[k];
  assert.ok(C.hull>0&&C.shield>0&&C.vmax>0&&C.turn>0,k+' stats');
  assert.ok(C.weapons.length>=(k==='thrall'?1:2)&&C.weapons.every(w=>w.id&&w.type&&Array.isArray(w.guns)&&w.guns.length),k+' weapons');
- assert.ok(C.hullE&&C.shieldE&&C.engines.length,k+' ellipsoids and engines');
+ assert.ok(C.hullE&&C.shieldE&&(C.engines.length||k==='station'),k+' ellipsoids and engines');
 }
 for(const k of PLAYABLE){
  const H=shipyardHull(k),C=CLASSES[k];
@@ -23,16 +23,29 @@ for(const k of PLAYABLE){
  H.weapons[0].dmg=-1;assert.notEqual(C.weapons[0].dmg,-1);
  const up=U.apply(shipyardHull(k),['reinforced_plating']);assert.equal(up.hull,Math.round(C.hull*1.15));
 }
-// Act bosses: bigger copies of an existing hull, with the special weapons that warn before they fire.
+// Act bosses: re-armed versions of an existing hull, with the special weapons that warn before they fire.
 for(const [k,base,special] of [['pyre','revenant','inferno'],['arbiter','seraph','judgement'],['mother','wraith','storm']]){
  const B=CLASSES[k];
- assert.ok(B.boss&&B.enemyOnly&&B.modelScale>1);assert.equal(B.model,CLASSES[base].model||base);
+ assert.ok(B.boss&&B.enemyOnly);
  assert.ok(B.hull>CLASSES[base].hull,k+' outweighs its base hull');
  assert.equal(B.weapons.find(w=>w.id===special).special,true,k+' '+special+' gives warning');
 }
-// Campaign-only hulls: variants of an existing model, never in skirmish or the shipyard.
-for(const [k,base] of [['sentinel','halberd'],['thrall','wraith']]){
- const V=CLASSES[k];assert.ok(V.campaignOnly&&V.enemyOnly&&!V.boss&&!V.capturable,k);assert.equal(V.model,base);assert.equal(shipyardHull(k),null);
+// Campaign-only hulls: variants of an existing class, never in skirmish or the shipyard.
+for(const k of ['sentinel','thrall','transport','station']){
+ const V=CLASSES[k];assert.ok(V.campaignOnly&&V.enemyOnly&&!V.boss&&!V.capturable,k);assert.equal(shipyardHull(k),null);
+}
+// Models: one file per hull. Only the Bloom-Mother still borrows another's (the Wraith's, scaled up). A model of its own
+// is unit-sized and bow-forward, so the class's scale is its length and it needs no turn; the recorded size is the file's.
+{
+ const files=new Map();
+ for(const [k,C] of Object.entries(CLASSES)){
+  const f=C.model?CLASSES[C.model].url:C.url;assert.ok(fs.existsSync(f),k+' model file '+f);
+  if(!C.model){assert.equal(fs.statSync(f).size,C.size,k+' size');assert.ok(!files.has(f),k+' shares '+f+' with '+files.get(f));files.set(f,k);}
+ }
+ assert.equal(Object.values(CLASSES).filter(C=>C.model).map(C=>C.key).join(),'mother','only the Bloom-Mother borrows a model');
+ for(const k of ['revenant','sentinel','pyre','arbiter','thrall','transport','station']){const C=CLASSES[k];assert.equal(C.url,'models/'+k+'.glb');assert.equal(C.rotY,0);assert.ok(!C.tint&&!C.modelScale,k+' uses its own textures at its own size');
+  assert.ok(C.hullE.r[2]<=C.scale/2&&C.shieldE.r[2]>C.hullE.r[2],k+' ellipsoids fit the hull');
+  for(const w of C.weapons)for(const g of w.guns)assert.ok(Math.abs(g[2])<=C.scale*0.55,k+' '+w.id+' mounts on the hull');}
 }
 assert.equal(CLASSES.sentinel.weapons.find(w=>w.id==='lance').special,true,'the Sentinel lance gives warning');
 assert.ok(!CLASSES.sentinel.weapons.some(w=>w.type==='torpedo'));

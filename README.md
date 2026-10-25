@@ -14,12 +14,12 @@ Enemy-only ships:
 - **Wraith** – an alien bioship. Slow green plasma bolts that drain shields, swarms of homing spore missiles, and a hull that grows back when it isn't under fire.
 - **Scrapjaw** – a pirate ram. Heavy armour and weak shields; autocannon tracer streams, shotgun-like scatterguns at short range, and a reinforced prow it drives into you.
 - **Seraph** – a beam frigate. Strong, fast-recharging shields on a fragile hull; three tracking beam emitters and a long-range railgun. It keeps its distance.
-- **Revenant** – a minelayer on the Warden hull in a dark red livery. Missile salvos, flak broadsides, and proximity mines dropped astern for anyone chasing it.
+- **Revenant** – an Ash Fleet minelayer: a rust-streaked renegade warship. Missile salvos, flak broadsides, and proximity mines dropped astern for anyone chasing it.
 
 Met only in the campaign, from Act II and Act III:
 
-- **Sentinel** – a Directorate lance frigate on the Halberd hull in pale machine silver. It holds at four kilometres and lines up a long spinal lance that charges, with a warning, before it fires; up close its broadsides are light and it carries no torpedoes.
-- **Thrall** – a young Wraith a little over half a bioship's size. Thralls hunt in packs of three or four, close fast to ram and spit plasma, and their thin hulls knit quickly.
+- **Sentinel** – a Directorate lance frigate: a white needle of a ship with blue running lights. It holds at four kilometres and lines up a long spinal lance that charges, with a warning, before it fires; up close its broadsides are light and it carries no torpedoes.
+- **Thrall** – a young Wraith, a green, beak-prowed organic ship about half a bioship's size. Thralls hunt in packs of three or four, close fast to ram and spit plasma, and their thin hulls knit quickly.
 
 The game is about shield facings, reactor power, firing arcs and turning circles rather than twitch flying.
 
@@ -135,7 +135,7 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 
 ## Assets
 
-- Ship models were generated with Tripo (Revenant reuses the Warden hull with a darker tint), then simplified to about 65k triangles each and compressed for the web (meshopt geometry, 1024 px WebP textures) with glTF Transform.
+- Ship models were generated with Tripo, then simplified to about 65k triangles each and compressed for the web (meshopt geometry, 1024 px WebP textures) with glTF Transform. The Revenant, Sentinel, Pyre, Arbiter, Thrall, civilian transport and defence station were supplied by the project owner from a larger generated set; they were turned bow-forward, centred and scaled to unit length, and the station had floating debris cut away. Only the Bloom-Mother still borrows another hull (the Wraith's, scaled up).
 - Spoken alerts were generated with ElevenLabs (voice: Philippa). To add a line, put its .mp3 in `voice/` and add its name to `VOICE_LINES` in `index.html`; the game already asks for these lines at the right moments: `enemy-shields-down`, `hull-critical`, `torpedoes-inbound`, `mines-detected`, `torpedo-away`, `afterburners`, `brace`, `battle-stations`, `enemy-destroyed`, `ship-lost`.
 - The title screen art and both music tracks ("Weightless Descent" on the title screen, "Untitled" in battle) were supplied by the project owner. The music was re-encoded at 128 kbps.
 - The afterburner roar (`sfx/afterburner.mp3`, credited to freesound_community) and the ship ambience on the campaign screens (`music/ambience.mp3`, "Deep Space Travel Ambience 03", credited to fronbondi_skegs) were supplied by the project owner. The ambience was trimmed and crossfaded end to start so it loops without a seam, and both were level-matched and re-encoded at 128 kbps.
@@ -150,7 +150,7 @@ Prompts, sizes, file names and Harlan's full script are in [docs/ART-BRIEF.md](d
   - the hired officers: `adeyemi.webp`, `fenn.webp`, `osei.webp`, `marlow.webp`, `achterberg.webp`;
   - the enemy commanders: `halloran.webp` (Act I finale), `vigil.webp` (Operation 6), `choir.webp` (Operation 7).
 - **Harlan's voice**, one MP3 per transmission in `voice/`: `harlan-1.mp3` to `harlan-9.mp3` (after each story operation), `harlan-act1.mp3` to `harlan-act3.mp3` (act briefings) and `harlan-end.mp3` (the ending). The lines are in `NARRATIVE` and `ACTS[].briefing` in `crew/campaign-data.js`.
-- **Eight ship and station models**, so enemies stop borrowing the player's hulls: the Revenant and Sentinel (which reuse the Warden and Halberd), the three bosses (scaled-up Warden, Seraph and Wraith), the Thrall (a scaled-down Wraith), a civilian transport and a defence station. These need a small code change each when they arrive.
+- **One ship model**: the Bloom-Mother, which is still a scaled-up Wraith. The other seven models from the brief (Revenant, Sentinel, Pyre, Arbiter, Thrall, civilian transport and defence station) are in.
 
 
 ### Bridge officer commands (campaign)

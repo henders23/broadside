@@ -49,7 +49,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   const base=spec.enemies||[],extra=allies.length&&root.BroadsideCampaign&&base.length?root.BroadsideCampaign.reinforcements(spec,allies.length+1):[],list=[...base,...extra];
   if(list[0]){primaryEnemy.name=list[0].name||primaryEnemy.name;scale(primaryEnemy,list[0],true);}
   if(goal.type==='escort'){
-   convoy=makeShip('sabre','p');
+   convoy=makeShip('transport','p');
    convoy.name=goal.convoy||'Civilian transport';
    convoy.civilian=true;
    // A convoy run in legs (campaign sideLeg) brings the damage it took in the last system.
@@ -67,7 +67,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   }
   // Defend: a fixed station with its own guns, the first thing the attackers go for. Later waves arrive when a wave is beaten.
   if(goal.type==='defend'){
-   station=makeShip(goal.hull||'warden','p');
+   station=makeShip(goal.hull||'station','p');
    station.name=goal.station||'Picket station';station.post=true;
    station.C={...station.C,vmax:.01,accel:.01,turn:1e-4};   // all but fixed (zero would divide by zero in the helm)
    station.hull=station.maxHull=Math.round(station.C.hull*(goal.stationHull||1.6));

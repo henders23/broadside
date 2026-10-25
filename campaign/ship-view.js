@@ -6,7 +6,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 // Side-on view of the flagship for the shipyard. Scale, rotation and finish match CLASSES and lookMaterial in index.html.
 const LOOK = { bastion: { scale: 300, rotY: Math.PI, rough: 0.45, metal: 0.55 }, halberd: { scale: 265, rotY: Math.PI / 2 }, sabre: { scale: 286, rotY: Math.PI }, warden: { scale: 320, rotY: Math.PI },
-  scrapjaw: { scale: 255, rotY: Math.PI }, seraph: { scale: 280, rotY: Math.PI }, revenant: { file: 'warden', scale: 320, rotY: Math.PI, tint: [0.62, 0.34, 0.32] } };
+  scrapjaw: { scale: 255, rotY: Math.PI }, seraph: { scale: 280, rotY: Math.PI }, revenant: { scale: 320, rotY: 0 } };
 const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
 const V3 = THREE.Vector3, models = {}, v = new V3();
 let renderer = null, scene, cam, hold, canvas, current = null, points = [], onFrame = null, raf = 0, size = [0, 0, 0], active = false;

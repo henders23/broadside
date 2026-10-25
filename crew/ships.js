@@ -151,41 +151,60 @@
       intel: 'Minelayer. It keeps you on its quarter and drops proximity mines astern, so chasing it means flying through them. Watch the plot for red mine markers.'
     }
   };
+  // A hull with a model of its own (models/<key>.glb, centred, longest side 1, bow along -Z, +Y up): its game length
+  // `len`, the model's proportions `dims` [width, height, length], and the hit and shield ellipsoids fitted to them. The
+  // hardpoints it inherits from `base` (gun mounts, engines) are stretched axis by axis from the base hull to the new one.
+  function refit(C, base, own) {
+    const half = own.dims.map(d => d * own.len / 2), R = [half[0] * 0.82, half[1] * 0.6, half[2] * 0.97], B = base.hullE.r;
+    const k = [0, 1, 2].map(i => R[i] / B[i]), st = p => p.map((v, i) => Math.round(v * k[i] * 10) / 10), cy = (own.cy || 0) * half[1];
+    return { key: C.key, model: undefined, url: 'models/' + C.key + '.glb', size: own.size, scale: own.len, rotY: 0, modelScale: undefined, tint: own.tint,
+      camDist: Math.round(own.len * 2.8), hullE: { c: [0, cy, 0], r: R.map(v => Math.round(v)) },
+      shieldE: { c: [0, cy * 0.5, 0], r: [Math.max(half[0] * 1.3, half[0] + 20), Math.max(half[1] * 1.25, half[1] + 18), half[2] * 1.2].map(v => Math.round(v)) },
+      engines: (own.engines || base.engines).map(st), weapons: C.weapons.map(w => ({ ...w, guns: w.guns.map(st) })) };
+  }
+  // The Ash Fleet's Revenant has its own hull now (it used to be a tinted Warden).
+  Object.assign(CLASSES.revenant, refit(CLASSES.revenant, CLASSES.revenant, { len: 320, dims: [0.179, 0.328, 1], cy: -0.15, size: 1091292 }));
   // Hulls that can be claimed from wrecks in the campaign and flown by the player (they stay out of skirmish).
   for (const [k, d, broadName] of [['scrapjaw', 760, 'Scatterguns'], ['seraph', 800, 'Beam arrays'], ['revenant', 880, 'Flak broadsides']]) Object.assign(CLASSES[k], { capturable: true, camDist: d, broadName });
   CLASSES.seraph.yardStbd = [[70, 6, 0], [0, 20, -50]];   // its beam arrays sit on the wing and the spine, not along a broadside
-  // Act bosses (campaign only): an existing hull scaled up and re-armed. Weapons a later phase unlocks are listed
+  // Non-combat hulls with models of their own: the civilian transport escorted on convoy missions (stats from the Sabre;
+  // its guns are taken off in battle) and the defence station (the Warden's guns, no engines).
+  variant('transport', 'sabre', { name: 'Civilian transport', cls: 'Civilian transport', own: { len: 250, dims: [0.201, 0.213, 0.986], size: 1093436 }, intel: 'An unarmed civilian transport.' });
+  variant('station', 'warden', { name: 'Defence station', cls: 'Defence station', own: { len: 320, dims: [0.821, 0.579, 0.997], size: 1072468, engines: [] }, intel: 'A fixed Navy station with guns of its own.' });
+  // Act bosses (campaign only): an existing hull re-armed, most with a model of its own. Weapons a later phase unlocks are listed
   // in the encounter's boss phases (crew/campaign-data.js) and stay silent until crew/fleet-controller.js frees them.
   // A variant of an existing hull: its model scaled by modelScale (hit ellipsoids, gun and engine positions scale with
   // it), new stats, boosted weapons (`boost`, by weapon id), some dropped (`drop`) and extra ones (`extra`).
+  // With `own` (see refit) it has a model of its own instead of a scaled copy of the base hull's.
   function variant(key, base, o) {
     const B = CLASSES[base], k = o.modelScale || 1, sc = p => p.map(v => v * k), arm = w => ({ ...w, guns: w.guns.map(sc) });
     CLASSES[key] = { ...B, ...o.stats, key, name: o.name, cls: o.cls, enemyOnly: true, campaignOnly: true, capturable: false,
       model: B.model || base, url: B.url, modelScale: k, tint: o.tint || B.tint,
       hullE: { c: sc(B.hullE.c), r: sc(B.hullE.r) }, shieldE: { c: sc(B.shieldE.c), r: sc(B.shieldE.r) }, engines: B.engines.map(sc), glow: B.glow * k,
       weapons: [...B.weapons.filter(w => !(o.drop || []).includes(w.id)).map(w => arm({ ...w, ...((o.boost || {})[w.id] || {}) })), ...(o.extra || []).map(arm)], intel: o.intel };
+    if (o.own) Object.assign(CLASSES[key], refit({ ...CLASSES[key], weapons: [...B.weapons.filter(w => !(o.drop || []).includes(w.id)).map(w => ({ ...w, ...((o.boost || {})[w.id] || {}) })), ...(o.extra || [])] }, B, o.own), { glow: B.glow * (o.own.glow || 1) });
     return CLASSES[key];
   }
   // Act bosses: variants that only appear in their finale.
   function bossClass(key, base, o) { return Object.assign(variant(key, base, o), { boss: true }); }
   // Acts II and III: hulls met only in the campaign.
-  variant('sentinel', 'halberd', { name: 'Sentinel', cls: 'Directorate lance frigate', tint: [0.78, 0.88, 1.12],
+  variant('sentinel', 'halberd', { name: 'Sentinel', cls: 'Directorate lance frigate', own: { len: 265, dims: [0.234, 0.354, 0.999], size: 1063364 },
     stats: { hull: 2200, shield: 700, regen: 44, vmax: 54, accel: 3.2, turn: deg(8), pref: 3400, beam: 110 },
     boost: { lance: { label: 'Sentinel lance', special: true, range: 4400, dps: 420, chargeT: 16 }, port: { dmg: 30, label: 'Port arrays' }, stbd: { dmg: 30, label: 'Starboard arrays' } },
     drop: ['torp'],
     intel: 'A Directorate lance frigate. It holds at long range and lines up its spinal lance, which charges with a warning before it fires: turn out of its line, then close in. Its broadsides are light.' });
-  variant('thrall', 'wraith', { name: 'Thrall', cls: 'Wraith swarmer', modelScale: 0.55, tint: [1.1, 1.15, 0.8],
+  variant('thrall', 'wraith', { name: 'Thrall', cls: 'Wraith swarmer', own: { len: 135, dims: [0.412, 0.322, 0.998], size: 898872, glow: 0.55 },
     stats: { hull: 1100, shield: 220, regen: 22, hullRegen: 8, vmax: 78, accel: 5, turn: deg(14), angAcc: deg(4), rammer: true, ram: 0.5, ramDmg: 0.8, pref: 900, beam: 25 },
     boost: { plasma: { dmg: 24, reload: 3.8 } },
     drop: ['spores'],
     intel: 'A small, fast Wraith swarmer that hunts in packs. It closes to ram and spit plasma; its hull is thin but knits quickly. Break the pack apart and finish them one at a time.' });
-  bossClass('pyre', 'revenant', { name: 'Pyre', cls: 'Ash Fleet dreadnought', modelScale: 1.4, tint: [0.42, 0.24, 0.22],
+  bossClass('pyre', 'revenant', { name: 'Pyre', cls: 'Ash Fleet dreadnought', own: { len: 440, dims: [0.217, 0.434, 0.983], cy: -0.1, size: 821940, glow: 1.4 },
     stats: { hull: 5000, shield: 760, regen: 34, vmax: 34, accel: 1.8, turn: deg(4.2), pref: 1600, beam: 120 },
     boost: { missiles: { salvo: 10 }, port: { dmg: 26 }, stbd: { dmg: 26 }, mines: { reload: 4, ammo: 24 } },
     extra: [{ ...CLASSES.warden.weapons.find(w => w.id === 'siege'), key: '' },
       { ...CLASSES.revenant.weapons.find(w => w.id === 'missiles'), id: 'inferno', label: 'Inferno salvo', special: true, sub: 'torp', salvo: 16, reload: 9, dmg: 70, col: [4, 1.6, 0.3] }],
     intel: 'The Ash Fleet flagship: a dreadnought fortress with siege cannons, flak, missiles and mines. Stay off its bow and out of its wake.' });
-  bossClass('arbiter', 'seraph', { name: 'Arbiter', cls: 'Directorate core warship', modelScale: 1.6, tint: [0.82, 0.92, 1.15],
+  bossClass('arbiter', 'seraph', { name: 'Arbiter', cls: 'Directorate core warship', own: { len: 420, dims: [1, 0.204, 0.992], size: 1244596, glow: 1.6 },
     stats: { hull: 3300, shield: 900, regen: 40, vmax: 50, accel: 3, turn: deg(6), pref: 2800 },
     boost: { rail: { dmg: 320, reload: 9 }, beams: { dps: 95 } },
     extra: [{ ...CLASSES.halberd.weapons.find(w => w.id === 'lance'), id: 'judgement', label: 'Judgement lance', special: true, key: '', dps: 600, guns: [[0, 2, -128]] }],

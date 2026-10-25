@@ -1,6 +1,6 @@
 # Art, voice and models still to make
 
-Everything Broadside still needs from an artist or a generator: eight portraits, thirteen voice clips for Fleet Admiral Harlan, and eight ship and station models.
+Everything Broadside still needs from an artist or a generator: eight portraits, thirteen voice clips for Fleet Admiral Harlan, and one ship model (the Bloom-Mother). The other seven models below arrived in October 2026 and are in the game; their prompts are kept for reference.
 
 - **Portraits and voice** are picked up automatically once the files exist. Each portrait is drawn over the character's badge, and each voice clip plays when its transmission opens (and stops when it closes). Until then the characters show an initials or faction badge, and Harlan's transmissions are text only. They could not be generated earlier because the ElevenLabs account had run out of credits.
 - **Ship models** need a small code change each when they arrive (file, scale, rotation, hit and shield ellipsoids, gun and engine positions in `crew/ships.js`). Until then those ships reuse another hull, as listed below.
@@ -43,6 +43,8 @@ One MP3 per transmission in `voice/`, with the file names below. The voice shoul
 The ending's later paragraphs change with the player's decisions and the state of the war, so only its opening paragraph is recorded.
 
 ## Ship and station models
+
+**Status.** In the game: the Revenant, Sentinel, Pyre, Arbiter, Thrall, civilian transport and defence station. **Still needed: the Bloom-Mother** (prompt 5), which is the Wraith scaled up for now. Spare models from the same set, not yet used, could become new hulls later: a white swept-wing cruiser, a black and chrome clawed ship, a white armoured cruiser, a long dark warship and a crescent-shaped dreadnought (the last two carry a planet that would need cutting away).
 
 Today several ships reuse another hull's model with a tint and a scale, and two of them borrow the player's own ships:
 

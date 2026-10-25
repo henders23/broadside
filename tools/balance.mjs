@@ -68,7 +68,7 @@ for (const p of plan) for (let r = 0; r < RUNS; r++) {
 console.log('\n');
 const C = await page.evaluate(() => Object.fromEntries(window.BroadsideCampaign.STORY.map(m => [m.id, m.name])));
 const rows = new Map();
-for (const r of results) { const k = `${r.side ? r.id + '#' + r.leg : r.id}|${r.group}|${r.fleet.length > 1 ? 'fleet' : r.fleet[0]}`; if (!rows.has(k)) rows.set(k, []); rows.get(k).push(r); }
+for (const r of results) { const k = `${r.side ? r.id + '#' + r.leg : r.id}|${r.group}|${r.fleet.length > 1 ? (FOCUSED ? r.fleet.join('+') : 'fleet') : r.fleet[0]}`; if (!rows.has(k)) rows.set(k, []); rows.get(k).push(r); }
 const table = [...rows.entries()].map(([k, rs]) => { const [id, group, who] = k.split('|'); return { id: rs[0].side ? id : +id, name: rs[0].label || C[id], group, who, runs: rs.length,
   win: rs.filter(r => r.outcome === 'win').length / rs.length, time: Math.round(rs.reduce((a, r) => a + r.time, 0) / rs.length), hull: Math.round(100 * rs.reduce((a, r) => a + r.hull, 0) / rs.length),
   foeHull: Math.round(100 * rs.reduce((a, r) => a + (r.foeHull || 0), 0) / rs.length),

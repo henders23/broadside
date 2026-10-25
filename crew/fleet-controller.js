@@ -52,7 +52,8 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    convoy=makeShip('sabre','p');
    convoy.name=goal.convoy||'Civilian transport';
    convoy.civilian=true;
-   convoy.hull=Math.round(convoy.C.hull*.65);
+   // A convoy run in legs (campaign sideLeg) brings the damage it took in the last system.
+   convoy.hull=Math.round(convoy.C.hull*.65*clamp(Number.isFinite(goal.convoyHull)?goal.convoyHull:1,.15,1));
    convoy.sh=convoy.sh.map(v=>Math.round(v*.65));
    convoy.cap=convoy.cap.map(v=>Math.round(v*.65));
    for(const group of convoy.groups)for(const mount of group.mounts||[])if(mount.t)mount.t.visible=false;

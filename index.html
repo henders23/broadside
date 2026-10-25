@@ -1266,7 +1266,7 @@ function startGame() {
   clearWorld(); battleEnvironment.configure(campaignMission ? campaignMission.env : 0, { gate: !!(campaignMission && campaignMission.gate) }); display.visible = false;
   const campaignSave = campaignMission ? readCampaignSave() : null, fleetRecs = campaignShips(campaignSave), flagRec = fleetRecs[0] || null;
   const pk = flagRec ? flagRec.ship : choice.ship;
-  const others = Object.keys(CLASSES).filter(k => k !== pk && !CLASSES[k].boss);
+  const others = Object.keys(CLASSES).filter(k => k !== pk && !CLASSES[k].campaignOnly);   // bosses, the Sentinel and the Thrall stay in the campaign
   const ek = campaignMission && CLASSES[campaignMission.enemies[0].cls] ? campaignMission.enemies[0].cls : others[Math.floor(Math.random() * others.length)];
   const fitted = rec => rec && window.BroadsideUpgrades ? window.BroadsideUpgrades.apply(CLASSES[rec.ship], rec.upgrades) : CLASSES[rec ? rec.ship : pk];
   player = makeShip(pk, 'p', flagRec ? fitted(flagRec) : CLASSES[pk]); enemy = makeShip(ek, 'e');
@@ -1394,6 +1394,7 @@ function showOver() {
       if (Array.isArray(saved.ships)) { for (const s of flown) { const rec = saved.ships.find(r => r.id === s.recId); if (rec) Object.assign(rec, record(s)); } }
       else Object.assign(saved, record(player));
       saved.pendingResult.lost = lost;
+      if (fleet?.convoy) saved.pendingResult.convoyHull = fleet.convoy.alive ? Math.round(1000 * clamp(fleet.convoy.hull / (fleet.convoy.C.hull * 0.65), 0, 1)) / 1000 : 0;   // carried into a convoy run's next leg
       // Wrecks the salvage crews can claim: destroyed capturable hostiles, or a commander who surrendered.
       if (win) saved.pendingResult.wrecks = ships.filter(s => s.team === 'e' && s.C.capturable && !s.isBoss && (!s.alive || game.campaignOutcome === 'surrender' && s === enemy))
         .map(s => ({ cls: s.key, name: s.name })).filter((w, i, a) => a.findIndex(x => x.cls === w.cls) === i).slice(0, 2);

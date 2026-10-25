@@ -174,7 +174,7 @@
       brief: 'With the Midway relay silent, the Directorate has nowhere left to hide its mind. It has put it in a ship. The Arbiter surfaced at the Halcyon relay an hour ago, and every machine in the Belt has turned to face it.',
       intel: 'A huge Seraph-pattern warship with heavy shields, beam arrays and a railgun. When pressed it raises a shield lattice held up by node ships: destroy the nodes or your guns barely scratch it. At the end it charges a spinal lance.',
       hud: 'Destroy the Arbiter', support: 1,
-      enemies: [{ cls: 'arbiter', name: 'THE ARBITER', dmg: 0.38 }, { cls: 'seraph', name: 'Directorate sentinel', dmg: 0.25, hull: 0.4, shield: 0.6, diff: 'commander' }],
+      enemies: [{ cls: 'arbiter', name: 'THE ARBITER', dmg: 0.32 }, { cls: 'sentinel', name: 'Directorate sentinel', dmg: 0.2, hull: 0.45, shield: 0.6, diff: 'commander' }],
       goal: { type: 'boss' },
       trophy: 'lattice_emitter',
       boss: { title: 'THE ARBITER', phases: [
@@ -195,7 +195,7 @@
       boss: { title: 'THE BLOOM-MOTHER', phases: [
         { name: 'The nursery', note: 'Plasma and spore swarms' },
         { at: 0.65, name: 'The brood wakes', line: '...the song swells, and the green answers it.',
-          spawn: [{ cls: 'wraith', name: 'Wraith brood', dmg: 0.25, hull: 0.3, shield: 0.5, diff: 'commander' }, { cls: 'wraith', name: 'Wraith brood', dmg: 0.25, hull: 0.3, shield: 0.5, diff: 'commander' }] },
+          spawn: [{ cls: 'thrall', name: 'Wraith brood', dmg: 0.55, hull: 1, shield: 0.8, diff: 'commander' }, { cls: 'thrall', name: 'Wraith brood', dmg: 0.55, hull: 1, shield: 0.8, diff: 'commander' }] },
         { at: 0.35, name: 'Regrowth', line: '...a low note, felt more than heard. The wounds are closing.', regen: 1.8, unlock: ['storm'] }] },
       ends: { boss_destroyed: ['The Bloom is dying', 'The Bloom-Mother came apart in Verdant’s upper atmosphere. The brood ships are drifting, and the green is turning brown.'] },
       choice: ['Burn the nursery from orbit', 'Quarantine Verdant and study it'], flags: ['verdant_burned', 'verdant_quarantined'] }
@@ -313,6 +313,18 @@
       brief: 'A machine courier lifted the ring’s navigation keys from a freighter it disabled at Citrine and is running for Midway. Once it jumps the keys are gone. Run it down before its drive spools up.',
       objective: 'Disable the courier before it jumps (bring it below 35% hull).', intel: 'A Seraph courier stripped for speed: it will not turn to fight, but its shields are strong. Burn hard and stay on its tail.',
       enemies: [{ cls: 'seraph', name: 'Courier THRESHOLD', hull: 0.7, shield: 0.8, dmg: 0.6 }], goal: { type: 'pursuit', seconds: 110, at: 0.35, speed: 0.78 } },
+    { id: 'a2-sightline', act: 2, station: 'elysia', system: 'halcyon', name: 'The Halcyon Sightline', giver: 'Dr. Halima Oduya', reward: 680, support: 1,
+      brief: 'Two Directorate lance frigates hold the approaches to Halcyon. From four kilometres out they can put a lance through anything that tries to reach the relay. Elysia needs that line open.',
+      objective: 'Destroy both Sentinels.', intel: 'Sentinel lance frigates. Their lances charge with a warning before they fire; turn out of the line when you hear it, then close the range. Up close their broadsides are light.',
+      enemies: [{ cls: 'sentinel', name: 'Sentinel AUGUR-2', hull: 0.7, shield: 0.8, dmg: 0.75 }, { cls: 'sentinel', name: 'Sentinel AUGUR-7', hull: 0.6, shield: 0.7, diff: 'commander' }], goal: { type: 'destroy' } },
+    { id: 'a2-lifeline', act: 2, station: 'juniper', system: 'elysia', name: 'The Ring Lifeline', giver: 'Portmaster Tobias Grail', reward: 980, support: 1,
+      brief: 'Juniper ring is down to nine days of grain. The MV Tessaly is loaded at Elysia, and the only way home runs through Citrine and Midway, past pickets and a Sentinel. Take her all the way. Damage she takes in one system she carries into the next; lose her anywhere and the run starts again.',
+      objective: 'Escort the MV Tessaly through Elysia, Citrine and Midway to Juniper.', intel: 'Three jumps, three fights: an Ash Fleet raider at Elysia, two machine pickets at Citrine, a Sentinel at Midway.',
+      goal: { type: 'escort', convoy: 'MV Tessaly · Grain hauler', hunter: true },
+      legs: [
+        { system: 'elysia', objective: 'See the MV Tessaly out of Elysia.', enemies: [{ cls: 'revenant', name: 'Ash Fleet raider', hull: 0.55, shield: 0.7 }] },
+        { system: 'citrine', objective: 'Get the MV Tessaly past the Citrine pickets.', enemies: [{ cls: 'seraph', name: 'Picket TOLL-3', hull: 0.5, shield: 0.65 }, { cls: 'seraph', name: 'Picket TOLL-6', hull: 0.45, shield: 0.6, diff: 'commander' }] },
+        { system: 'midway', objective: 'Run the Midway gauntlet and bring the MV Tessaly home.', enemies: [{ cls: 'sentinel', name: 'Sentinel GAUNT-4', hull: 0.75, shield: 0.8, dmg: 0.8 }] }] },
     { id: 'a3-hospital', act: 3, station: 'elysia', system: 'thalos', name: 'Mercy at Thalos', giver: 'Dr. Halima Oduya', reward: 760, support: 1,
       brief: 'The hospital station at Thalos took in two hundred survivors from Harrow. The brood has followed their scent. Hold the station until the evacuation ships are clear.',
       objective: 'Defend the hospital station through all three waves.', intel: 'Young Wraith in three waves. They want the station, not you; make them want you.',
@@ -321,7 +333,7 @@
     { id: 'a3-sporerunner', act: 3, station: 'peregrine', system: 'widow', name: 'The Spore Runner', giver: 'Harbourmaster Ines Kaur', reward: 720, support: 0,
       brief: 'A clan smuggler has been buying Wraith spores at Widow and selling them to anyone with a grudge. She is leaving with a full hold. Stop her before she jumps.',
       objective: 'Disable the smuggler before she jumps (bring her below 30% hull).', intel: 'A fast Scrapjaw runner. She will not stop to fight, and an escort will try to block you.',
-      enemies: [{ cls: 'scrapjaw', name: 'The Gallowglass', hull: 0.6, shield: 0.7, dmg: 0.6 }, { cls: 'scrapjaw', name: 'Gallowglass escort', hull: 0.4, shield: 0.55, diff: 'commander' }], goal: { type: 'pursuit', seconds: 100, at: 0.3, speed: 0.8 } },
+      enemies: [{ cls: 'scrapjaw', name: 'The Gallowglass', hull: 0.45, shield: 0.6, dmg: 0.6 }, { cls: 'scrapjaw', name: 'Gallowglass escort', hull: 0.4, shield: 0.55, diff: 'commander' }], goal: { type: 'pursuit', seconds: 120, at: 0.3, speed: 0.62 } },
     { id: 'a3-stowaway', act: 3, station: 'meridian', system: 'innerpost', name: 'Stowaway', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 640, support: 0,
       brief: 'A freighter out of Juniper arrived at Innerpost with something growing in its hold. The something has left the freighter. It is the first Wraith inside Navy space, and it must be the last.',
       objective: 'Destroy the Wraith before it reaches the core worlds.', intel: 'A young bioship, hungry and fast-growing. Its hull regenerates when it is not under fire.',
@@ -333,18 +345,40 @@
     { id: 'a3-lastlight', act: 3, station: 'elysia', system: 'mire', name: 'Last Light', giver: 'Dr. Halima Oduya', reward: 760, support: 0,
       brief: 'The research vessel Lantern Moth went into Mire to sample the Wraith and has been hiding in the debris for two days. Bring her and her samples home.',
       objective: 'Escort the RV Lantern Moth to the jump beacon, or destroy the Wraith stalking her.', intel: 'A mature Wraith. Expect spore salvos aimed at the slower ship.',
-      enemies: [{ cls: 'wraith', name: 'Mire stalker', hull: 0.75, shield: 0.8 }], goal: { type: 'escort', convoy: 'RV Lantern Moth · Research vessel', hunter: true } }
+      enemies: [{ cls: 'wraith', name: 'Mire stalker', hull: 0.75, shield: 0.8 }], goal: { type: 'escort', convoy: 'RV Lantern Moth · Research vessel', hunter: true } },
+    { id: 'a3-swarm', act: 3, station: 'tarn', system: 'widow', name: 'The Swarm at Widow', giver: 'Commodore Aris Penn', reward: 780, support: 1,
+      brief: 'Something small and fast is stripping the picket buoys at Widow, four at a time. The last buoy saw them before it went dark: a swarm of young Wraith, hunting together. Burn it out before it grows.',
+      objective: 'Destroy the Thrall swarm.', intel: 'Four Thralls: small, quick Wraith swarmers that close to ram and spit plasma. Thin hulls that knit fast. Pick one and finish it before turning to the next.',
+      enemies: [{ cls: 'thrall', name: 'Thrall swarm-leader', hull: 0.9, shield: 0.9, dmg: 0.7 }, { cls: 'thrall', name: 'Thrall', hull: 0.7, shield: 0.7, diff: 'commander' }, { cls: 'thrall', name: 'Thrall', hull: 0.7, shield: 0.7, diff: 'commander' }, { cls: 'thrall', name: 'Thrall', hull: 0.7, shield: 0.7, diff: 'commander' }],
+      goal: { type: 'destroy' } },
+    { id: 'a3-lastships', act: 3, station: 'juniper', system: 'widow', name: 'Last Ships from Widow', giver: 'Portmaster Tobias Grail', reward: 1080, support: 1,
+      brief: 'The last evacuation transport out of Widow is waiting for an escort. The road to Juniper runs through Widow and Nex, and the brood has both. Bring the MV Orison home. Damage she takes at Widow she carries into Nex; lose her and the run starts again.',
+      objective: 'Escort the MV Orison through Widow and Nex to Juniper.', intel: 'Two jumps, two fights: a Thrall pack at Widow, then a Wraith and its swarm at Nex.',
+      goal: { type: 'escort', convoy: 'MV Orison · Evacuee transport', hunter: true },
+      legs: [
+        { system: 'widow', objective: 'Get the MV Orison clear of the Widow swarm.', enemies: [{ cls: 'thrall', name: 'Thrall swarm-leader', hull: 0.9, shield: 0.9 }, { cls: 'thrall', name: 'Thrall', hull: 0.8, shield: 0.8, diff: 'commander' }, { cls: 'thrall', name: 'Thrall', hull: 0.8, shield: 0.8, diff: 'commander' }] },
+        { system: 'nex', objective: 'Bring the MV Orison through Nex to the Juniper beacon.', enemies: [{ cls: 'wraith', name: 'Nex brood-singer', hull: 0.65, shield: 0.75 }, { cls: 'thrall', name: 'Thrall', hull: 0.8, shield: 0.8, diff: 'commander' }, { cls: 'thrall', name: 'Thrall', hull: 0.8, shield: 0.8, diff: 'commander' }] }] }
   ];
   for (const m of SIDE) m.kind = 'side';
+  for (const m of SIDE) if (m.legs) Object.assign(m, { system: m.legs[0].system, enemies: m.legs[0].enemies });
   const sideById = Object.fromEntries(SIDE.map(m => [m.id, m]));
+  // A convoy run in legs: the mission as it stands at `progress` ({ leg, hull }), with that leg's system, enemies and
+  // objective, and the convoy's hull carried over from the last leg. Missions without legs come back unchanged.
+  function sideLeg(m, progress) {
+    if (!m || !m.legs) return m;
+    const n = Math.max(0, Math.min((progress && progress.leg) || 0, m.legs.length - 1)), L = m.legs[n], hull = progress && Number.isFinite(progress.hull) ? progress.hull : 1;
+    return { ...m, system: L.system, enemies: L.enemies, hud: `Leg ${n + 1} of ${m.legs.length} · ${L.objective}`, leg: n, legCount: m.legs.length,
+      next: m.legs[n + 1] ? m.legs[n + 1].system : null, goal: { ...m.goal, ...(L.goal || {}), convoyHull: hull } };
+  }
   function sideMissions(station, act, done) { const d = new Set(done || []); return SIDE.filter(m => m.station === station && m.act <= act && !d.has(m.id)); }
 
   // ---------------- generated contracts ----------------
   const FOES = {
     Pirates: { cls: 'scrapjaw', group: 'Corsair', names: ['Captain Mara Quill', 'Captain Jessup Crane', 'Captain Hollis Teague', 'Captain Dace Varga', 'Captain Tamsin Roe', 'Captain Ivo Strake', 'Captain Bryn Kessler', 'Old Saul Mott'] },
     Renegades: { cls: 'revenant', group: 'Ash Fleet', names: ['Lt. Cmdr. Halvard Rook', 'Commander Ysolde Marr', 'Lieutenant Cass Ferro', 'Commander Edrik Vane', 'Lt. Cmdr. Juno Albright'] },
-    Machines: { cls: 'seraph', group: 'Directorate', names: ['PICKET-12', 'WARDEN-3', 'SENTINEL-8', 'AUGUR-5', 'LATTICE-9', 'CENSOR-1'] },
-    Aliens: { cls: 'wraith', group: 'Wraith', names: ['Brood-singer', 'Spore matron', 'Thorn choir', 'Pale drifter', 'Hollow cantor'] }
+    // `alt`: from that act on, a share of the work is against a different hull (a pack of them, for Thralls).
+    Machines: { cls: 'seraph', alt: { cls: 'sentinel', act: 2, chance: 0.35 }, group: 'Directorate', names: ['PICKET-12', 'WARDEN-3', 'SENTINEL-8', 'AUGUR-5', 'LATTICE-9', 'CENSOR-1'] },
+    Aliens: { cls: 'wraith', alt: { cls: 'thrall', act: 3, chance: 0.4, pack: 3 }, group: 'Wraith', names: ['Brood-singer', 'Spore matron', 'Thorn choir', 'Pale drifter', 'Hollow cantor'] }
   };
   FOES.Unknown = FOES.Aliens;
   const CONVOYS = ['MV Calloway', 'MV Sunward', 'MV Brightwater', 'MV Tessaly', 'MV Orison', 'MV Hale', 'MV Quiet Harbour'];
@@ -365,8 +399,23 @@
     patrol: { label: 'Patrol', verb: 'Clear' },
     escort: { label: 'Escort', verb: 'Escort' }
   };
+  const SHIP_WORD = { scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship', sentinel: 'lance frigate', thrall: 'swarm' };
   function contractFor(type, station, sys, act, r, id) {
-    const foe = foeFor(sys, act), s = strength(sys, act), lvl = threatLevel(sys), a = Math.min(act, 3), ship = { scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship' }[foe.cls];
+    const k = contractBase(type, station, sys, act, r, id), alt = foeFor(sys, act).alt;
+    // A Thrall swarm comes as a pack: the contract's ships, topped up to the pack size, at nearly full strength (they are small).
+    if (k.enemy === 'thrall') {
+      for (const e of k.enemies) { e.hull = round(Math.min(1, e.hull + 0.35)); e.shield = round(Math.min(1, e.shield + 0.3)); }
+      while (k.enemies.length < alt.pack) k.enemies.push({ cls: 'thrall', name: 'Thrall', hull: 0.8, shield: 0.8, diff: 'commander' });
+      k.intel = `A Wraith swarm of ${k.enemies.length} Thralls. Small, fast and thin-hulled; they close to ram. Break the pack apart.`;
+      if (k.type !== 'escort') k.objective = 'Destroy the swarm.';
+    }
+    return k;
+  }
+  function contractBase(type, station, sys, act, r, id) {
+    let foe = foeFor(sys, act);
+    const s = strength(sys, act), lvl = threatLevel(sys), a = Math.min(act, 3);
+    if (foe.alt && a >= foe.alt.act && r() < foe.alt.chance) foe = { ...foe, cls: foe.alt.cls };
+    const ship = SHIP_WORD[foe.cls];
     const base = { id, kind: 'contract', type, station, system: sys.id, act: a, enemy: foe.cls };
     if (type === 'bounty') {
       const who = pick(r, foe.names);
@@ -537,14 +586,14 @@
   // When the player brings escorts, the enemy brings support too: hostiles are topped up to match, up to three.
   const SUPPORT = {
     scrapjaw: { cls: 'scrapjaw', name: 'Corsair escort' }, revenant: { cls: 'scrapjaw', name: 'Ash Fleet escort' },
-    seraph: { cls: 'seraph', name: 'Directorate drone' }, wraith: { cls: 'wraith', name: 'Wraith brood' }
+    seraph: { cls: 'seraph', name: 'Directorate drone' }, wraith: { cls: 'wraith', name: 'Wraith brood' }, thrall: { cls: 'thrall', name: 'Thrall' }
   };
   // Not every fight is matched: a spec's `support` caps how many ships the enemy may add (story operations and station
   // missions set it); for generated fights it is drawn from the encounter id, so some stay outnumbered.
   function supportCap(spec) { return Number.isInteger(spec.support) ? spec.support : hash(String(spec.id)) % MAX_FLEET; }
   function reinforcements(spec, fleetSize) {
     const want = Math.min(MAX_FLEET, Math.max(1, fleetSize)), have = spec.enemies.length, add = Math.min(Math.max(0, want - have), supportCap(spec));
-    const sup = SUPPORT[spec.enemies[0].cls] || SUPPORT[{ pyre: 'revenant', arbiter: 'seraph', mother: 'wraith' }[spec.enemies[0].cls]] || SUPPORT.scrapjaw, out = [];
+    const sup = SUPPORT[spec.enemies[0].cls] || SUPPORT[{ pyre: 'revenant', arbiter: 'seraph', mother: 'wraith', sentinel: 'seraph', thrall: 'thrall' }[spec.enemies[0].cls]] || SUPPORT.scrapjaw, out = [];
     for (let i = 0; i < add; i++) out.push({ cls: sup.cls, name: sup.name, hull: 0.42, shield: 0.6, diff: 'commander', support: true });
     return out;
   }
@@ -571,7 +620,9 @@
     scrapjaw: 'Cut your engines, Navy. Whatever is in your hold is ours now.',
     revenant: 'This sector is closed by order of the Ash Fleet. Turn back or be counted with the dead.',
     seraph: 'Human platform: your trajectory has been predicted. Your outcome has been predicted.',
-    wraith: '...a low harmonic rises through the hull. It is not a language. It is a hunting call.'
+    wraith: '...a low harmonic rises through the hull. It is not a language. It is a hunting call.',
+    sentinel: 'Firing solution acquired at four kilometres. Hold your course, human platform. It will be quicker.',
+    thrall: '...a chorus of small, sharp clicks, closing from every bearing at once.'
   };
   const storyEncounter = (id, ctx) => storyById[id] ? encounter(storyById[id], ctx) : null;
   // Decisions and fronts reshape a battle. Every change is listed in spec.notes for the briefing.
@@ -608,7 +659,7 @@
   root.BroadsideCampaign = Object.freeze({
     SYSTEMS, byId, ROUTES, THREATS, threatLevel, neighbors, path, jumps,
     ACTS, STORY, STORY_ORDER, storyById, actOf, storyUnlocked, storyAvailable, openStory,
-    STATIONS, nearestStation, SIDE, sideById, sideMissions,
+    STATIONS, nearestStation, SIDE, sideById, sideMissions, sideLeg,
     CONTRACT_TYPES, contracts, hostile, rollInterception, interception, fleeChance,
     ENV_BY_REGION, encounter, storyEncounter, supportCap, NARRATIVE, CONSEQUENCES, CHOICE_STAKES,
     FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle,

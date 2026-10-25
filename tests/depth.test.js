@@ -93,6 +93,7 @@ assert.ok(startOpen.includes('ship-bastion') && startOpen.includes('g-shields') 
 assert.ok(!startOpen.includes('ship-scrapjaw') && !startOpen.includes('pl-narrows') && !startOpen.includes('ship-pyre'));
 const later = K.open({ completed: [1, 2], unlocked: () => false, act: 1, regions: ['Red Narrows'], met: ['scrapjaw'] }).map(e => e.id);
 assert.ok(later.includes('ship-scrapjaw') && later.includes('fac-ash') && later.includes('pl-narrows') && later.includes('g-capture'));
-assert.equal(K.open({ completed: C.STORY_ORDER, unlocked: () => true, act: 4, regions: C.SYSTEMS.map(s => s.region), met: ['scrapjaw', 'revenant', 'seraph', 'wraith'] }).length, K.entries.length, 'everything opens by the end');
+assert.equal(K.open({ completed: C.STORY_ORDER, unlocked: () => true, act: 4, regions: C.SYSTEMS.map(s => s.region), met: ['scrapjaw', 'revenant', 'seraph', 'wraith', 'sentinel', 'thrall'] }).length, K.entries.length, 'everything opens by the end');
+assert.ok(!later.includes('ship-sentinel') && !later.includes('ship-thrall'), 'the new hulls open when met');
 
 console.log('Campaign depth tests passed (slots, difficulty, reputation, captures, recruits, codex).');

@@ -156,12 +156,29 @@
   CLASSES.seraph.yardStbd = [[70, 6, 0], [0, 20, -50]];   // its beam arrays sit on the wing and the spine, not along a broadside
   // Act bosses (campaign only): an existing hull scaled up and re-armed. Weapons a later phase unlocks are listed
   // in the encounter's boss phases (crew/campaign-data.js) and stay silent until crew/fleet-controller.js frees them.
-  function bossClass(key, base, o) {
-    const B = CLASSES[base], k = o.modelScale, sc = p => p.map(v => v * k), arm = w => ({ ...w, guns: w.guns.map(sc) });
-    CLASSES[key] = { ...B, ...o.stats, key, name: o.name, cls: o.cls, enemyOnly: true, boss: true, model: B.model || base, modelScale: k, tint: o.tint || B.tint,
+  // A variant of an existing hull: its model scaled by modelScale (hit ellipsoids, gun and engine positions scale with
+  // it), new stats, boosted weapons (`boost`, by weapon id), some dropped (`drop`) and extra ones (`extra`).
+  function variant(key, base, o) {
+    const B = CLASSES[base], k = o.modelScale || 1, sc = p => p.map(v => v * k), arm = w => ({ ...w, guns: w.guns.map(sc) });
+    CLASSES[key] = { ...B, ...o.stats, key, name: o.name, cls: o.cls, enemyOnly: true, campaignOnly: true, capturable: false,
+      model: B.model || base, url: B.url, modelScale: k, tint: o.tint || B.tint,
       hullE: { c: sc(B.hullE.c), r: sc(B.hullE.r) }, shieldE: { c: sc(B.shieldE.c), r: sc(B.shieldE.r) }, engines: B.engines.map(sc), glow: B.glow * k,
-      weapons: [...B.weapons.map(w => arm({ ...w, ...(o.boost[w.id] || {}) })), ...o.extra.map(arm)], intel: o.intel };
+      weapons: [...B.weapons.filter(w => !(o.drop || []).includes(w.id)).map(w => arm({ ...w, ...((o.boost || {})[w.id] || {}) })), ...(o.extra || []).map(arm)], intel: o.intel };
+    return CLASSES[key];
   }
+  // Act bosses: variants that only appear in their finale.
+  function bossClass(key, base, o) { return Object.assign(variant(key, base, o), { boss: true }); }
+  // Acts II and III: hulls met only in the campaign.
+  variant('sentinel', 'halberd', { name: 'Sentinel', cls: 'Directorate lance frigate', tint: [0.78, 0.88, 1.12],
+    stats: { hull: 2200, shield: 700, regen: 44, vmax: 54, accel: 3.2, turn: deg(8), pref: 3400, beam: 110 },
+    boost: { lance: { label: 'Sentinel lance', special: true, range: 4400, dps: 420, chargeT: 16 }, port: { dmg: 30, label: 'Port arrays' }, stbd: { dmg: 30, label: 'Starboard arrays' } },
+    drop: ['torp'],
+    intel: 'A Directorate lance frigate. It holds at long range and lines up its spinal lance, which charges with a warning before it fires: turn out of its line, then close in. Its broadsides are light.' });
+  variant('thrall', 'wraith', { name: 'Thrall', cls: 'Wraith swarmer', modelScale: 0.55, tint: [1.1, 1.15, 0.8],
+    stats: { hull: 1100, shield: 220, regen: 22, hullRegen: 8, vmax: 78, accel: 5, turn: deg(14), angAcc: deg(4), rammer: true, ram: 0.5, ramDmg: 0.8, pref: 900, beam: 25 },
+    boost: { plasma: { dmg: 24, reload: 3.8 } },
+    drop: ['spores'],
+    intel: 'A small, fast Wraith swarmer that hunts in packs. It closes to ram and spit plasma; its hull is thin but knits quickly. Break the pack apart and finish them one at a time.' });
   bossClass('pyre', 'revenant', { name: 'Pyre', cls: 'Ash Fleet dreadnought', modelScale: 1.4, tint: [0.42, 0.24, 0.22],
     stats: { hull: 5000, shield: 760, regen: 34, vmax: 34, accel: 1.8, turn: deg(4.2), pref: 1600, beam: 120 },
     boost: { missiles: { salvo: 10 }, port: { dmg: 26 }, stbd: { dmg: 26 }, mines: { reload: 4, ammo: 24 } },

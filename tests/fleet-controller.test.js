@@ -132,4 +132,10 @@ function fixture(missionId,encounter,escortCount=0){
  const g=fixture(0,{enemies:m.enemies,goal:m.goal});g.fleet.tick(60);assert.match(g.fleet.status(),/JUMPS IN 50 S/);g.fleet.tick(51);
  assert.equal(g.outcome(),'lose');assert.equal(g.game.campaignOutcome,'quarry_escaped');
 }
-console.log('Campaign fleet contract tests passed (16 scenarios).');
+{
+ // A convoy run's later leg: the convoy starts with the damage it carried, never below 15%.
+ const leg=Campaign.sideLeg(Campaign.sideById['a2-lifeline'],{leg:1,hull:0.4}),f=fixture(0,{enemies:leg.enemies,goal:leg.goal});
+ assert.equal(f.fleet.convoy.hull,26);assert.match(f.fleet.status(),/MV TESSALY 40% HULL/);
+ const g=fixture(0,{enemies:leg.enemies,goal:{...leg.goal,convoyHull:0.01}});assert.equal(g.fleet.convoy.hull,10);
+}
+console.log('Campaign fleet contract tests passed (17 scenarios).');

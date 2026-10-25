@@ -44,7 +44,21 @@ for (const m of C.SIDE) { assert.ok(C.STATIONS[m.station], `${m.id} station`); a
 same(C.sideMissions('peregrine', 1, []).map(m => m.id), ['a1-salvage', 'a1-ledger']);
 same(C.sideMissions('peregrine', 1, ['a1-salvage']).map(m => m.id), ['a1-ledger']);
 assert.equal(C.sideMissions('elysia', 1, []).length, 0, 'act II missions wait for act II');
-assert.equal(C.sideMissions('elysia', 3, []).length, 3);
+assert.equal(C.sideMissions('elysia', 3, []).length, 4);
+// Convoy runs in legs: each leg has its own system and enemies, and the convoy's damage carries over.
+{
+  const m = C.sideById['a2-lifeline'];
+  assert.equal(m.legs.length, 3); assert.equal(m.system, 'elysia'); assert.equal(m.enemies, m.legs[0].enemies, 'the first leg stands for the mission');
+  const l1 = C.sideLeg(m, null), l3 = C.sideLeg(m, { leg: 2, hull: 0.4 });
+  assert.equal(l1.leg, 0); assert.equal(l1.next, 'citrine'); assert.equal(l1.goal.convoyHull, 1); assert.match(l1.hud, /^Leg 1 of 3 · /);
+  assert.equal(l3.system, 'midway'); assert.equal(l3.enemies[0].cls, 'sentinel'); assert.equal(l3.next, null); assert.equal(l3.goal.convoyHull, 0.4);
+  assert.equal(C.sideLeg(m, { leg: 9 }).leg, 2, 'progress past the end is the last leg');
+  assert.equal(m.legs[0].enemies[0].cls, 'revenant'); assert.equal(C.sideLeg(C.sideById['a2-scout'], { leg: 1 }), C.sideById['a2-scout'], 'single-battle missions are unchanged');
+  const e = C.encounter({ ...l3, kind: 'side' }, {});
+  assert.equal(e.system, 'midway'); assert.equal(e.goal.convoyHull, 0.4); assert.match(e.objective, /^Leg 3 of 3/);
+  for (const x of C.SIDE.filter(x => x.legs)) for (const L of x.legs) assert.ok(C.byId[L.system] && L.enemies.length && L.objective, x.id + ' leg');
+}
+for (const [act, cls] of [[2, 'sentinel'], [3, 'thrall']]) assert.ok(C.SIDE.some(m => m.act === act && m.enemies.some(e => e.cls === cls)), `act ${act} mission against ${cls}`);
 // Acts II and III each bring a defence and a pursuit
 for (const [act, type] of [[2, 'defend'], [2, 'pursuit'], [3, 'defend'], [3, 'pursuit']]) assert.ok(C.SIDE.some(m => m.act === act && m.goal.type === type), `act ${act} ${type}`);
 for (const m of C.SIDE.filter(m => m.goal.type === 'defend')) assert.ok(m.goal.station && m.goal.waves.length >= 1 && m.goal.waves.every(w => w.length >= 1), `${m.id} waves`);
@@ -64,7 +78,16 @@ for (const station of Object.keys(C.STATIONS)) for (let act = 1; act <= 3; act++
   if (k.type === 'bounty') assert.ok(C.hostile(C.byId[k.system], act), `${k.id} bounty in hostile space`);
 }
 const act3 = C.contracts('juniper', 2, 3).find(k => k.type === 'bounty');
-assert.equal(act3.enemy, 'wraith', 'act III bounties out of Juniper hunt the Wraith');
+assert.ok(['wraith', 'thrall'].includes(act3.enemy), 'act III bounties out of Juniper hunt the Wraith');
+// From Act II some Directorate work is against Sentinels, from Act III some Wraith work against Thrall swarms; never earlier.
+{
+  const seen = a => { const n = {}; for (let c = 0; c < 30; c++) for (const st of Object.keys(C.STATIONS)) for (const k of C.contracts(st, c, a)) n[k.enemy] = (n[k.enemy] || 0) + 1; return n; };
+  const one = seen(1), two = seen(2), three = seen(3);
+  assert.ok(!one.sentinel && !one.thrall && !two.thrall, 'no new hulls before their act');
+  assert.ok(two.sentinel > 0.2 * (two.sentinel + two.seraph) && two.sentinel < 0.5 * (two.sentinel + two.seraph), 'a share of Act II machine work is Sentinels');
+  assert.ok(three.thrall > 0.25 * (three.thrall + three.wraith), 'a share of Act III Wraith work is Thrall swarms');
+  for (let c = 0; c < 30; c++) for (const st of Object.keys(C.STATIONS)) for (const k of C.contracts(st, c, 3)) if (k.enemy === 'thrall') assert.ok(k.enemies.length >= 3 && k.enemies.every(e => e.cls === 'thrall'), k.id + ' is a pack');
+}
 
 // Interceptions only happen in hostile space
 assert.equal(C.hostile(C.byId.kestrel, 1), false);

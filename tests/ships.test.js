@@ -9,7 +9,7 @@ for(const k of ['wraith','pyre','arbiter','mother'])assert.equal(shipyardHull(k)
 for(const k of Object.keys(CLASSES)){
  const C=CLASSES[k];
  assert.ok(C.hull>0&&C.shield>0&&C.vmax>0&&C.turn>0,k+' stats');
- assert.ok(C.weapons.length>=2&&C.weapons.every(w=>w.id&&w.type&&Array.isArray(w.guns)&&w.guns.length),k+' weapons');
+ assert.ok(C.weapons.length>=(k==='thrall'?1:2)&&C.weapons.every(w=>w.id&&w.type&&Array.isArray(w.guns)&&w.guns.length),k+' weapons');
  assert.ok(C.hullE&&C.shieldE&&C.engines.length,k+' ellipsoids and engines');
 }
 for(const k of PLAYABLE){
@@ -30,4 +30,12 @@ for(const [k,base,special] of [['pyre','revenant','inferno'],['arbiter','seraph'
  assert.ok(B.hull>CLASSES[base].hull,k+' outweighs its base hull');
  assert.equal(B.weapons.find(w=>w.id===special).special,true,k+' '+special+' gives warning');
 }
+// Campaign-only hulls: variants of an existing model, never in skirmish or the shipyard.
+for(const [k,base] of [['sentinel','halberd'],['thrall','wraith']]){
+ const V=CLASSES[k];assert.ok(V.campaignOnly&&V.enemyOnly&&!V.boss&&!V.capturable,k);assert.equal(V.model,base);assert.equal(shipyardHull(k),null);
+}
+assert.equal(CLASSES.sentinel.weapons.find(w=>w.id==='lance').special,true,'the Sentinel lance gives warning');
+assert.ok(!CLASSES.sentinel.weapons.some(w=>w.type==='torpedo'));
+assert.ok(CLASSES.thrall.rammer&&CLASSES.thrall.vmax>CLASSES.wraith.vmax&&CLASSES.thrall.hullE.r[2]<CLASSES.wraith.hullE.r[2],'the Thrall: a small, fast rammer');
+assert.ok(['pyre','arbiter','mother'].every(k=>CLASSES[k].campaignOnly));
 console.log('Ship table tests passed ('+Object.keys(CLASSES).length+' classes).');

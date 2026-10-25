@@ -68,10 +68,11 @@ const table = [...rows.entries()].map(([k, rs]) => { const [id, group, who] = k.
   foeHull: Math.round(100 * rs.reduce((a, r) => a + (r.foeHull || 0), 0) / rs.length),
   accuracy: Math.round(100 * rs.reduce((a,r)=>a+(r.accuracy||0),0)/rs.length),
   lanceDamage: Math.round(rs.reduce((a,r)=>a+(r.lanceDamage||0),0)/rs.length),
+  lanceAlignment: Math.round(100*rs.reduce((a,r)=>a+(r.lanceAlignment||0),0)/rs.length),
   escortDamage: Math.round(rs.reduce((a,r)=>a+(r.escortDamage||0),0)/rs.length),
   taken: Object.entries(rs.reduce((a, r) => { for (const [k, v] of Object.entries(r.tally || {})) a[k] = (a[k] || 0) + v / rs.length; return a; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, v]) => k + ' ' + Math.round(v)).join(', '),
   timeouts: rs.filter(r => r.outcome === 'timeout').length, codes: Object.entries(rs.reduce((a, r) => (a[r.code || r.outcome] = (a[r.code || r.outcome] || 0) + 1, a), {})).map(([c, n]) => c + ' ' + n).join(', ') }; });
-for (const t of table) console.log(`${String(t.id).padStart(2)} ${t.name.padEnd(24)} ${t.group.padEnd(24)} ${t.who.padEnd(8)} win ${String(Math.round(t.win * 100)).padStart(3)}%  ${String(t.time).padStart(4)} s  hull ${String(t.hull).padStart(3)}%  foe ${String(t.foeHull).padStart(3)}%  ${t.codes}  accuracy ${t.accuracy}%  lance ${t.lanceDamage}  escort ${t.escortDamage}${process.argv.includes('--taken') ? '  | taken ' + t.taken : ''}`);
+for (const t of table) console.log(`${String(t.id).padStart(2)} ${t.name.padEnd(24)} ${t.group.padEnd(24)} ${t.who.padEnd(8)} win ${String(Math.round(t.win * 100)).padStart(3)}%  ${String(t.time).padStart(4)} s  hull ${String(t.hull).padStart(3)}%  foe ${String(t.foeHull).padStart(3)}%  ${t.codes}  accuracy ${t.accuracy}%  lance ${t.lanceDamage}  aligned ${t.lanceAlignment}%  escort ${t.escortDamage}${process.argv.includes('--taken') ? '  | taken ' + t.taken : ''}`);
 // A full run replaces docs/balance-results.json; a partial run (--only, --quick) replaces just the rows it flew.
 const file = join(ROOT, 'docs', 'balance-results.json'), key = t => `${t.id}|${t.group}|${t.who}`;
 let merged = table;

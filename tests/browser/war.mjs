@@ -24,12 +24,15 @@ await suite('war', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   check(body.includes('THE WAR') && body.includes('Red Narrows') && body.includes('This decision changes a later battle'), 'the war and the stakes are in the report');
   const tx = await page.evaluate(() => { const r = document.querySelector('#modalbody .tx .crew-portrait').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
   check(tx[0] >= 120 && tx[1] >= 140, 'officer portrait is large: ' + tx.join('×'));
+  const quotedReward=Number((body.match(/Operation reward:\s*(\d+)/)||[])[1]);
+  const creditsBefore=(await read()).credits;
+  check(quotedReward>0,'report specifies the mission payout before territory changes');
   await shot('w02-after-action');
   await page.keyboard.press('Escape');
   check(await page.locator('#veil').isVisible(), 'Escape cannot discard story progression while the choice is pending');
   await page.locator('#modalactions button', { hasText: 'Offer amnesty' }).click();
   st = await read();
-  check(st.flags.thorne_amnesty && st.fronts['Red Narrows'] === -2, 'amnesty recorded; Red Narrows moved by 4: ' + st.fronts['Red Narrows']);
+  check(st.flags.thorne_amnesty && st.fronts['Red Narrows'] === -2 && st.credits === creditsBefore+quotedReward, 'amnesty and front recorded, the advertised danger pay was credited: ' + st.credits);
 
   // Push back: three battles away from the Ash Marches
   for (const [i, sys] of ['kestrel', 'driftwall', 'vela'].entries()) {

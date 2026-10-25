@@ -1,10 +1,10 @@
-# Art and voice still to make
+# Art and voice production brief
 
-The game picks these files up automatically once they exist: each portrait is drawn over the character's badge, and each voice clip plays when its transmission opens (and stops when it closes). Until then the characters show an initials or faction badge and Harlan's transmissions are text only. They could not be generated in this pass: the ElevenLabs account had run out of credits.
+**25 October 2026 status:** all eight named characters now have distinct SVG concept portraits (768 × 960 viewBox) in `img/commanders/<id>.svg`, and `crew/personnel.js` displays them. They are original illustrated/vector portraits, **not yet photorealistic**. The original descriptions below remain the art-direction specification for eventual `*.webp` replacements. Recording Harlan's 13 MP3 transmissions and authoring dedicated station/transport GLB models remain outstanding.
 
 ## Portraits
 
-Save as WebP, 768 × 960 (4:5), in `img/commanders/` with the file name given. They should match the existing painted portraits (`vex.webp`, `thorne.webp`, `img/admiral-harlan.webp`): photorealistic, cinematic, chest-up, on a dark starship set, with black Navy uniforms and gold shoulder boards for Navy officers.
+For the future photo-real replacement pass, save as WebP, 768 × 960 (4:5), in `img/commanders/` with the file name given. Update `crew/personnel.js` from `.svg` to `.webp` when these have been approved. They should match the existing painted portraits (`vex.webp`, `thorne.webp`, `img/admiral-harlan.webp`): photorealistic, cinematic, chest-up, on a dark starship set, with black Navy uniforms and gold shoulder boards for Navy officers.
 
 | File | Character | Prompt |
 | --- | --- | --- |

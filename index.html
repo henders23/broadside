@@ -2686,7 +2686,7 @@ if (location.search.includes('sim')) window.__sim = {
     campaignMission = spec; startGame();
     game.tally = {};
     player.ai = { diff: DIFF.captain, side: 1, shT: 2, pwT: 0, mode: 'close', sideT: 0 }; player.target = enemy;
-    const lead = enemy, dt = 1 / 30; let pick = 0, cmd = 0;
+    const lead = enemy, dt = 1 / 30; let pick = 0, cmd = 0, lanceReady = 0, lanceAligned = 0;
     while (state === 'playing' && game.time < maxTime) {
       // Pick targets as a sensible captain would: lattice nodes first, then the nearest hostile, the lead counting as further off.
       if ((pick -= dt) <= 0) { pick = 2; const foes = ships.filter(s => s.team === 'e' && s.alive), nodes = foes.filter(s => s.latticeNode);
@@ -2694,13 +2694,21 @@ if (location.search.includes('sim')) window.__sim = {
         const w = s => player.pos.distanceTo(s.pos) * (s === lead ? 1.4 : 1), t = (nodes.length ? nodes : hunters.length ? hunters : foes).sort((a, b) => w(a) - w(b))[0]; if (t) player.target = t; }
       // Officer commands once the fight is hurting, as a captain would: each is tried when ready and refuses when pointless.
       if (bridge && (cmd -= dt) <= 0) { cmd = 3; if (player.hull < player.C.hull * 0.85 || player.sh.some((v, i) => v < player.cap[i] * 0.5)) for (const k of ['Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9']) bridge.activateByKey(k); }
+      // Separate lance availability from the AI pilot's ability to align the bow.
+      const lance = player.groups.find(g=>g.type==='lance');
+      if (lance && lance.charge>=1 && lance.beamT<=0) {
+        lanceReady += dt;
+        if (player.target?.alive && inArc(player,lance,player.target.pos)) lanceAligned += dt;
+      }
       updateGame(dt); fire.update(dt); smoke.update(dt);
     }
     const out = { outcome: game.outcome || 'timeout', code: game.campaignOutcome || null, time: Math.round(game.time), hull: player.alive ? Math.max(0, player.hull / player.C.hull) : 0,
       foes: ships.filter(s => s.team === 'e' && s.alive).length, foeHull: lead.alive ? Math.max(0, lead.hull / lead.maxHull) : 0, tally: game.tally, mission: spec.id, shipClass: player.key, fleetSize: 1+(fleet?.allies.length||0),
       accuracy: player.stats.shots ? player.stats.hits/player.stats.shots : null,
       shots: player.stats.shots, hits: player.stats.hits, lanceDamage: Math.round(player.stats.lanceDmg),
-      escortDamage: fleet?.escortReport().reduce((n,a)=>n+a.damage,0)||0 };
+      escortDamage: fleet?.escortReport().reduce((n,a)=>n+a.damage,0)||0,
+      lanceReadySeconds: Math.round(lanceReady), lanceAlignedSeconds: Math.round(lanceAligned),
+      lanceAlignment: lanceReady ? lanceAligned/lanceReady : null };
     if (state === 'playing') { game.ending = true; state = 'over'; }
     return out;
   }

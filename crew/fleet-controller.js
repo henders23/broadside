@@ -26,7 +26,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
  const SUPPORT_DMG=.4;
  // NPC-controlled escorts deal less than a human-led flagship. Two escorts should
  // create resilience and tactical choices, not overwhelm bosses without player input.
- const ESCORT_DMG=.7;
+ const ESCORT_DMG=.55;
  function scale(ship,e,lead){
   if(!e)return;
   ship.dmgOut=Number.isFinite(e.dmg)?e.dmg:lead?1:SUPPORT_DMG;

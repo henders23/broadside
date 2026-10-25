@@ -23,11 +23,16 @@
     { id: 'hardened_emitters', slot: 'shields', name: 'Hardened emitters', cost: 260, effect: 'Generator damage weakens shields half as much.' },
     { id: 'expanded_magazine', slot: 'torp', name: 'Expanded magazine', cost: 300, effect: 'Carries 50% more torpedoes.' },
     { id: 'fast_reload_tubes', slot: 'torp', name: 'Fast-reload tubes', cost: 320, effect: 'Torpedo tubes reload 20% faster.' },
-    { id: 'heavy_warheads', slot: 'torp', name: 'Heavy warheads', cost: 380, effect: '20% more damage per torpedo.' }
+    { id: 'heavy_warheads', slot: 'torp', name: 'Heavy warheads', cost: 380, effect: '20% more damage per torpedo.' },
+    // Trophies: never for sale, fitted to the flagship when it brings down an act's boss (STORY[].trophy in campaign-data.js).
+    { id: 'pyre_plating', slot: 'trophy', name: 'Pyre armour plate', cost: 0, trophy: 'pyre', effect: 'Plate cut from the Pyre: 8% less hull damage from every hit, on top of any ablative belt.' },
+    { id: 'lattice_emitter', slot: 'trophy', name: 'Lattice emitter', cost: 0, trophy: 'arbiter', effect: 'The Arbiter’s shield emitter: shields 10% stronger and recovering 15% faster.' },
+    { id: 'living_graft', slot: 'trophy', name: 'Living graft', cost: 0, trophy: 'mother', effect: 'Bloom-Mother tissue grown into the hull: it knits 6 points a second when not under fire.' }
   ];
   const byId = Object.fromEntries(catalogue.map(u => [u.id, u]));
   const owned = list => new Set((Array.isArray(list) ? list : []).filter(id => byId[id]));
   const forSlot = slot => catalogue.filter(u => u.slot === slot);
+  const trophies = list => catalogue.filter(u => u.slot === 'trophy' && owned(list).has(u.id));
   const torpedoCap = (base, list) => owned(list).has('expanded_magazine') ? Math.round(base * 1.5) : base;
 
   // Returns a copy of a ship class with the owned upgrades applied; the class itself is never changed.
@@ -63,8 +68,11 @@
     if (has.has('expanded_magazine')) torps.forEach(w => { w.ammo = torpedoCap(w.ammo, ['expanded_magazine']); });
     if (has.has('fast_reload_tubes')) torps.forEach(w => faster(w, 0.8));
     if (has.has('heavy_warheads')) torps.forEach(w => harder(w, 1.2));
+    if (has.has('pyre_plating')) C.armour = (C.armour || 1) * 0.92;
+    if (has.has('lattice_emitter')) { C.shield = Math.round(C.shield * 1.1); C.regen *= 1.15; }
+    if (has.has('living_graft')) C.hullRegen = Math.max(C.hullRegen || 0, 6);
     return C;
   }
 
-  root.BroadsideUpgrades = Object.freeze({ catalogue, byId, forSlot, owned, apply, torpedoCap });
+  root.BroadsideUpgrades = Object.freeze({ catalogue, byId, forSlot, trophies, owned, apply, torpedoCap });
 })(typeof window !== 'undefined' ? window : globalThis);

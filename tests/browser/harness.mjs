@@ -44,6 +44,7 @@ export async function suite(name, opts, body) {
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   if (opts.random != null) await ctx.addInitScript(v => { window.__campaignRandom = () => v; }, opts.random);
   const page = await ctx.newPage(), errors = [];
+  page.setDefaultNavigationTimeout(120000);   // software WebGL on a busy runner can take a while to fire `load`
   page.on('pageerror', e => errors.push(String(e)));
   page.on('console', m => { if (m.type() === 'error' && !/fonts|ERR_FAILED|404/.test(m.text())) errors.push('console: ' + m.text()); });
   let pass = 0, fail = 0;

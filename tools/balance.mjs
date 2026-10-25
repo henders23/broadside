@@ -1,0 +1,73 @@
+// Automated balance testing: the AI flies the player's ship against every story operation and act finale, many times,
+// in headless Chromium, faster than real time (see __sim.fight in index.html for how it picks targets and uses officers).
+// Prints win rates, fight lengths, hull left on both sides and how fights ended, and records them in
+// docs/balance-results.json. Run: node tools/balance.mjs [--runs 3] [--only 8,9,10] [--quick] [--taken]
+//   --only    story operations to fly (default: all ten)     --quick   Captain, solo only (no Ensign, Admiral or fleet rows)
+//   --taken   also print where the flagship's damage came from (boss, lead, supporting ships)
+// Needs the same set-up as the browser suites (Playwright and three.js 0.169.0; see tests/browser/harness.mjs).
+import { createServer } from 'node:http';
+import { readFile, writeFile } from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
+import { extname, join, normalize, dirname } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+const ROOT = normalize(join(dirname(fileURLToPath(import.meta.url)), '..'));
+const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i < 0 ? d : process.argv[i + 1]; };
+const RUNS = Number(arg('runs', 3)), ONLY = arg('only', '') ? arg('only').split(',').map(Number) : null, QUICK = process.argv.includes('--quick');
+const HULLS = ['bastion', 'halberd', 'sabre', 'warden'];
+
+async function load(spec) { try { return await import(spec.startsWith('/') ? pathToFileURL(spec).href : spec); } catch (e) { return null; } }
+const pw = (await load(process.env.PLAYWRIGHT || 'playwright')) || (await load('/opt/node-tools/node_modules/playwright/index.mjs'));
+const three = [process.env.THREE_DIR, join(ROOT, 'node_modules', 'three')].find(d => d && existsSync(join(d, 'build', 'three.module.js')));
+if (!pw || !three) { console.error('Needs Playwright and three.js 0.169.0 (see tests/browser/harness.mjs).'); process.exit(1); }
+const TYPES = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml', '.glb': 'model/gltf-binary', '.mp3': 'audio/mpeg' };
+const server = createServer(async (req, res) => { const p = normalize(join(ROOT, decodeURIComponent(new URL(req.url, 'http://x').pathname))); let body; try { body = await readFile(p); } catch (e) { res.writeHead(404).end(); return; } res.writeHead(200, { 'content-type': TYPES[extname(p)] || 'application/octet-stream' }).end(body); });
+await new Promise(r => server.listen(0, '127.0.0.1', r));
+const base = `http://127.0.0.1:${server.address().port}`;
+
+const browser = await pw.chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
+await ctx.route('https://cdn.jsdelivr.net/npm/three@0.169.0/**', r => { const p = new URL(r.request().url()).pathname.replace('/npm/three@0.169.0/', ''); r.fulfill({ body: readFileSync(join(three, p)), contentType: 'application/javascript' }); });
+await ctx.route(/fonts\.(googleapis|gstatic)\.com|\.mp3$/, r => r.abort());
+const page = await ctx.newPage();
+page.on('pageerror', e => console.error('page error:', String(e)));
+await page.goto(base + '/index.html?sim');
+await page.waitForFunction(() => window.__sim && window.__sim.state === 'menu', null, { timeout: 300000 });
+
+// One fight: a fresh save with the given fleet and difficulty, the encounter staged as the campaign would stage it.
+const fight = (story, fleet, difficulty) => page.evaluate(({ story, fleet, difficulty }) => {
+  const C = window.BroadsideCampaign, save = { version: 1, ships: fleet.map((ship, i) => ({ id: 's' + i, ship, shipName: 'Test ' + ship, hull: 1, sub: null, torps: null, upgrades: [], reserve: false })), flag: 's0',
+    completed: [], flags: {}, credits: 0, difficulty, tutorial: 'done', officers: {}, fronts: C.startFronts() };
+  localStorage.setItem(C.saveKey(localStorage), JSON.stringify(save));
+  return window.__sim.fight(C.storyEncounter(story, { flags: {}, fronts: save.fronts }), 420);
+}, { story, fleet, difficulty });
+
+const plan = [];
+const stories = (ONLY || [1, 2, 3, 8, 4, 6, 9, 5, 7, 10]);
+for (const id of stories) for (const h of HULLS) plan.push({ id, fleet: [h], difficulty: 'captain', group: 'solo, Captain' });
+if (!QUICK) for (const id of stories.filter(id => id >= 8)) {
+  for (const h of HULLS) for (const d of ['ensign', 'admiral']) plan.push({ id, fleet: [h], difficulty: d, group: 'solo, ' + d[0].toUpperCase() + d.slice(1) });
+  plan.push({ id, fleet: ['bastion', 'sabre', 'warden'], difficulty: 'captain', group: 'fleet of three, Captain' });
+}
+const results = [], t0 = Date.now();
+for (const p of plan) for (let r = 0; r < RUNS; r++) {
+  const res = await fight(p.id, p.fleet, p.difficulty);
+  results.push({ ...p, ...res });
+  process.stdout.write(`\r${results.length} of ${plan.length * RUNS} fights · ${Math.round((Date.now() - t0) / 1000)} s`);
+}
+console.log('\n');
+const C = await page.evaluate(() => Object.fromEntries(window.BroadsideCampaign.STORY.map(m => [m.id, m.name])));
+const rows = new Map();
+for (const r of results) { const k = `${r.id}|${r.group}|${r.fleet.length > 1 ? 'fleet' : r.fleet[0]}`; if (!rows.has(k)) rows.set(k, []); rows.get(k).push(r); }
+const table = [...rows.entries()].map(([k, rs]) => { const [id, group, who] = k.split('|'); return { id: +id, name: C[id], group, who, runs: rs.length,
+  win: rs.filter(r => r.outcome === 'win').length / rs.length, time: Math.round(rs.reduce((a, r) => a + r.time, 0) / rs.length), hull: Math.round(100 * rs.reduce((a, r) => a + r.hull, 0) / rs.length),
+  foeHull: Math.round(100 * rs.reduce((a, r) => a + (r.foeHull || 0), 0) / rs.length),
+  taken: Object.entries(rs.reduce((a, r) => { for (const [k, v] of Object.entries(r.tally || {})) a[k] = (a[k] || 0) + v / rs.length; return a; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, v]) => k + ' ' + Math.round(v)).join(', '),
+  timeouts: rs.filter(r => r.outcome === 'timeout').length, codes: Object.entries(rs.reduce((a, r) => (a[r.code || r.outcome] = (a[r.code || r.outcome] || 0) + 1, a), {})).map(([c, n]) => c + ' ' + n).join(', ') }; });
+for (const t of table) console.log(`${String(t.id).padStart(2)} ${t.name.padEnd(24)} ${t.group.padEnd(24)} ${t.who.padEnd(8)} win ${String(Math.round(t.win * 100)).padStart(3)}%  ${String(t.time).padStart(4)} s  hull ${String(t.hull).padStart(3)}%  foe ${String(t.foeHull).padStart(3)}%  ${t.codes}${process.argv.includes('--taken') ? '  | taken ' + t.taken : ''}`);
+// A full run replaces docs/balance-results.json; a partial run (--only, --quick) replaces just the rows it flew.
+const file = join(ROOT, 'docs', 'balance-results.json'), key = t => `${t.id}|${t.group}|${t.who}`;
+let merged = table;
+if ((ONLY || QUICK) && existsSync(file)) { const old = JSON.parse(readFileSync(file, 'utf8')).table || [], fresh = new Map(table.map(t => [key(t), t])); merged = old.map(t => fresh.get(key(t)) || t); for (const t of table) if (!old.some(o => key(o) === key(t))) merged.push(t); }
+await writeFile(file, JSON.stringify({ when: new Date().toISOString(), runs: RUNS, table: merged }, null, 1) + '\n');
+await browser.close(); server.close();

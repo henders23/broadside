@@ -51,6 +51,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .num{font-variant-numeric:tabular-nums;color:var(--text)}
 #own{left:max(14px,env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));width:250px}
 #foe{right:max(14px,env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:230px}
+#coach{position:absolute;right:calc(20px + env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);width:min(330px,36vw);z-index:6;padding:14px 16px;border:1px solid #9fd8ff66;border-right:3px solid #9fd8ff;border-radius:10px;background:linear-gradient(120deg,rgba(8,24,38,.92),rgba(4,10,18,.85));box-shadow:0 10px 30px #0009;animation:coachin .4s ease}#coach[hidden]{display:none}#coach small{display:block;font-size:10px;letter-spacing:.22em;color:#9fd8ff;text-transform:uppercase}#coach b{display:block;margin:4px 0 6px;font-size:17px;color:#f4e6cc}#coach p{margin:0 0 10px;font-size:12.5px;line-height:1.55;color:#c9d8e4}#coach .ck{display:flex;justify-content:space-between;align-items:center;gap:8px}#coach kbd:empty{visibility:hidden}#coach button{pointer-events:auto;background:none;border:1px solid #ffffff33;color:#c9d8e4;border-radius:999px;padding:4px 10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}@keyframes coachin{from{opacity:0;transform:translate(12px,-50%)}}
+#bosscard{position:absolute;inset:0;z-index:7;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:16vh;gap:6px;text-align:center;background:linear-gradient(#000 0 9vh,transparent 9vh calc(100% - 9vh),#000 calc(100% - 9vh));opacity:0}#bosscard[hidden]{display:none}#bosscard small{font-size:12px;letter-spacing:.42em;color:#ffb36b;text-transform:uppercase}#bosscard b{font-size:clamp(34px,6vw,72px);letter-spacing:.18em;color:#ffe3c4;text-shadow:0 0 28px #ff5b4f99;font-weight:800}#bosscard span{font-size:14px;letter-spacing:.2em;color:#e9d2bd;text-transform:uppercase}#bosscard em{margin-top:10px;font-style:normal;font-size:10px;letter-spacing:.3em;color:#ffffff66;text-transform:uppercase}#bossbar.warn .bt span{color:#ff6b5f;animation:bosswarn .5s steps(2) infinite}@keyframes bosswarn{50%{opacity:.35}}
 #bossbar{position:absolute;top:calc(188px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(560px,60vw);z-index:5;pointer-events:none}#bossbar .bt{display:flex;justify-content:space-between;gap:12px;font-size:11px;letter-spacing:.16em;color:#ffd0a0;text-transform:uppercase;margin-bottom:5px}#bossbar .bt b{font-weight:700}#bossbar .bb{position:relative;height:10px;background:rgba(255,91,79,.15);border:1px solid rgba(255,140,110,.5)}#bossbar .bb i{position:absolute;inset:0;background:linear-gradient(90deg,#ff5b4f,#ffb36b);transform-origin:left}#bossbar .bb .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:#ffe3c4}#bossbar.lattice .bb i{background:linear-gradient(90deg,#6fd0ff,#cfefff)}#bossbar.lattice .bt span{color:#9fd8ff}
 #escorts{right:max(14px,env(safe-area-inset-right,0px));top:calc(300px + env(safe-area-inset-top,0px));width:230px;pointer-events:auto}#esc-list{display:flex;flex-direction:column;gap:7px}.esc{display:flex;flex-direction:column;gap:3px}.esc .en{display:flex;justify-content:space-between;gap:8px;font-size:11px}.esc .en b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.esc .en span{color:var(--dim,#9ab)}.esc.lost{opacity:.45}.esc small{font-size:10px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.escbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.escbtns button{font:inherit;font-size:10px;letter-spacing:.06em;padding:5px 2px;background:#0a1b2a;border:1px solid #2f485c;color:#e1eaf2;cursor:pointer}.escbtns button.on{border-color:#f0c27c;color:#f0d3a4;background:#173044}
 .shieldbox{display:grid;grid-template-columns:118px 1fr;gap:10px;align-items:center}
@@ -275,6 +277,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div id="tacwrap"><canvas id="tac" aria-label="Tactical plot"></canvas><span class="sec">Tactical · <kbd>Tab</kbd> enlarge</span></div>
     <div id="tacfull" hidden><canvas id="tacF" aria-label="Tactical plot, enlarged"></canvas><span class="sec">Tactical plot · heading up · <kbd>Tab</kbd> to close</span></div>
 
+    <div id="coach" hidden aria-live="polite"><small id="coach-k"></small><b id="coach-t"></b><p id="coach-p"></p><div class="ck"><kbd id="coach-keys"></kbd><button type="button" id="coach-skip">Skip tutorial</button></div></div>
+    <div id="bosscard" hidden aria-live="assertive"><small id="bosscard-cls"></small><b id="bosscard-title"></b><span id="bosscard-who"></span><em>Press any key</em></div>
     <div id="bossbar" hidden aria-live="polite"><div class="bt"><b id="boss-name"></b><span id="boss-phase"></span></div><div class="bb" id="boss-track"><i id="boss-fill"></i></div></div>
     <div class="panel" id="escorts" hidden aria-label="Escort orders">
       <div class="ptitle"><b>Escorts</b><small id="esc-order">—</small></div>
@@ -434,6 +438,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <script src="crew/fleet-controller.js"></script>
 <script src="crew/battle-environments.js"></script>
 <script src="crew/upgrades.js"></script>
+<script src="crew/ships.js"></script>
+<script src="crew/tutorial.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -458,179 +464,8 @@ const FACINGS = ['Fore', 'Aft', 'Port', 'Stbd'];
 const STEPS = [-0.3, 0, 0.33, 0.66, 1];   // telegraph: astern, stop, 1/3, 2/3, full
 
 // ---------------- ship classes ----------------
-const CLASSES = {
-  bastion: {
-    key: 'bastion', name: 'Bastion', cls: 'Heavy battleship', url: 'models/bastion.glb', size: 919464, scale: 300, rotY: Math.PI,
-    hull: 3000, shield: 620, regen: 28, vmax: 42, accel: 2.2, turn: deg(5.5), angAcc: deg(1.5), pitchMax: deg(14), grip: 0.45,
-    hullE: { c: [0, -15, 0], r: [40, 17, 146] }, shieldE: { c: [0, -10, 0], r: [64, 40, 178] },
-    engines: [[-22, -20, 143], [0, -18, 144], [22, -20, 143]], glow: 16,
-    weapons: [
-      { id: 'port', label: 'Port battery', key: 'Q', type: 'battery', sub: 'port', center: -90, half: 68, elevMin: -35, elev: 35, range: 2700, reload: 7.5, dmg: 46, speed: 480, shots: 3, snd: 'cannon',
-        guns: [-100, -60, -20, 20, 60, 100].map(z => [-31, -8, z]) },
-      { id: 'stbd', label: 'Starboard battery', key: 'E', type: 'battery', sub: 'stbd', center: 90, half: 68, elevMin: -35, elev: 35, range: 2700, reload: 7.5, dmg: 46, speed: 480, shots: 3, snd: 'cannon',
-        guns: [-100, -60, -20, 20, 60, 100].map(z => [31, -8, z]) },
-      { id: 'dorsal', label: 'Dorsal turrets', key: 'Space', type: 'battery', sub: 'fore', center: 0, half: 150, elevMin: -8, elev: 70, range: 3000, reload: 5.5, dmg: 32, speed: 560, shots: 3, snd: 'turret',
-        guns: [[0, 17, -62], [0, 9, 70]] },
-      { id: 'torp', label: 'Torpedoes', key: 'T', type: 'torpedo', sub: 'torp', center: 0, half: 70, elevMin: -40, elev: 40, range: 5200, reload: 12, tubes: 4, ammo: 8, dmg: 340,
-        guns: [[-14, -22, -146], [14, -22, -146]] }
-    ],
-    fore: 'Dorsal turrets', tip: 'Dorsal turrets (<b>Space</b>) cover almost every bearing: use them whenever they are loaded.',
-    len: 294, blurb: 'Slow and wide. Six-gun broadsides on each beam and dorsal turrets that cover almost every bearing. Thick shields, wide turning circle.',
-    arm: '2 × 6-turret broadside (18 shells a salvo) · 2 dorsal turrets · 4 torpedo tubes, 8 torpedoes',
-    pref: 1900, camDist: 820, menuRot: 0.4,
-    look: { rough: 0.45, metal: 0.55 }   // its texture is near-mirror smooth, so the sun glared off it
-  },
-  halberd: {
-    key: 'halberd', name: 'Halberd', cls: 'Lance cruiser', url: 'models/halberd.glb', size: 910540, scale: 265, rotY: Math.PI / 2,
-    hull: 2500, shield: 520, regen: 26, vmax: 58, accel: 3.4, turn: deg(9), angAcc: deg(2.7), pitchMax: deg(18), grip: 0.65,
-    hullE: { c: [0, -10, 0], r: [30, 28, 128] }, shieldE: { c: [0, -4, 0], r: [50, 50, 154] },
-    engines: [[-10, -10, 127], [10, -10, 127], [0, -24, 125]], glow: 13,
-    weapons: [
-      { id: 'lance', label: 'Spinal lance', key: 'Space', type: 'lance', sub: 'fore', center: 0, half: 4, elevMin: -4, elev: 4, range: 3600, chargeT: 14, dps: 600, dur: 2.4,
-        guns: [[0, -14, -133]] },
-      { id: 'port', label: 'Port battery', key: 'Q', type: 'battery', sub: 'port', center: -90, half: 70, elevMin: -35, elev: 35, range: 2500, reload: 5, dmg: 44, speed: 500, shots: 4, snd: 'lasercannon',
-        guns: [-60, -20, 20, 60].map(z => [-30, -4, z]) },
-      { id: 'stbd', label: 'Starboard battery', key: 'E', type: 'battery', sub: 'stbd', center: 90, half: 70, elevMin: -35, elev: 35, range: 2500, reload: 5, dmg: 44, speed: 500, shots: 4, snd: 'lasercannon',
-        guns: [-60, -20, 20, 60].map(z => [30, -4, z]) },
-      { id: 'torp', label: 'Torpedoes', key: 'T', type: 'torpedo', sub: 'torp', center: 0, half: 70, elevMin: -40, elev: 40, range: 5200, reload: 10, tubes: 2, ammo: 6, dmg: 340,
-        guns: [[-8, -30, -124], [8, -30, -124]] }
-    ],
-    fore: 'Spinal lance', tip: 'The lance (<b>Space</b>) fires only dead ahead: point the bow, then fire. It strips shields fast.',
-    len: 260, blurb: 'Narrow and quick on the helm. Built around a spinal lance that only fires dead ahead, so you aim it by pointing the whole ship. Lighter broadsides.',
-    arm: 'Spinal lance · 2 × 4-turret broadside (16 shells a salvo) · 2 torpedo tubes, 6 torpedoes',
-    pref: 2000, camDist: 700, menuRot: -0.3
-  },
-  sabre: {
-    key: 'sabre', name: 'Sabre', cls: 'Battlecruiser', url: 'models/sabre.glb', size: 798228, scale: 286, rotY: Math.PI,
-    hull: 2400, shield: 500, regen: 26, vmax: 62, accel: 3.8, turn: deg(7.5), angAcc: deg(2.1), pitchMax: deg(16), grip: 0.55,
-    hullE: { c: [0, -10, 0], r: [36, 30, 139] }, shieldE: { c: [0, 0, 0], r: [58, 64, 168] },
-    engines: [[-17, 5, 139], [17, 5, 139], [0, 11, 139], [-10, -5, 139], [10, -5, 139]], glow: 12,
-    weapons: [
-      { id: 'bow', label: 'Bow battery', key: 'Space', type: 'battery', sub: 'fore', center: 0, half: 55, elevMin: -20, elev: 30, range: 3100, reload: 6, dmg: 50, speed: 540, shots: 3, snd: 'turret', mount: 1.4,
-        guns: [[0, 4, -96], [0, 7, -78], [0, 10, -60]] },
-      { id: 'port', label: 'Port battery', key: 'Q', type: 'battery', sub: 'port', center: -90, half: 66, elevMin: -35, elev: 35, range: 2600, reload: 6, dmg: 42, speed: 500, shots: 3, snd: 'lasercannon',
-        guns: [[-32, -4, -40], [-35, -4, -10], [-43, -4, 30], [-43, -4, 70]] },
-      { id: 'stbd', label: 'Starboard battery', key: 'E', type: 'battery', sub: 'stbd', center: 90, half: 66, elevMin: -35, elev: 35, range: 2600, reload: 6, dmg: 42, speed: 500, shots: 3, snd: 'lasercannon',
-        guns: [[32, -4, -40], [35, -4, -10], [43, -4, 30], [43, -4, 70]] },
-      { id: 'torp', label: 'Torpedoes', key: 'T', type: 'torpedo', sub: 'torp', center: 0, half: 70, elevMin: -40, elev: 40, range: 5200, reload: 10, tubes: 2, ammo: 6, dmg: 340,
-        guns: [[-8, -28, -128], [8, -28, -128]] }
-    ],
-    fore: 'Bow battery', tip: 'The bow battery (<b>Space</b>) covers the forward quarter. Close in bow-first, then turn to bring a broadside to bear as well.',
-    len: 280, blurb: 'The fastest hull in the fleet. Three heavy turrets on the foredeck fire across the forward quarter, so it fights best charging in at an angle. Thin shields.',
-    arm: '3-turret bow battery · 2 × 4-turret broadside (12 shells a salvo) · 2 torpedo tubes, 6 torpedoes',
-    pref: 2300, beam: 45, camDist: 760, menuRot: 0.6
-  },
-  warden: {
-    key: 'warden', name: 'Warden', cls: 'Siege dreadnought', url: 'models/warden.glb', size: 831496, scale: 320, rotY: Math.PI,
-    hull: 3600, shield: 600, regen: 24, vmax: 36, accel: 1.8, turn: deg(4.5), angAcc: deg(1.2), pitchMax: deg(12), grip: 0.4,
-    hullE: { c: [0, -12, 0], r: [36, 32, 155] }, shieldE: { c: [0, 0, 0], r: [58, 64, 188] },
-    engines: [[-23, 13, 156], [23, 13, 156], [-13, -4, 156], [13, -4, 156]], glow: 15,
-    weapons: [
-      { id: 'siege', label: 'Siege cannons', key: 'Space', type: 'battery', sub: 'fore', center: 0, half: 22, elevMin: -12, elev: 20, range: 4200, reload: 12, dmg: 150, speed: 640, shots: 2, snd: 'cannon', mount: 2.2, bow: true,
-        guns: [[0, 10, -118], [0, 12, -86]] },
-      { id: 'port', label: 'Port battery', key: 'Q', type: 'battery', sub: 'port', center: -90, half: 64, elevMin: -35, elev: 35, range: 2700, reload: 8, dmg: 44, speed: 470, shots: 3, snd: 'cannon',
-        guns: [[-28, -4, -90], [-40, -4, -50], [-40, -4, -10], [-39, -4, 30], [-40, -4, 70]] },
-      { id: 'stbd', label: 'Starboard battery', key: 'E', type: 'battery', sub: 'stbd', center: 90, half: 64, elevMin: -35, elev: 35, range: 2700, reload: 8, dmg: 44, speed: 470, shots: 3, snd: 'cannon',
-        guns: [[28, -4, -90], [40, -4, -50], [40, -4, -10], [39, -4, 30], [40, -4, 70]] },
-      { id: 'torp', label: 'Torpedoes', key: 'T', type: 'torpedo', sub: 'torp', center: 0, half: 80, elevMin: -40, elev: 40, range: 5200, reload: 11, tubes: 6, ammo: 16, dmg: 340,
-        guns: [[-10, -35, -140], [10, -35, -140], [-16, -40, -120], [16, -40, -120], [-20, -40, -100], [20, -40, -100]] }
-    ],
-    fore: 'Siege cannons', tip: 'Siege cannons (<b>Space</b>) hit hardest and reach farthest, but only within a narrow arc ahead. Point the bow and fire from long range.',
-    len: 314, blurb: 'The heaviest hull and the slowest helm. Two siege cannons out-range every other gun but only fire ahead, and six torpedo tubes finish what they open up.',
-    arm: '2 siege cannons · 2 × 5-turret broadside (15 shells a salvo) · 6 torpedo tubes, 16 torpedoes',
-    pref: 2500, camDist: 880, menuRot: -0.5
-  },
+const CLASSES = window.BroadsideShips.CLASSES;   // crew/ships.js: hull stats, weapons and the act bosses
 
-  // enemy-only ships: never offered in the picker, only met in battle
-  wraith: {
-    key: 'wraith', name: 'Wraith', cls: 'Alien bioship', enemyOnly: true, url: 'models/wraith.glb', size: 834700, scale: 270, rotY: Math.PI,
-    hull: 3000, shield: 460, regen: 30, hullRegen: 12, vmax: 60, accel: 3.6, turn: deg(10), angAcc: deg(2.8), pitchMax: deg(20), grip: 0.7,
-    hullE: { c: [0, 4, 0], r: [70, 22, 112] }, shieldE: { c: [0, 4, 0], r: [118, 52, 140] },
-    engines: [[0, 14, 116], [-10, 2, 114], [10, 2, 114]], glow: 14, glowCol: [0.5, 3, 0.9],
-    weapons: [
-      { id: 'plasma', label: 'Plasma spitters', key: 'Space', type: 'battery', sub: 'fore', center: 0, half: 110, elevMin: -40, elev: 40, range: 2600, reload: 5, dmg: 70, speed: 380, shots: 2, style: 'plasma', kind: 'plasma', bare: true, snd: 'lasercannon', sndRate: 0.55,
-        guns: [[-40, 10, -60], [40, 10, -60], [-20, 18, -90], [20, 18, -90]] },
-      { id: 'spores', label: 'Spore swarm', key: 'T', type: 'missile', sub: 'torp', center: 0, half: 160, elevMin: -60, elev: 60, range: 3200, reload: 12, salvo: 8, dmg: 45, speed: 90, vmax: 260, turn: 1.6, life: 16, col: [0.6, 3.2, 1], snd: 'torplaunch', sndRate: 1.5,
-        guns: [[-60, 2, 0], [60, 2, 0], [-30, 4, 40], [30, 4, 40]] }
-    ],
-    fore: 'Plasma spitters', pref: 1900, beam: 35,
-    intel: 'Alien bioship. Its green plasma eats shields and its hull grows back, so keep the pressure on. Spore swarms home in on you; point defence thins them out.'
-  },
-  scrapjaw: {
-    key: 'scrapjaw', name: 'Scrapjaw', cls: 'Pirate ram', enemyOnly: true, url: 'models/scrapjaw.glb', size: 904216, scale: 255, rotY: Math.PI,
-    hull: 5000, shield: 420, regen: 24, vmax: 60, accel: 3.4, turn: deg(7.5), angAcc: deg(2.2), pitchMax: deg(16), grip: 0.6, ram: 0.35, ramDmg: 1.6,
-    hullE: { c: [0, -8, 0], r: [34, 30, 122] }, shieldE: { c: [0, 0, 0], r: [56, 62, 150] },
-    engines: [[-34, 2, 124], [34, 2, 124], [-14, -22, 122], [14, -22, 122]], glow: 16, glowCol: [3.2, 1.3, 0.4],
-    weapons: [
-      { id: 'auto', label: 'Autocannons', key: 'Space', type: 'battery', sub: 'fore', center: 0, half: 60, elevMin: -30, elev: 30, range: 2500, reload: 4, dmg: 13, speed: 760, shots: 14, gap: 0.07, sndEvery: 3, style: 'tracer', snd: 'pd2', sndRate: 0.7,
-        guns: [[0, 6, -85], [0, 9, -62]] },
-      { id: 'port', label: 'Port scatterguns', key: 'Q', type: 'battery', sub: 'port', center: -90, half: 70, elevMin: -35, elev: 35, range: 2000, reload: 3.5, dmg: 18, speed: 640, shots: 2, pellets: 5, spread: 0.06, style: 'flak', snd: 'cannon', sndRate: 1.3,
-        guns: [[-26, -6, -40], [-29, -6, -10], [-36, -6, 20], [-36, -6, 60]] },
-      { id: 'stbd', label: 'Starboard scatterguns', key: 'E', type: 'battery', sub: 'stbd', center: 90, half: 70, elevMin: -35, elev: 35, range: 2000, reload: 3.5, dmg: 18, speed: 640, shots: 2, pellets: 5, spread: 0.06, style: 'flak', snd: 'cannon', sndRate: 1.3,
-        guns: [[26, -6, -40], [29, -6, -10], [36, -6, 20], [36, -6, 60]] }
-    ],
-    fore: 'Autocannons', pref: 1100, beam: 60, rammer: true,
-    intel: 'Pirate ram. Thick armour, weak shields, and scatterguns that shred at close range. It will try to ram you: keep your distance and turn away when it charges.'
-  },
-  seraph: {
-    key: 'seraph', name: 'Seraph', cls: 'Beam frigate', enemyOnly: true, url: 'models/seraph.glb', size: 853132, scale: 280, rotY: Math.PI,
-    hull: 2000, shield: 620, regen: 42, vmax: 58, accel: 3.4, turn: deg(7), angAcc: deg(2), pitchMax: deg(16), grip: 0.6,
-    hullE: { c: [0, -4, 0], r: [80, 18, 130] }, shieldE: { c: [0, 0, 0], r: [112, 40, 160] },
-    engines: [[-8, -2, 137], [8, -2, 137], [-8, -16, 137], [8, -16, 137]], glow: 13, glowCol: [1.6, 2.6, 4],
-    weapons: [
-      { id: 'rail', label: 'Railgun', key: 'Space', type: 'battery', sub: 'fore', center: 0, half: 8, elevMin: -8, elev: 8, range: 4800, reload: 11, dmg: 240, speed: 2600, shots: 1, style: 'rail', kind: 'rail', bare: true, bow: true, snd: 'lasercannon', sndRate: 1.6,
-        guns: [[0, 2, -128]] },
-      { id: 'beams', label: 'Beam arrays', key: 'E', type: 'beam', sub: 'port', center: 0, half: 160, elevMin: -50, elev: 50, range: 2900, chargeT: 6, dur: 2.2, dps: 90, col: [1.4, 3, 5], width: 2.5, snd: 'lance', sndRate: 1.7,
-        guns: [[-70, 6, 0], [70, 6, 0], [0, 20, -50]] }
-    ],
-    fore: 'Railgun', pref: 2700, beam: 70,
-    intel: 'Beam frigate. Strong shields that recharge fast but a fragile hull. It keeps its distance and snipes with a railgun, so close in and work one shield facing down.'
-  },
-  revenant: {
-    key: 'revenant', name: 'Revenant', cls: 'Minelayer', enemyOnly: true, model: 'warden', url: 'models/warden.glb', size: 831496, scale: 320, rotY: Math.PI, tint: [0.62, 0.34, 0.32],
-    hull: 4400, shield: 600, regen: 28, vmax: 42, accel: 2.2, turn: deg(5.5), angAcc: deg(1.5), pitchMax: deg(12), grip: 0.45,
-    hullE: { c: [0, -12, 0], r: [36, 32, 155] }, shieldE: { c: [0, 0, 0], r: [58, 64, 188] },
-    engines: [[-23, 13, 156], [23, 13, 156], [-13, -4, 156], [13, -4, 156]], glow: 15, glowCol: [4, 0.7, 0.5],
-    weapons: [
-      { id: 'missiles', label: 'Missile racks', key: 'Space', type: 'missile', sub: 'fore', center: 0, half: 180, elevMin: -90, elev: 90, range: 3600, reload: 12, salvo: 8, dmg: 58, speed: 70, vmax: 320, turn: 1.1, life: 15, pdK: 0.11, col: [4, 1, 0.6], snd: 'torplaunch', sndRate: 1.15,
-        guns: [[-12, 26, -40], [12, 26, -40], [-12, 28, 10], [12, 28, 10]] },
-      { id: 'port', label: 'Port flak', key: 'Q', type: 'battery', sub: 'port', center: -90, half: 70, elevMin: -35, elev: 35, range: 2500, reload: 5, dmg: 22, speed: 620, shots: 2, pellets: 5, spread: 0.04, style: 'flak', snd: 'cannon', sndRate: 1.15,
-        guns: [[-40, -4, -50], [-40, -4, -10], [-39, -4, 30], [-40, -4, 70]] },
-      { id: 'stbd', label: 'Starboard flak', key: 'E', type: 'battery', sub: 'stbd', center: 90, half: 70, elevMin: -35, elev: 35, range: 2500, reload: 5, dmg: 22, speed: 620, shots: 2, pellets: 5, spread: 0.04, style: 'flak', snd: 'cannon', sndRate: 1.15,
-        guns: [[40, -4, -50], [40, -4, -10], [39, -4, 30], [40, -4, 70]] },
-      { id: 'mines', label: 'Mine layer', key: 'T', type: 'mine', sub: 'torp', center: 180, half: 75, elevMin: -60, elev: 60, range: 1800, reload: 5, tubes: 2, ammo: 14, dmg: 320, trigger: 300,
-        guns: [[-20, -10, 150], [20, -10, 150]] }
-    ],
-    fore: 'Missile racks', pref: 1300, beam: 135,
-    intel: 'Minelayer. It keeps you on its quarter and drops proximity mines astern, so chasing it means flying through them. Watch the plot for red mine markers.'
-  }
-};
-// Hulls that can be claimed from wrecks in the campaign and flown by the player (they stay out of skirmish).
-for (const [k, d] of [['scrapjaw', 760], ['seraph', 800], ['revenant', 880]]) Object.assign(CLASSES[k], { capturable: true, camDist: d });
-// Act bosses (campaign only): an existing hull scaled up and re-armed. Weapons a later phase unlocks are listed
-// in the encounter's boss phases (crew/campaign-data.js) and stay silent until crew/fleet-controller.js frees them.
-function bossClass(key, base, o) {
-  const B = CLASSES[base], k = o.modelScale, sc = p => p.map(v => v * k), arm = w => ({ ...w, guns: w.guns.map(sc) });
-  CLASSES[key] = { ...B, ...o.stats, key, name: o.name, cls: o.cls, enemyOnly: true, boss: true, model: B.model || base, modelScale: k, tint: o.tint || B.tint,
-    hullE: { c: sc(B.hullE.c), r: sc(B.hullE.r) }, shieldE: { c: sc(B.shieldE.c), r: sc(B.shieldE.r) }, engines: B.engines.map(sc), glow: B.glow * k,
-    weapons: [...B.weapons.map(w => arm({ ...w, ...(o.boost[w.id] || {}) })), ...o.extra.map(arm)], intel: o.intel };
-}
-bossClass('pyre', 'revenant', { name: 'Pyre', cls: 'Ash Fleet dreadnought', modelScale: 1.4, tint: [0.42, 0.24, 0.22],
-  stats: { hull: 9500, shield: 950, regen: 34, vmax: 34, accel: 1.8, turn: deg(4.2), pref: 1600, beam: 120 },
-  boost: { missiles: { salvo: 10 }, port: { dmg: 26 }, stbd: { dmg: 26 }, mines: { reload: 4, ammo: 24 } },
-  extra: [{ ...CLASSES.warden.weapons.find(w => w.id === 'siege'), key: '' },
-    { ...CLASSES.revenant.weapons.find(w => w.id === 'missiles'), id: 'inferno', label: 'Inferno salvo', sub: 'torp', salvo: 16, reload: 9, dmg: 70, col: [4, 1.6, 0.3] }],
-  intel: 'The Ash Fleet flagship: a dreadnought fortress with siege cannons, flak, missiles and mines. Stay off its bow and out of its wake.' });
-bossClass('arbiter', 'seraph', { name: 'Arbiter', cls: 'Directorate core warship', modelScale: 1.6, tint: [0.82, 0.92, 1.15],
-  stats: { hull: 7000, shield: 1300, regen: 60, vmax: 50, accel: 3, turn: deg(6), pref: 2800 },
-  boost: { rail: { dmg: 320, reload: 9 }, beams: { dps: 120 } },
-  extra: [{ ...CLASSES.halberd.weapons.find(w => w.id === 'lance'), id: 'judgement', label: 'Judgement lance', key: '', dps: 800, guns: [[0, 2, -128]] }],
-  intel: 'The Directorate mind in a hull: heavy, fast-recharging shields, beam arrays and a railgun. Its shield lattice only falls when the node ships do.' });
-bossClass('mother', 'wraith', { name: 'Bloom-Mother', cls: 'Wraith brood-mother', modelScale: 1.8, tint: [0.85, 1.1, 0.85],
-  stats: { hull: 8500, shield: 760, regen: 34, hullRegen: 26, vmax: 46, accel: 3, turn: deg(6.5), pref: 1900 },
-  boost: { plasma: { dmg: 85 }, spores: { salvo: 10 } },
-  extra: [{ ...CLASSES.wraith.weapons.find(w => w.id === 'spores'), id: 'storm', label: 'Spore storm', salvo: 20, reload: 9, dmg: 40 }],
-  intel: 'The mother of the Wraith. Plasma, spore swarms and a hull that regrows faster the more it is hurt. Never let up.' });
 const SUBS = ['engines', 'shields', 'reactor', 'port', 'stbd', 'fore', 'torp'];
 const SUBNAME = { engines: 'Engines', shields: 'Shield generator', reactor: 'Reactor', port: 'Port battery', stbd: 'Stbd battery', fore: '', torp: 'Torpedo bay' };
 const FACING_SUBS = [['fore', 'torp', 'shields'], ['engines', 'reactor', 'shields'], ['port', 'shields', 'reactor'], ['stbd', 'shields', 'engines']];
@@ -647,7 +482,7 @@ const choice = { ship: 'bastion', diff: 'captain' };
 const CAMPAIGN_KEY = window.BroadsideCampaign ? window.BroadsideCampaign.saveKey(localStorage) : 'broadside-campaign-v1';   // the active save slot
 const campaignParams = new URLSearchParams(location.search);
 const campaignMissionId = Number(campaignParams.get('campaign')) || 0;
-const campaignMission = (() => {
+let campaignMission = (() => {   // `let` so the balance tool can stage encounters in place (see __sim.fight)
   const C = window.BroadsideCampaign; if (!C) return null;
   if (campaignParams.has('encounter')) { const save = readCampaignSave(); return save && save.launch && Array.isArray(save.launch.enemies) && save.launch.enemies.length ? save.launch : null; }
   if (!campaignMissionId) return null;
@@ -1496,6 +1331,11 @@ function startGame() {
   // A plain one-on-one fight needs no contact line; escorts, timers, surrenders and pincers do.
   $('fleet-objective').hidden = !fleet || !!fleet.boss || (fleet.spec.goal.type === 'destroy' && fleet.spec.enemies.length < 2 && !allies.length);
   $('bossbar').hidden = !fleet?.boss; if (fleet?.boss) buildBossBar();
+  bossEntrance();
+  // First battle of a new campaign (or a replay asked for from Intel): the coached tutorial. ?tutorial forces it.
+  tutorial = window.BroadsideTutorial && campaignMission && !campaignMission.boss && (campaignParams.has('tutorial') || window.BroadsideTutorial.wanted(readCampaignSave()))
+    ? window.BroadsideTutorial.create({ ship: player.name, enemy: enemy.name, convoy: fleet?.convoy ? fleet.convoy.name.split(' · ')[0] : '' }) : null;
+  tutorialPips = player.pips ? { ...player.pips } : null; drawCoach();
   $('escorts').hidden = !allies.length; escortHudT = 0;
   $('escort-hold').hidden = !fleet?.convoy;
   $('escort-hold').textContent='HOLD CONVOY [H]';
@@ -1509,6 +1349,7 @@ function startGame() {
 function endGame(outcome) {
   if (game.ending) return;
   game.ending = true; game.outcome = outcome; game.endT = 7; bridge?.onEnd();
+  $('coach').hidden = true; endBossEntrance();
   // Mission 3 can end in surrender and mission 5 by transmitting/escaping.
   // Neither should trigger the destroyed-enemy VO.
   if (!(outcome === 'win' && ['surrender','extracted','escort_extracted'].includes(game.campaignOutcome)))
@@ -1517,7 +1358,8 @@ function endGame(outcome) {
 function showOver() {
   state = 'over'; for (const s of ships) s.burn = false;
   const win = game.outcome === 'win';
-  const w = $('over-word'); w.textContent = win ? enemy.name + ' destroyed' : player.name + ' lost'; w.className = 'bigword ' + (win ? 'win' : 'lose');
+  const w = $('over-word'), soft = { convoy_lost: 'Convoy lost', station_lost: 'Station lost', quarry_escaped: 'Quarry escaped' }[game.campaignOutcome];   // lost the objective, not the ship
+  w.textContent = win ? enemy.name + ' destroyed' : soft && player.alive ? soft : player.name + ' lost'; w.className = 'bigword ' + (win ? 'win' : 'lose');
   $('over-sub').textContent = win ? 'The enemy ' + enemy.C.cls.toLowerCase() + ' is a drifting wreck.' :
     'Keep your strongest facing toward the enemy, and move power to shields when a facing drops below a quarter.';
   const st = player.stats, acc = st.shots ? Math.round(st.hits / st.shots * 100) : 0;
@@ -1533,7 +1375,9 @@ function showOver() {
       escort_extracted: ['Convoy extracted', convoy + ' reached the illuminated jump beacon. You held the corridor long enough for it to escape.'],
       fleet_destroyed: ['Hostiles destroyed', ''],
       surrender: ['Enemy commander surrendered', enemy.name + ' has powered down weapons and surrendered.'],
-      extracted: ['Objective complete', 'You held on long enough. ' + enemy.name + ' remains at large, but the job is done.']
+      extracted: ['Objective complete', 'You held on long enough. ' + enemy.name + ' remains at large, but the job is done.'],
+      station_held: ['Station held', (fleet?.station?.name || 'The station').split(' · ')[0] + ' is still standing. Every attacking wave has been broken.'],
+      quarry_disabled: ['Quarry disabled', enemy.name + ' is dead in space with its jump drive cold. Boarding parties are on the way.']
     };
     const pick = custom || ends[code];
     if (pick) { $('over-word').textContent = pick[0]; $('over-sub').textContent = pick[1]; }
@@ -1555,12 +1399,15 @@ function showOver() {
         .map(s => ({ cls: s.key, name: s.name })).filter((w, i, a) => a.findIndex(x => x.cls === w.cls) === i).slice(0, 2);
       saved.pendingResult.met = [...new Set(ships.filter(s => s.team === 'e').map(s => s.key))];   // ship classes seen, for the codex
       if (!win) saved.credits = Math.max(0, (saved.credits || 0) - 100);
+      if (tutorial) saved.tutorial = 'done';   // shown once (Intel can ask for it again)
       try { localStorage.setItem(CAMPAIGN_KEY, JSON.stringify(saved)); } catch (e) { console.warn('Could not save campaign outcome', e); }
     }
     $('again').hidden = true;
     $('tomenu').textContent = 'Return to campaign';
     const convoyName = (fleet?.convoy?.name || 'The convoy').split(' · ')[0];
     if(!win&&game.campaignOutcome==='convoy_lost')$('over-sub').textContent=convoyName+' has been lost. Refit at a starbase and attempt the escort again.';
+    else if(!win&&game.campaignOutcome==='station_lost')$('over-sub').textContent=(fleet?.station?.name||'The station').split(' · ')[0]+' has been destroyed. Refit at a starbase and try again.';
+    else if(!win&&game.campaignOutcome==='quarry_escaped')$('over-sub').textContent=enemy.name+' has jumped out of the system. Refit at a starbase and pick up the trail again.';
     else if(!win)$('over-sub').textContent='Rescue teams are towing the ship to the nearest starbase. Return to the campaign map to regroup.';
     else if(game.campaignOutcome==='escort_saved')$('over-sub').textContent=convoyName+' survived. All hostile vessels have been disabled.';
     else if(game.campaignOutcome==='fleet_destroyed')$('over-sub').textContent='Every hostile ship is disabled. Ship damage, subsystem condition and remaining torpedoes have been recorded.';
@@ -1594,6 +1441,7 @@ function damage(s, dmg, kind, local, src) {
   if (bridge && s.team === 'e' && src === player) dmg *= bridge.attackMultiplier();
   if (bridge && s === player && src?.team === 'e') dmg *= bridge.defenseMultiplier();
   if (s.dmgTaken != null) dmg *= s.dmgTaken;   // a boss behind its shield lattice
+  if (src && src.dmgOut != null) dmg *= src.dmgOut;   // supporting ships hit softer than the ship they escort
   if (campaignDiff && src?.team === 'e' && s.team === 'p') dmg *= campaignDiff.enemyDamage;
   const u = localUnit(s, local, _du); const f = facingOfUnit(u);
   const mult = SHIELD_MULT[kind] || 1;
@@ -1625,6 +1473,7 @@ function damage(s, dmg, kind, local, src) {
   }
   if (src) { src.stats.dealt += dmg; if (kind === 'lance') src.stats.lanceDmg += dmg; }
   s.stats.taken += dmg;
+  if (game.tally && s === player) { const k = (src ? (src.C.boss ? 'boss' : src === enemy ? 'lead' : 'add') : 'env') + ':' + kind; game.tally[k] = (game.tally[k] || 0) + Math.round(dmg); }   // balance tool
   if (s.hull <= 0) killShip(s);
 }
 function facingDown(s, f) {
@@ -2101,6 +1950,8 @@ function aiUpdate(s, dt) {
   // Sable and the pursuer take opposing approach angles instead of stacking in one line.
   if(ai.flankOffset && (ai.mode==='broadside'||ai.mode==='close')) desired=clamp(desired+ai.flankOffset,-155,155);
   let err = wrapDeg(b - desired);
+  // a quarry running for its jump point weaves a little but never turns to fight (crew/fleet-controller.js, pursuit)
+  if (ai.flee) { bearingTo(s, _v5.set(ai.flee.x, s.pos.y, ai.flee.z), _bt); err = _bt.b + Math.sin(game.time * 0.35) * 16; ai.mode = 'flee'; }
   // steer around rocks in the way
   for (const a of asteroids) {
     _v2.subVectors(a.pos, s.pos); const al = _v2.dot(s.fwd); if (al < 0 || al > 1600 + a.r) continue;
@@ -2108,12 +1959,12 @@ function aiUpdate(s, dt) {
     if (Math.hypot(_v3.x, _v3.z) < a.r + 260) { _v4.copy(_v3).transformDirection(s.inv); err = (_v4.x >= 0 ? 1 : -1) * 60; break; }
   }
   // do not ram: if the enemy is close and ahead, turn away from it
-  if (dist < 750 && Math.abs(b) < 50 && ai.mode !== 'ram') err = (b >= 0 ? -1 : 1) * 70;
+  if (dist < 750 && Math.abs(b) < 50 && ai.mode !== 'ram' && ai.mode !== 'flee') err = (b >= 0 ? -1 : 1) * 70;
   if (s.pos.length() > ARENA - 900) { bearingTo(s, _v5.set(0, 0, 0), _bt); err = _bt.b; }
   // look ahead: the bearing keeps swinging while the hull is still turning
   const rT = clamp((err + r2d(s.yawRate) * 4) / 22, -1, 1);
   s.rudder += clamp(rT - s.rudder, -1.1 * dt, 1.1 * dt);
-  s.step = ai.mode === 'close' || ai.mode === 'ram' ? 4 : ai.mode === 'lance' ? 3 : dist > pref + 700 ? 4 : 3;
+  s.step = ai.mode === 'close' || ai.mode === 'ram' || ai.mode === 'flee' ? 4 : ai.mode === 'lance' ? 3 : dist > pref + 700 ? 4 : 3;
   s.climb = clamp((t.pos.y - s.pos.y) / 500, -1, 1) * 0.7;
   // shields: reinforce the facing toward the threat after a reaction delay
   ai.shT -= dt;
@@ -2135,13 +1986,14 @@ function aiUpdate(s, dt) {
     else setPips(s, 3, 4, 5);
   }
   // weapons
+  if (tutorial && tutorial.holdFire && s.team === 'e') return;   // the tutorial's first steps are learned in peace
   for (const g of s.groups) {
     if (g.locked) continue;   // held back for a later boss phase
     if (g.type === 'battery' || g.type === 'missile') {
-      if (g.charge >= 1 && inArc(s, g, t.pos)) { g.holdT += dt; if (g.holdT > D.hold) { fireGroup(s, g); g.holdT = 0; } } else g.holdT = 0;
+      if (g.charge >= 1 && inArc(s, g, t.pos)) { g.holdT += dt; if (g.holdT > D.hold && armed(s, g)) { fireGroup(s, g); g.holdT = 0; g.warnAt = null; } } else g.holdT = 0;
     } else if (g.type === 'beam') { if (g.charge >= 1 && inArc(s, g, t.pos)) fireGroup(s, g); }
     else if (g.type === 'mine') { if (Math.random() < dt * (0.25 + D.smart * 0.5)) fireGroup(s, g); }
-    else if (g.type === 'lance') { if (g.charge >= 1 && Math.abs(b) < 2.5 && Math.abs(el) < 3 && dist < g.range) fireGroup(s, g); }
+    else if (g.type === 'lance') { if (g.charge >= 1 && Math.abs(b) < (g.special ? 6 : 2.5) && Math.abs(el) < 3 && dist < g.range && armed(s, g)) { fireGroup(s, g); g.warnAt = null; } }
     else if (g.type === 'torpedo') {
       const fT = facingOfBearing(bearingTo(t, s.pos, _bt).b);
       const weak = t.sh[fT] < t.cap[fT] * 0.25;
@@ -2149,6 +2001,45 @@ function aiUpdate(s, dt) {
     }
   }
 }
+
+// A boss's special weapon gives warning before it fires: it charges for WARN_T seconds first, and fires only if it
+// still has a shot when the charge is done (a warning more than a few seconds old starts again).
+const WARN_T = 2.6;
+function armed(s, g) {
+  if (!g.special) return true;
+  const t = game.time;
+  if (g.warnAt == null || t > g.warnAt + 4) {
+    g.warnAt = t + WARN_T; game.bossWarn = { label: g.label, until: g.warnAt };
+    if (s.team !== player.team) { showMsg(`${g.label} charging · ${s.name}`, WARN_T, true); Sfx.alarm(); }
+    return false;
+  }
+  return t >= g.warnAt;
+}
+// The coached first battle (crew/tutorial.js): the current step in a panel at the right, moved on by doing it.
+let tutorial = null, tutorialPips = null;
+function tutorialTick(dt) {
+  if (!tutorial || tutorial.finished || !player.alive) return;
+  const uses = bridge ? Object.values(bridge.uses).reduce((a, b) => a + b, 0) : 1;
+  const snap = { step: player.step, rudder: player.rudder, focus: player.focus, pips: player.pips, pips0: tutorialPips, uses,
+    broadside: player.groups.some(g => (g.sub === 'port' || g.sub === 'stbd') && g.charge < 1) };
+  if (tutorial.update(snap, dt)) { drawCoach(); Sfx.beep(880, 0.06, 0.05); }
+}
+function drawCoach() {
+  const st = tutorial && tutorial.step; $('coach').hidden = !st; if (!st) return;
+  $('coach-k').textContent = `Tutorial · ${st.n} of ${st.of}`; $('coach-t').textContent = st.title; $('coach-p').textContent = st.text; $('coach-keys').textContent = st.keys;
+  const c = $('coach'); c.style.animation = 'none'; void c.offsetWidth; c.style.animation = '';
+}
+$('coach-skip').addEventListener('click', () => { if (tutorial) { tutorial.skip(); drawCoach(); } });
+// Boss entrance: a title card and a slow orbit of the boss for the first few seconds (any key skips it).
+const BOSS_INTRO = 4.6;
+function bossEntrance() {
+  const B = fleet && fleet.boss; game.bossIntro = 0; game.bossWarn = null; $('bosscard').hidden = true;
+  if (!B) return;
+  game.bossIntro = BOSS_INTRO;
+  $('bosscard-cls').textContent = B.ship.C.cls; $('bosscard-title').textContent = B.title; $('bosscard-who').textContent = B.ship.name.split(' · ').pop();
+  const card = $('bosscard'); card.hidden = false; card.style.opacity = 0;   // faded in and out on the battle clock (updateCamera)
+}
+function endBossEntrance() { if (game && game.bossIntro > 0) { game.bossIntro = 0; $('bosscard').hidden = true; } }
 
 // ---------------- input ----------------
 const keys = new Set();
@@ -2158,6 +2049,7 @@ window.addEventListener('keydown', e => {
   if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(k)) e.preventDefault();
   keys.add(k);
   if (e.repeat) return;
+  if (game && game.bossIntro > 0) { endBossEntrance(); if (k !== 'KeyP' && k !== 'Escape') return; }
   if (k === 'KeyP' || k === 'Escape') { pause(state === 'playing'); return; }
   if (state !== 'playing') return;
   if (bridge && bridge.activateByKey(k)) return;
@@ -2260,6 +2152,15 @@ function updateCamera(dt) {
   }
   if (!player) return;
   const P = player;
+  if (game && game.bossIntro > 0 && fleet && fleet.boss && fleet.boss.ship.alive) {
+    const b = fleet.boss.ship, k = 1 - game.bossIntro / BOSS_INTRO, R = (b.C.camDist || 900) * (b.C.modelScale || 1) * 0.9, a = b.yaw + 2.2 + k * 0.9;
+    game.bossIntro = Math.max(0, game.bossIntro - dt); if (game.bossIntro === 0) $('bosscard').hidden = true;
+    $('bosscard').style.opacity = clamp(Math.min(k / 0.12, (1 - k) / 0.18), 0, 1).toFixed(3);
+    camera.position.set(b.pos.x + Math.sin(a) * R, b.pos.y + R * (0.12 + 0.1 * k), b.pos.z + Math.cos(a) * R);
+    camera.lookAt(b.pos.x, b.pos.y + 20, b.pos.z); camera.fov = 40; camera.updateProjectionMatrix();
+    if (game.bossIntro === 0) { cam.curYaw = Math.atan2(camera.position.x - P.pos.x, camera.position.z - P.pos.z); }
+    return;
+  }
   let tYaw, tPitch = cam.pitch, dist = cam.dist;
   if (cam.mode === 'target' && enemy) {
     _v1.subVectors(P.pos, enemy.pos); tYaw = Math.atan2(_v1.x, _v1.z) + 0.25; tPitch = 0.22;
@@ -2536,8 +2437,9 @@ function drawBossBar() {
   const B = fleet && fleet.boss; if (!B) return;
   const f = Math.max(0, B.ship.hull / (B.ship.maxHull || B.ship.C.hull));
   $c('boss-fill').style.transform = `scaleX(${f.toFixed(3)})`;
-  setT($c('boss-phase'), B.ship.alive ? `Phase ${B.phase + 1} of ${B.phases.length} · ${B.phases[B.phase].name}${B.lattice ? ' · lattice up: destroy the nodes' : ''}` : 'Destroyed');
-  $c('bossbar').classList.toggle('lattice', B.lattice);
+  const W = game.bossWarn && B.ship.alive && game.time < game.bossWarn.until ? game.bossWarn : null;
+  setT($c('boss-phase'), !B.ship.alive ? 'Destroyed' : W ? `⚠ ${W.label} charging · break off` : `Phase ${B.phase + 1} of ${B.phases.length} · ${B.phases[B.phase].name}${B.lattice ? ' · lattice up: destroy the nodes' : ''}`);
+  $c('bossbar').classList.toggle('lattice', B.lattice); $c('bossbar').classList.toggle('warn', !!W);
 }
 // Escort panel: each escort's hull and target, and the standing order (U focus, I defend, O free).
 const ESCORT_KEYS = { KeyU: 'focus', KeyI: 'defend', KeyO: 'free' };
@@ -2657,6 +2559,7 @@ function updateGame(dt) {
   game.time += dt;
   bridge?.tick(dt);
   fleet?.tick(dt);
+  tutorialTick(dt);
   if(fleet&&Math.floor(game.time*4)!==Math.floor((game.time-dt)*4))$('fleet-objective').textContent=fleet.status();
   for (const a of asteroids) { a.mesh.rotation.x += a.spin.x * dt; a.mesh.rotation.y += a.spin.y * dt; }
   if (player.alive) playerHelm(dt);
@@ -2769,8 +2672,29 @@ function frame(now) {
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
   get state() { return state; }, get game() { return game; }, get bridge() { return bridge; }, get fleet() {return fleet;}, get cam() { return cam; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
-  start: startGame, setPips, fireGroup, inArc, Sfx, damage,
-  step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } }
+  start: startGame, setPips, fireGroup, inArc, Sfx, damage, armed, get tutorial() { return tutorial; },
+  step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } },
+  // Balance testing (tools/balance.mjs): stage an encounter from the current save, let the AI fly the player's ship
+  // (Captain grade, picking targets and using officer commands), and run it to the end or to maxTime seconds without rendering.
+  fight(spec, maxTime = 420) {
+    campaignMission = spec; startGame();
+    game.tally = {};
+    player.ai = { diff: DIFF.captain, side: 1, shT: 2, pwT: 0, mode: 'close', sideT: 0 }; player.target = enemy;
+    const lead = enemy, dt = 1 / 30; let pick = 0, cmd = 0;
+    while (state === 'playing' && game.time < maxTime) {
+      // Pick targets as a sensible captain would: lattice nodes first, then the nearest hostile, the lead counting as further off.
+      if ((pick -= dt) <= 0) { pick = 2; const foes = ships.filter(s => s.team === 'e' && s.alive), nodes = foes.filter(s => s.latticeNode);
+        const hunters = foes.filter(s => s.target && (s.target.civilian || s.target.post));   // whoever is going for the convoy or the station
+        const w = s => player.pos.distanceTo(s.pos) * (s === lead ? 1.4 : 1), t = (nodes.length ? nodes : hunters.length ? hunters : foes).sort((a, b) => w(a) - w(b))[0]; if (t) player.target = t; }
+      // Officer commands once the fight is hurting, as a captain would: each is tried when ready and refuses when pointless.
+      if (bridge && (cmd -= dt) <= 0) { cmd = 3; if (player.hull < player.C.hull * 0.85 || player.sh.some((v, i) => v < player.cap[i] * 0.5)) for (const k of ['Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9']) bridge.activateByKey(k); }
+      updateGame(dt); fire.update(dt); smoke.update(dt);
+    }
+    const out = { outcome: game.outcome || 'timeout', code: game.campaignOutcome || null, time: Math.round(game.time), hull: player.alive ? Math.max(0, player.hull / player.C.hull) : 0,
+      foes: ships.filter(s => s.team === 'e' && s.alive).length, foeHull: lead.alive ? Math.max(0, lead.hull / lead.maxHull) : 0, tally: game.tally };
+    if (state === 'playing') { game.ending = true; state = 'over'; }
+    return out;
+  }
 };
 boot();
 </script>

@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
-for(const name of ['crew/personnel.js','crew/bridge-controller.js','crew/fleet-controller.js','crew/battle-environments.js','crew/upgrades.js','crew/experience.js','crew/campaign-data.js','crew/codex.js']){
+for(const name of ['crew/personnel.js','crew/bridge-controller.js','crew/fleet-controller.js','crew/battle-environments.js','crew/upgrades.js','crew/experience.js','crew/campaign-data.js','crew/codex.js','crew/ships.js','crew/tutorial.js','campaign/core.js','campaign/map.js','campaign/board.js','campaign/shipyard.js','campaign/crew.js','campaign/reports.js']){
   const code=fs.readFileSync(name,'utf8');
   new Function(code);
 }

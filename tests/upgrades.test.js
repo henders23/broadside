@@ -11,16 +11,25 @@ const base=Object.freeze({hull:3000,shield:620,regen:28,vmax:42,accel:2.2,turn:0
  Object.freeze({id:'torp',sub:'torp',type:'torpedo',reload:12,dmg:340,range:5200,tubes:4,ammo:8})])});
 const w=(C,id)=>C.weapons.find(x=>x.id===id);
 
-assert.equal(U.catalogue.length,21);
+assert.equal(U.catalogue.length,24);
 for(const slot of ['engines','hull','reactor','broadside','fore','shields','torp'])assert.equal(U.forSlot(slot).length,3,slot);
-assert.equal(new Set(U.catalogue.map(u=>u.id)).size,21,'upgrade ids are unique');
-assert.ok(U.catalogue.every(u=>Number.isInteger(u.cost)&&u.cost>0&&u.effect),'every upgrade has a cost and an effect');
+assert.equal(new Set(U.catalogue.map(u=>u.id)).size,24,'upgrade ids are unique');
+const shop=U.catalogue.filter(u=>u.slot!=='trophy');
+assert.equal(shop.length,21,'21 upgrades for sale');
+assert.ok(shop.every(u=>Number.isInteger(u.cost)&&u.cost>0&&u.effect),'every upgrade for sale has a cost and an effect');
+// Trophies: one per act boss, never for sale, and applied like any other upgrade.
+assert.equal(U.forSlot('trophy').map(u=>u.trophy).join(),'pyre,arbiter,mother');
+assert.ok(U.forSlot('trophy').every(u=>u.cost===0&&u.effect));
+assert.equal(U.trophies(['heavy_shells','living_graft']).map(u=>u.id).join(),'living_graft');
+{const T=U.apply(base,['ablative_belt','pyre_plating','lattice_emitter','living_graft']);
+ assert.ok(Math.abs(T.armour-0.9*0.92)<1e-9,'Pyre plate stacks with the ablative belt');
+ assert.equal(T.shield,Math.round(base.shield*1.1));assert.ok(Math.abs(T.regen-base.regen*1.15)<1e-9);assert.equal(T.hullRegen,6);}
 
 assert.equal(U.apply(base,[]),base,'no upgrades returns the class unchanged');
 assert.equal(U.apply(base,undefined),base,'old saves without upgrades still work');
 assert.equal(U.apply(base,['not_a_real_upgrade']),base,'unknown ids are ignored');
 
-const all=U.apply(base,U.catalogue.map(u=>u.id));
+const all=U.apply(base,shop.map(u=>u.id));
 assert.notEqual(all,base);
 assert.equal(all.hull,3450);assert.equal(all.shield,713);assert.equal(all.regen,35);
 assert.ok(Math.abs(all.vmax-47.04)<1e-9);assert.ok(Math.abs(all.turn-0.096*1.2)<1e-9);

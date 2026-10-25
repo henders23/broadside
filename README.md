@@ -31,9 +31,10 @@ Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use 
 - **Ten story operations** with named enemies: Captain Kora Vex, Commander Orren Sable, Captain Garrick Thorne, ORACLE-9, the VIGIL Array, the Cantor and the Choir, and a **boss battle to close each act**:
   - *The Pyre at Grimhold* — Commodore Ingrid Halloran's Ash Fleet dreadnought. The pirate clans join her at 65% hull; below 30% she unleashes an inferno missile salvo.
   - *The Arbiter* at Halcyon — the Directorate's mind in a warship. At 60% it raises a shield lattice that soaks 80% of incoming damage until its two node ships are destroyed; below 30% it restores its shields and fires a spinal lance.
-  - *Mother of the Bloom* at Verdant — the Wraith brood-mother. Her brood wakes at 65%; below 35% she regrows two and a half times faster and fills the sky with a spore storm.
-  - Bosses are bigger, re-armed versions of the enemy hulls, with a boss health bar showing their phases.
-- **Five starbases** (Meridian, Tarn, Peregrine, Elysia, Juniper) with **mission boards**: ten hand-written station missions that open act by act, and three generated contracts per station (bounty, patrol, escort) that change after every victory. Hold up to four orders at once; fly to the target and engage from its arrival screen.
+  - *Mother of the Bloom* at Verdant — the Wraith brood-mother. Her brood wakes at 65%; below 35% she regrows nearly twice as fast and fills the sky with a spore storm.
+  - Bosses are bigger, re-armed versions of the enemy hulls, with a boss health bar showing their phases. Each makes an entrance (a title card while the camera circles it; any key skips), and its special weapon (the inferno salvo, the Judgement lance, the spore storm) charges for 2.6 seconds with a warning on the boss bar before it fires, time enough to break off.
+  - Bringing a boss down earns a **trophy** fitted to the flagship: *Pyre armour plate* (8% less hull damage), the Arbiter's *Lattice emitter* (stronger, faster shields) or the Bloom-Mother's *Living graft* (the hull knits when not under fire).
+- **Five starbases** (Meridian, Tarn, Peregrine, Elysia, Juniper) with **mission boards**: fourteen hand-written station missions that open act by act (Acts II and III add **station defences**, where waves of attackers go for a station that fights beside you, and **pursuits**, where a fleeing ship must be disabled before its jump drive spools up), and three generated contracts per station (bounty, patrol, escort) that change after every victory. Hold up to four orders at once; fly to the target and engage from its arrival screen.
 - **A fleet of up to three ships.** Commission new hulls at any starbase (Sabre 1,100, Halberd 1,250, Bastion 1,500, Warden 1,700 requisition), name them, make any one the flagship, hold one in reserve, or sell one back for half its price. Every ship keeps its own damage, torpedoes and upgrades.
 - **Fleet battles, up to 3 v 3.** You fly the flagship; your escorts fly under the AI and follow your standing order: **U** focus my target, **I** defend the flagship, **O** engage freely (also buttons on the Escorts panel). Bring escorts and the enemy may bring support ships too, but not every fight is matched: some operations stay one enemy against your fleet, and generated work varies. A disabled escort is towed home at 30% hull rather than lost.
 - Repairs, rearming, upgrades and buying or selling ships only at a starbase.
@@ -41,11 +42,13 @@ Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use 
 - **Claim wrecks.** After a victory, tow home a defeated Scrapjaw, Revenant or Seraph and refit it for a Navy helm (650–800 requisition, joins in reserve damaged), then fly it like any other ship. Impound Thorne's Scrapjaw, the Widow, if he surrenders.
 - **Officers for hire**, one at each starbase, each with a new battle command (Rally the Crew, Overcharge, Hull Patch, Burn Hard, Jamming Field). Assign who serves at each post on the Officers screen; the rest wait in reserve.
 - **Codex** of ships, factions, people, places and a captain's guide, opening as the campaign reveals them.
+- Painted portraits for the hired officers and three enemy commanders, and recordings of Harlan's transmissions, are picked up automatically once their files are added to `img/commanders/` and `voice/` (see [docs/ART-BRIEF.md](docs/ART-BRIEF.md)); until then those characters show a badge and Harlan's transmissions are text.
 - **Three save slots** and a **difficulty** per campaign (Ensign, Captain, Admiral): enemy skill, hull and damage, ambush rate and pay. **Saves** on the campaign bar switches, starts or deletes campaigns.
 - Jumps are free, but routes through hostile space can be **intercepted**: fight for salvage, or try to break away (fast hulls and healthy engines get away more often).
 - Persistent campaign save in browser localStorage (key `broadside-campaign-v1`): selected flagship, progress, decisions, hull condition, critical subsystem damage, surviving torpedoes and requisition.
-- Battles are staged from data: escorts to a jump beacon, timed holds, forced surrenders and two-ship pincers, for story operations and generated work alike.
-- **Shipyard** (works while docked) with a fleet column to pick a ship, showing the selected ship's 3D model side-on, with its seven systems (engines, hull, reactor, broadsides, forward weapon, shields, torpedo bay) as slots tied to their hardpoints and battle condition. Each system has three permanent **upgrades** to buy with requisition (21 in all, 260–450 each); they apply in every campaign battle. Hull overhaul, emergency repairs and torpedo resupply are here too.
+- Battles are staged from data: escorts to a jump beacon, timed holds, forced surrenders, two-ship pincers, station defences in waves and pursuits, for story operations and generated work alike.
+- **A coached first battle.** A new campaign's first fight walks through the controls one step at a time (throttle, rudder, shields, power, broadsides, officers) while the enemy holds its fire; each step finishes when you do it. Skip it from its panel, or replay it in your next battle from **Intel**.
+- **Shipyard** (works while docked) with a fleet column to pick a ship, showing the selected ship's 3D model side-on, with its seven systems (engines, hull, reactor, broadsides, forward weapon, shields, torpedo bay) as slots tied to their hardpoints and battle condition. Each system has three permanent **upgrades** to buy with requisition (21 in all, 260–450 each); they apply in every campaign battle, alongside any boss trophies. Hull overhaul, emergency repairs and torpedo resupply are here too.
 - **Officers** screen with each bridge officer's dossier, battle command (key, cooldown, effect), service record and field reports, plus the enemy commanders identified so far. Officers start at the bottom of their career (ensigns, and a petty officer for the engineer) and gain **experience** in every engagement, more for each command you give them; each promotion, up to Captain, makes their command stronger and its cooldown shorter, and **Intel** for campaign clues and branching narrative decisions.
 - Completing a story operation unlocks the next. A loss tows the flagship to the nearest starbase, damaged but recoverable, rather than deleting the save.
 
@@ -87,9 +90,10 @@ python3 -m http.server 8000
 
 ## Tests
 
-- **Rules** (no browser needed): `node tests/<name>.test.js` for each file in `tests/`. They cover the campaign data, fleet and boss objectives, the war and story, experience, upgrades, environments and a syntax check of both pages.
-- **Browser suites**: `tests/browser/` drives the real pages in headless Chromium with software WebGL. It covers the map, officers, starbases, the fleet, bosses, campaign depth, the war, skirmish and the shield look, about 250 checks in all, with screenshots saved to `tests/browser/out/`. Set up with `npm install --no-save playwright three@0.169.0 && npx playwright install chromium`, then run `node tests/browser/run.mjs`, or name suites to run only those (`node tests/browser/run.mjs war bosses`). The suites start their own web server and serve three.js from `node_modules`, so no network access is needed.
+- **Rules** (no browser needed): `node tests/<name>.test.js` for each file in `tests/`. They cover the campaign data, fleet, boss, defence and pursuit objectives, the war and story, experience, upgrades and trophies, the shared ship table, the tutorial, environments and a syntax check of both pages.
+- **Browser suites**: `tests/browser/` drives the real pages in headless Chromium with software WebGL. It covers the map, officers, starbases, the fleet, bosses, campaign depth, the war, skirmish, the shield look, and the tutorial, boss entrances and trophies, defences and pursuits, about 270 checks in all, with screenshots saved to `tests/browser/out/`. Set up with `npm install --no-save playwright three@0.169.0 && npx playwright install chromium`, then run `node tests/browser/run.mjs`, or name suites to run only those (`node tests/browser/run.mjs war bosses`). The suites start their own web server and serve three.js from `node_modules`, so no network access is needed.
 - Both run on every push to `main` and on pull requests (`.github/workflows/campaign-checks.yml`).
+- **Balance**: `node tools/balance.mjs [--runs 4] [--only 8,9,10] [--quick]` has the AI fly the flagship through every story operation and finale, faster than real time, and writes win rates to `docs/balance-results.json`. See [docs/BALANCE.md](docs/BALANCE.md) for the targets and the last tuning pass.
 
 ## Performance
 
@@ -105,8 +109,13 @@ The title screen's **Graphics** page has Low / Medium / High presets, an optiona
 ## Project layout
 
 ```
-index.html      the whole game (three.js 0.169 from jsDelivr via an import map)
-img/            title screen art
+index.html      the battle page (three.js 0.169 from jsDelivr via an import map)
+campaign.html   the campaign page; its script is split across campaign/ (core, map, board, shipyard, crew, reports, ship-view)
+crew/           shared modules: ship table (ships.js), campaign data, fleet objectives, crew, upgrades, codex, tutorial
+tests/          rule tests (Node) and browser suites (tests/browser, Playwright)
+tools/          balance testing (balance.mjs)
+docs/           design notes, balance notes, and the art and voice still to make (ART-BRIEF.md)
+img/            title screen art and portraits (img/commanders/ for painted commander portraits)
 music/          title and battle music (.mp3, looped)
 voice/          spoken bridge alerts (.mp3)
 models/         ship models (.glb, meshopt-compressed, textures as WebP)

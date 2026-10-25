@@ -108,6 +108,28 @@ function fixture(missionId,encounter,escortCount=0){
 {
  // The Bloom-Mother: a big hit can cross two phases at once.
  const f=fixture(10);f.boss.hull=30;f.fleet.tick(.1);
- assert.equal(f.fleet.boss.phase,2);assert.equal(f.boss.regenK,2.5);assert.equal(f.ships.filter(s=>s.name==='Wraith brood').length,2);
+ assert.equal(f.fleet.boss.phase,2);assert.equal(f.boss.regenK,1.8);assert.equal(f.ships.filter(s=>s.name==='Wraith brood').length,2);
 }
-console.log('Campaign fleet contract tests passed (14 scenarios).');
+{
+ // Defend: a fixed station the attackers go for; a second wave arrives when the first is beaten; losing the station loses.
+ const m=Campaign.SIDE.find(x=>x.id==='a2-listening'),f=fixture(0,{enemies:m.enemies,goal:m.goal}),st=f.fleet.station;
+ assert.ok(st&&st.post&&st.team==='p');assert.ok(st.C.vmax<.1);assert.equal(st.hull,160);assert.equal(f.boss.target,st);
+ assert.match(f.fleet.status(),/DEFEND · NORTHPOINT LISTENING POST 100% HULL · WAVE 1 OF 2/);
+ for(const s of f.ships.filter(s=>s.team==='e')){s.alive=false;f.fleet.onDestroyed(s);}
+ assert.equal(f.outcome(),null,'a second wave is still to come');
+ f.fleet.tick(7);assert.equal(f.fleet.wave,1);assert.equal(f.ships.filter(s=>s.team==='e'&&s.alive).length,2);
+ for(const s of f.ships.filter(s=>s.team==='e'&&s.alive)){s.alive=false;f.fleet.onDestroyed(s);}
+ assert.equal(f.outcome(),'win');assert.equal(f.game.campaignOutcome,'station_held');
+ const g=fixture(0,{enemies:m.enemies,goal:m.goal});g.fleet.station.alive=false;g.fleet.onDestroyed(g.fleet.station);
+ assert.equal(g.outcome(),'lose');assert.equal(g.game.campaignOutcome,'station_lost');
+}
+{
+ // Pursuit: the quarry runs, slower than usual; disabling it wins, and its jump drive running out the clock loses.
+ const m=Campaign.SIDE.find(x=>x.id==='a2-courier'),f=fixture(0,{enemies:m.enemies,goal:m.goal});
+ assert.equal(f.fleet.quarry,f.boss);assert.ok(f.boss.ai.flee);assert.ok(f.boss.pos.z>0,'starts ahead of the enemy line');
+ assert.equal(f.boss.maxHull,70);f.boss.hull=30;f.fleet.tick(.1);assert.equal(f.outcome(),null);
+ f.boss.hull=24;f.fleet.tick(.1);assert.equal(f.outcome(),'win');assert.equal(f.game.campaignOutcome,'quarry_disabled');
+ const g=fixture(0,{enemies:m.enemies,goal:m.goal});g.fleet.tick(60);assert.match(g.fleet.status(),/JUMPS IN 50 S/);g.fleet.tick(51);
+ assert.equal(g.outcome(),'lose');assert.equal(g.game.campaignOutcome,'quarry_escaped');
+}
+console.log('Campaign fleet contract tests passed (16 scenarios).');

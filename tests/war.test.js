@@ -33,7 +33,7 @@ assert.equal(C.storyEncounter(6, { flags: { halloran_logs: true } }).enemyShield
 const pen = C.storyEncounter(7, { flags: { ash_amnesty: true, oracle_transmitted: true } });
 assert.equal(pen.friends[0].name, 'ASF Penitence'); assert.equal(pen.goal.headStart, 0.33);
 assert.equal(C.storyEncounter(9, { flags: { oracle_sealed: true } }).boss.phases.find(p => p.lattice).lattice, 0.4);
-assert.equal(C.storyEncounter(10, { flags: { arbiter_salvaged: true } }).boss.phases.find(p => p.regen).regen, 1.5);
+assert.equal(C.storyEncounter(10, { flags: { arbiter_salvaged: true } }).boss.phases.find(p => p.regen).regen, 1.2);
 assert.equal(C.storyById[9].boss.phases[1].lattice, 0.2, 'shaping a battle never changes the story data itself');
 assert.equal(C.storyEncounter(1).notes.length, 0, 'no context, no changes');
 

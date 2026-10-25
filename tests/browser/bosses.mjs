@@ -83,7 +83,7 @@ await suite('bosses', { random: 0.99 }, async ({ page, ctx, base, out, KEY, chec
   await page.waitForTimeout(800);
   await shot('b07-mother');
   await hurt(0.3); b = await bossState();
-  check(b.phase === 2 && await page.evaluate(() => window.__sim.fleet.boss.ship.regenK) === 2.5, 'regrowth phase');
+  check(b.phase === 2 && await page.evaluate(() => window.__sim.fleet.boss.ship.regenK) === 1.8, 'regrowth phase');
 
   // --- Uneven fights: Thorne stays alone against a full fleet
   await page.goto(base + '/campaign.html');

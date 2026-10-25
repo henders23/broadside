@@ -44,7 +44,11 @@ for (const m of C.SIDE) { assert.ok(C.STATIONS[m.station], `${m.id} station`); a
 same(C.sideMissions('peregrine', 1, []).map(m => m.id), ['a1-salvage', 'a1-ledger']);
 same(C.sideMissions('peregrine', 1, ['a1-salvage']).map(m => m.id), ['a1-ledger']);
 assert.equal(C.sideMissions('elysia', 1, []).length, 0, 'act II missions wait for act II');
-assert.equal(C.sideMissions('elysia', 3, []).length, 2);
+assert.equal(C.sideMissions('elysia', 3, []).length, 3);
+// Acts II and III each bring a defence and a pursuit
+for (const [act, type] of [[2, 'defend'], [2, 'pursuit'], [3, 'defend'], [3, 'pursuit']]) assert.ok(C.SIDE.some(m => m.act === act && m.goal.type === type), `act ${act} ${type}`);
+for (const m of C.SIDE.filter(m => m.goal.type === 'defend')) assert.ok(m.goal.station && m.goal.waves.length >= 1 && m.goal.waves.every(w => w.length >= 1), `${m.id} waves`);
+for (const m of C.SIDE.filter(m => m.goal.type === 'pursuit')) assert.ok(m.goal.seconds > 0 && m.goal.at > 0 && m.goal.at < 1, `${m.id} pursuit`);
 
 // Generated contracts: three per board, stable for a cycle, different the next cycle
 const a = C.contracts('peregrine', 0, 1), b = C.contracts('peregrine', 0, 1), c = C.contracts('peregrine', 1, 1);

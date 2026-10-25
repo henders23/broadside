@@ -28,6 +28,10 @@ jobs:
         run: node tests/depth.test.js
       - name: Run war and story rules (fronts, push back, consequences)
         run: node tests/war.test.js
+      - name: Run ship table tests (shared hulls, shipyard view, bosses)
+        run: node tests/ships.test.js
+      - name: Run tutorial steps
+        run: node tests/tutorial.test.js
 
   browser-suites:
     runs-on: ubuntu-latest

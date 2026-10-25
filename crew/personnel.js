@@ -89,7 +89,15 @@
   };
   // Fleet Admiral Harlan, who briefs each act and sends a transmission after every story operation.
   const harlan = {id:'harlan',name:'Fleet Admiral Gideon Harlan',title:'Commander, Frontier Fleet',image:'img/admiral-harlan.webp'};
+  // Painted portraits still to come (docs/ART-BRIEF.md). Each tries img/commanders/<id>.webp over its badge and
+  // falls back to the badge when the file is not there yet, so dropping the file in is all it takes.
+  const ART = ['adeyemi','fenn','osei','marlow','achterberg','halloran','vigil','choir'];
   function portrait(person, extra=''){
+    const html = badge(person, extra);
+    if(!person || !ART.includes(person.id)) return html;
+    return html.replace(/<\/span>$/, `<img class="art" src="img/commanders/${person.id}.webp" alt="" onerror="this.remove()"></span>`);
+  }
+  function badge(person, extra){
     if(person && person.image){
       const src=String(person.image).replace(/[^a-z0-9./-]/gi,'');
       return `<span class="crew-portrait ${extra}" role="img" aria-label="Portrait of ${person.name}" style="background-image:url('${src}');background-size:cover;background-position:center 18%"></span>`;
@@ -110,5 +118,5 @@
     const code=(person?.faction||'UNKNOWN').slice(0,2).toUpperCase();
     return `<span class="crew-portrait classified ${extra}" role="img" aria-label="Commander identity classified"><span>${code}</span></span>`;
   }
-  root.BroadsidePersonnel = Object.freeze({crew,recruits,POSTS,activeCrew,commanders,leads,briefLines,portrait,harlan});
+  root.BroadsidePersonnel = Object.freeze({crew,recruits,POSTS,activeCrew,commanders,leads,briefLines,portrait,harlan,ART});
 })(window);

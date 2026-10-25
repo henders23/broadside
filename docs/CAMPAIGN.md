@@ -51,7 +51,7 @@ Four aftermath decisions change later battles. The after-action report says whic
 | | Amnesty | The ASF Penitence fights at your side at Nex and Verdant. |
 | Op 4, ORACLE's archive | Transmit | The Long Lantern starts a third of the way to the beacon. |
 | | Seal | The Arbiter's lattice is weaker (takes 40% instead of 20%). |
-| Op 9, the Arbiter | Salvage the core | The Bloom-Mother regrows at 1.5× instead of 2.5× in her last phase. |
+| Op 9, the Arbiter | Salvage the core | The Bloom-Mother regrows at 1.2× instead of 1.8× in her last phase. |
 | | Destroy it | +10 standing with both Navy yards. |
 
 ## Frontlines
@@ -113,10 +113,10 @@ Operations unlock in story order (1, 2, 3, 8, 4, 6, 9, 5, 7, 10); the numbers 1�
 - Phases also send a hail from the boss, and a hit big enough to cross two thresholds runs both. The goal type `boss` is won when the boss is destroyed, whatever escorts remain.
 - | Boss | Built on | Scale | Hull / shields | Phase 2 | Phase 3 |
   | --- | --- | --- | --- | --- | --- |
-  | Pyre | Revenant (Warden hull), adds the Warden's siege cannons | 1.4× | 9,500 / 950 | 65%: two clan raiders, shields restored | 30%: inferno salvo (16 missiles) |
-  | Arbiter | Seraph, adds a spinal lance | 1.6× | 7,000 / 1,300 | 60%: two lattice nodes, 20% damage taken until they die | 30%: shields restored, Judgement lance |
-  | Bloom-Mother | Wraith | 1.8× | 8,500 / 760, regrows 26 a second | 65%: two brood ships | 35%: regrowth ×2.5, spore storm (20 spores) |
-- Boss classes are built by `bossClass()` in `index.html`: the base class's model scaled by `modelScale` (hit ellipsoids, gun and engine positions scale with it), new stats, boosted weapons and extra ones. They are enemy-only and never appear in skirmish.
+  | Pyre | Revenant (Warden hull), adds the Warden's siege cannons | 1.4× | 5,000 / 760 | 65%: two clan raiders, shields restored | 30%: inferno salvo (16 missiles), after a 2.6 s warning |
+  | Arbiter | Seraph, adds a spinal lance | 1.6× | 3,300 / 900 | 60%: two lattice nodes, 20% damage taken until they die | 30%: shields restored, Judgement lance, after a 2.6 s warning |
+  | Bloom-Mother | Wraith | 1.8× | 4,500 / 640, regrows 12 a second | 65%: two brood ships | 35%: regrowth ×1.8, spore storm (20 spores), after a 2.6 s warning |
+- Boss classes are built by `bossClass()` in `crew/ships.js`: the base class's model scaled by `modelScale` (hit ellipsoids, gun and engine positions scale with it), new stats, boosted weapons and extra ones. They are enemy-only and never appear in skirmish.
 - The battle HUD shows a boss bar (hull, phase marks, current phase, lattice state) in place of the contact line. The map, arrival card, briefing (with a list of the phases) and HUD label the operation **Act N finale**.
 
 ## Uneven fights
@@ -216,7 +216,10 @@ These officers now have active battle commands (5–9): Varro shields, Okoye tar
 
 - `crew/campaign-data.js`: the star chart (systems, routes), acts, story operations, starbases, station missions, the contract and interception generators, and `encounter()`. Shared by both pages and the Node tests.
 - `index.html`: Three.js renderer and the battle engine; `?encounter=1` stages the encounter saved in `launch` (and `?campaign=N` a story operation) and applies ship state. It writes the pending battle result and returns to `campaign.html` after the result screen.
-- `campaign.html`: Strategic map, accessible star hotspots, arrival screens, starbase mission boards, interceptions, briefings, officer dossiers, shipyard, state persistence, after-action reports and return to skirmish.
+- `campaign.html`: Strategic map, accessible star hotspots, arrival screens, starbase mission boards, interceptions, briefings, officer dossiers, shipyard, state persistence, after-action reports and return to skirmish. The page is markup and styles; its script lives in `campaign/`, as classic scripts that share one scope and load in order: `core.js` (save, slots, pay, reputation, the war, officer cards, Harlan's voice, orders), `map.js` (star chart, fronts, jumps, interceptions, launching battles), `board.js` (modals, briefings, mission boards, recruits), `shipyard.js`, `crew.js` (codex, officers, saves, Intel) and `reports.js` (after-action reports, act transitions, the ending, start-up), plus the `ship-view.js` module for the shipyard's 3D view.
+- `crew/ships.js`: the one ship table (`CLASSES`): stats, weapons, hardpoints and ellipsoids for every hull, and the three act bosses. The battle page flies it; the shipyard reads it through `shipyardHull()` (turn in degrees a second, starboard-side points) instead of keeping its own copy.
+- `crew/fleet-controller.js`: campaign objectives in battle: escorts and convoys, holds, surrenders, pincers, boss phases, station defences in waves (`goal.type: 'defend'`) and pursuits (`goal.type: 'pursuit'`); supporting ships hit at 40% unless an entry sets `dmg`.
+- `crew/tutorial.js`: the coached first battle (steps, completion tests, when hostiles may open fire).
 - `img/campaign-atlas.webp`: The original concept image. No longer displayed; system coordinates are still stored in its 1672 × 941 space.
 
 The original monolithic game script still contains direct player/enemy assumptions. The first fleet extension now permits multiple vessels, retargeting, fleet HUD markers, collision-pair processing and per-mission survival conditions. Remaining code still contains duel-era assumptions; **extend incrementally** and test targeting, projectile collision, AI behaviour and victory conditions before adding larger fleets.
@@ -227,9 +230,9 @@ The rebuilt strategic screen was exercised in headless Chromium (SwiftShader Web
 
 ## Recommended next milestones
 
-1. **Battle QA and balancing** — including the three bosses, solo and with a fleet, on each difficulty; recruit commands; captured hulls as flagships.
+1. **Battle QA and balancing** — `tools/balance.mjs` now measures every operation and finale with the AI at the helm ([BALANCE.md](BALANCE.md)); human playtests of the bosses solo and with a fleet, recruit commands and captured hulls as flagships are still needed.
 2. **Further QA** — Play every operation, station mission and contract type on all four hulls, alone and with escorts. Contract pay, enemy strength, hull prices, reinforcement strength, interception odds and breakaway chances are first-pass numbers.
-3. **Art pass** — Portraits for the recruits and the new commanders (VIGIL Array and the Choir use the classified medallion; generated contract captains do too), an authored civilian hull, arrival transitions.
+3. **Art pass** — Portraits for the recruits and the new commanders and Harlan's voice (specified in [ART-BRIEF.md](ART-BRIEF.md); the game picks the files up when they are added), an authored civilian hull and station model, arrival transitions.
 
 Every milestone should preserve the intentional slow, dangerous, naval feel of Broadside.
 

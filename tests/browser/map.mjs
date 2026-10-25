@@ -14,7 +14,7 @@ await suite('map', {}, async ({ page, ctx, base, out, KEY, check, shot, read, wr
   check(await page.locator('#intro').isHidden() && await page.evaluate(k => JSON.parse(localStorage.getItem(k)).introSeen, KEY) === true, 'Take command closes it and records it as seen');
   await page.reload();
   check(await page.locator('#intro').isHidden(), 'briefing does not repeat on the next visit');
-  await page.click('#tabIntel'); await page.locator('#modalactions button', { hasText: 'Replay' }).click();
+  await page.click('#tabIntel'); await page.locator('#modalactions button', { hasText: 'Replay admiral' }).click();
   check(await page.locator('#intro').isVisible(), 'briefing can be replayed from Intel');
   await page.keyboard.press('Escape');
   check(await page.locator('#intro').isHidden(), 'Escape closes the briefing');

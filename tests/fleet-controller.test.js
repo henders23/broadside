@@ -70,6 +70,9 @@ function fixture(missionId,encounter,escortCount=0){
  assert.equal(foes().length,3,'ORACLE-9 gets two drones against a three-ship fleet');
  assert.ok(foes().slice(1).every(s=>s.name==='Directorate drone'&&s.hull===42));
  const [a,b]=f.allies,[boss,d1,d2]=foes();
+ assert.equal(a.dmgOut,.7,'AI escorts contribute at 70% weapon strength');
+ assert.equal(b.dmgOut,.7,'second escort scales identically');
+ assert.equal(f.player.dmgOut,undefined,'the human flagship retains full firepower');
  boss.pos=new V3(0,0,-3000);d1.pos=new V3(0,0,400);d2.pos=new V3(5000,0,0);a.pos=new V3(5000,0,100);b.pos=new V3(0,0,0);
  f.fleet.tick(1.1);assert.equal(a.target,f.selected(),'focus: escorts fire on the flagship target');assert.equal(a.orderIntent,'Focusing your target');assert.equal(f.fleet.order,'focus');
  d2.target=f.player;d1.target=b;boss.target=b;assert.equal(f.fleet.setOrder('defend'),true);f.fleet.tick(1.1);

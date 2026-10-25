@@ -61,8 +61,23 @@ function txCard(person,kicker,text,tone=''){return `<div class="tx ${tone}">${Pe
 function harlanCard(text,kicker='FLEET ADMIRAL GIDEON HARLAN · TRANSMISSION'){return txCard(Personnel.harlan,kicker,text,'admiral');}
 // Harlan's recorded transmissions (docs/ART-BRIEF.md): voice/harlan-<clip>.mp3 plays with the text when the file exists.
 let harlanAudio=null;
-function harlanVoice(clip){if(harlanAudio)harlanAudio.pause();harlanAudio=null;if(window.__noVoice)return;const a=new Audio(`voice/harlan-${clip}.mp3`);a.volume=.9;a.addEventListener('error',()=>{if(harlanAudio===a)harlanAudio=null;});a.play().catch(()=>{});harlanAudio=a;}
-function harlanQuiet(){if(harlanAudio){harlanAudio.pause();harlanAudio=null;}}
+function harlanVoice(clip){if(harlanAudio)harlanAudio.pause();harlanAudio=null;if(window.__noVoice)return;const a=new Audio(`voice/harlan-${clip}.mp3`);a.volume=.9;const done=()=>{if(harlanAudio===a){harlanAudio=null;Ambience.level();}};a.addEventListener('error',done);a.addEventListener('ended',done);a.play().catch(()=>{});harlanAudio=a;Ambience.level();}
+function harlanQuiet(){if(harlanAudio){harlanAudio.pause();harlanAudio=null;}Ambience.level();}
+// The ship around you: a quiet engine-room hum under every campaign screen. Browsers allow sound only after the first
+// click or key, so it starts then; it dips while Harlan speaks and goes quiet while the tab is hidden. M or the
+// speaker button in the top bar turns it off (remembered in this browser).
+const AMB_PREF='broadside-ambience',AMB_VOL=.3;
+const Ambience={ctx:null,gain:null,started:false,on:(()=>{try{return localStorage.getItem(AMB_PREF)!=='off';}catch(e){return true;}})(),
+ async start(){if(this.started||!this.on||window.__noVoice)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;this.started=true;
+  const c=this.ctx=new C();this.gain=c.createGain();this.gain.gain.value=0;this.gain.connect(c.destination);
+  try{const buf=await c.decodeAudioData(await(await fetch('music/ambience.mp3')).arrayBuffer()),src=c.createBufferSource();src.buffer=buf;src.loop=true;src.connect(this.gain);src.start();}catch(e){return;}
+  this.level(2.5);},
+ // Fades to where the hum should sit now; `slow` is the fade's time constant in seconds.
+ level(slow=.6){if(!this.ctx)return;const t=this.ctx.currentTime,v=!this.on||document.hidden?0:harlanAudio?AMB_VOL*.35:AMB_VOL;this.gain.gain.cancelScheduledValues(t);this.gain.gain.setTargetAtTime(v,t,slow/3);},
+ toggle(){this.on=!this.on;try{localStorage.setItem(AMB_PREF,this.on?'on':'off');}catch(e){}if(this.on){if(this.ctx)this.ctx.resume();this.start();}this.level();this.mark();toast(this.on?'Ship ambience on':'Ship ambience off');},
+ mark(){const b=$('ambToggle');if(b){b.setAttribute('aria-pressed',String(this.on));b.title=this.on?'Ship ambience on (M)':'Ship ambience off (M)';b.classList.toggle('off',!this.on);}}};
+for(const ev of ['pointerdown','keydown'])window.addEventListener(ev,()=>{Ambience.start();if(Ambience.ctx&&Ambience.ctx.state==='suspended')Ambience.ctx.resume();},{passive:true});
+document.addEventListener('visibilitychange',()=>Ambience.level());
 function notesHtml(spec){return spec&&spec.notes&&spec.notes.length?`<div class="notes"><small>WHAT HAS CHANGED</small>${spec.notes.map(n=>`<div>${n}</div>`).join('')}</div>`:'';}
 const ORDER_LINES={win:['Clean work, captain. The station will hear about this.','That is one less threat on the lanes. The crew earned their pay today.','Job done. The yards will want to know what we broke this time.'],loss:['We got hurt, captain. The order is still open when we are ready.','That went badly. We regroup, repair, and go back.']};
 function gainRep(kind,win,station,system,apply=true){let rep=state.rep;const out=[];for(const [id,d] of Campaign.repChanges(kind,win,station,system)){const before=Campaign.standing(rep,id);rep=Campaign.adjustRep(rep,id,d);const after=Campaign.standing(rep,id);out.push({id,d:after.value-before.value,tier:after.level>before.level?after.name:null});}if(apply)state.rep=rep;return out;}

@@ -1,5 +1,6 @@
 // Acts II and III content: the Sentinel and Thrall hulls in battle, the story fights that use them, and a convoy run
-// in legs (the board, each leg's battle, damage carried between legs, the reward on the last leg, a failed leg).
+// in legs (the board, each leg's battle, damage carried between legs, the reward on the last leg, a failed leg),
+// and the campaign's ship ambience and the afterburner sound.
 // Run: node tests/browser/acts.mjs (or tests/browser/run.mjs for every suite).
 import { suite } from './harness.mjs';
 
@@ -96,4 +97,31 @@ await suite('acts', { random: 0.99 }, async ({ page, base, KEY, check, shot, rea
   await page.locator('#modalactions button').first().click(); await page.waitForTimeout(500);
   st = await read();
   check(!st.legs['a3-lastships'] && st.orders.includes('a3-lastships'), 'back to leg 1, order still open');
+
+  // --- Sound: the ship's ambience on the campaign screens, and the afterburner in battle
+  await page.goto(base + '/campaign.html'); await page.waitForTimeout(600);
+  check(await S(() => !Ambience.started), 'no ambience before the first click (browsers block it)');
+  await page.mouse.click(800, 860); await page.waitForFunction(() => Ambience.gain && Ambience.ctx.state === 'running', null, { timeout: 20000 });
+  await page.waitForTimeout(2500);
+  const amb = await S(() => ({ g: Ambience.gain.gain.value, loop: true }));
+  check(amb.g > 0.2 && amb.g <= 0.31, 'the hum fades in after the first click: ' + amb.g.toFixed(2));
+  await S(() => harlanVoice('test')); await page.waitForTimeout(400);
+  await S(() => { harlanAudio = harlanAudio || new Audio(); Ambience.level(0.01); }); await page.waitForTimeout(300);
+  check(await S(() => Ambience.gain.gain.value < 0.15), 'it dips while Harlan speaks');
+  await S(() => harlanQuiet()); await page.waitForTimeout(1500);
+  check(await S(() => Ambience.gain.gain.value > 0.2), 'and comes back when he stops');
+  await page.keyboard.press('KeyM'); await page.waitForTimeout(1500);
+  check(await S(() => Ambience.gain.gain.value < 0.02 && localStorage.getItem('broadside-ambience') === 'off' && document.getElementById('ambToggle').classList.contains('off')), 'M turns it off, and the choice is remembered');
+  await shot('a05-ambience-off');
+  await page.click('#ambToggle'); await page.waitForTimeout(300);
+  check(await S(() => Ambience.on && localStorage.getItem('broadside-ambience') === 'on'), 'the speaker button turns it back on');
+  // afterburner
+  await battle("C.encounter({ ...C.sideById['a3-swarm'], kind: 'side' }, ctx)");
+  await page.mouse.click(800, 450);
+  await page.waitForFunction(() => window.__sim.Sfx.buf.afterburner, null, { timeout: 30000 }).catch(() => {});
+  check(await S(() => !!window.__sim.Sfx.buf.afterburner), 'the afterburner sample loads');
+  await page.keyboard.down('ShiftLeft'); await S(() => window.__sim.step(6));
+  check(await S(() => window.__sim.player.burn && !!window.__sim.Sfx.burnSrc), 'Shift lights the afterburner with its roar');
+  await page.keyboard.up('ShiftLeft'); await S(() => window.__sim.step(6));
+  check(await S(() => !window.__sim.player.burn && !window.__sim.Sfx.burnSrc), 'releasing Shift fades it out');
 });

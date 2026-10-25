@@ -787,7 +787,7 @@ function explode(p, scale = 1, vel = null, snd = null) {
 
 // ---------------- audio ----------------
 // sound files from the supplied pack, fetched at boot and decoded once audio is allowed to start
-const SFX_FILES = ['cannon', 'lasercannon', 'turret', 'lance', 'pd1', 'pd2', 'torplaunch', 'shieldhit', 'hit', 'boom', 'torphit', 'chain1', 'chain2', 'death', 'death2', 'engine', 'sighted'];
+const SFX_FILES = ['cannon', 'lasercannon', 'turret', 'lance', 'pd1', 'pd2', 'torplaunch', 'shieldhit', 'hit', 'boom', 'torphit', 'chain1', 'chain2', 'death', 'death2', 'engine', 'sighted', 'afterburner'];
 const sfxRaw = {};
 // spoken bridge alerts, voiced with ElevenLabs. Only lines listed here are fetched; every other line the game asks for
 // is skipped quietly, so a new line needs just its file in voice/ and its name added below.
@@ -835,6 +835,17 @@ const Sfx = {
     src.buffer = b; src.playbackRate.value = rate; g.gain.value = Math.min(1.2, vol);
     src.connect(g); g.connect(this.out); src.start(now);
     v.push(now + b.duration / rate); this.lastT[name] = now;
+    return true;
+  },
+  // The flagship's afterburner roar: starts on ignition, fades when the burn ends (the sample runs about 5.6 s).
+  burn(on, vol = 0.85) {
+    const c = this.ctx; if (!c) return false;
+    if (!on) { const b = this.burnSrc; this.burnSrc = null; if (b) { const t = c.currentTime; b.g.gain.cancelScheduledValues(t); b.g.gain.setValueAtTime(b.g.gain.value, t); b.g.gain.linearRampToValueAtTime(0, t + 0.45); b.src.stop(t + 0.5); } return true; }
+    if (!this.buf.afterburner) return false;
+    this.burn(false);
+    const src = c.createBufferSource(), g = c.createGain(); src.buffer = this.buf.afterburner; g.gain.value = vol;
+    src.connect(g); g.connect(this.out); src.start(); this.burnSrc = { src, g };
+    src.onended = () => { if (this.burnSrc && this.burnSrc.src === src) this.burnSrc = null; };
     return true;
   },
   toggle() { this.muted = !this.muted; if (this.out) this.out.gain.value = this.muted ? 0 : 0.75; showMsg(this.muted ? 'Sound off' : 'Sound on', 1.2); },
@@ -1349,7 +1360,7 @@ function startGame() {
 function endGame(outcome) {
   if (game.ending) return;
   game.ending = true; game.outcome = outcome; game.endT = 7; bridge?.onEnd();
-  $('coach').hidden = true; endBossEntrance();
+  $('coach').hidden = true; endBossEntrance(); Sfx.burn(false);
   // Mission 3 can end in surrender and mission 5 by transmitting/escaping.
   // Neither should trigger the destroyed-enemy VO.
   if (!(outcome === 'win' && ['surrender','extracted','escort_extracted'].includes(game.campaignOutcome)))
@@ -1424,8 +1435,8 @@ function toMenu(page = 'main') {
   Sfx.engine(0, false);
 }
 function pause(on) {
-  if (on && state === 'playing') { state = 'paused'; $('pause').hidden = false; Sfx.engine(0, false); }
-  else if (!on && state === 'paused') { state = 'playing'; $('pause').hidden = true; }
+  if (on && state === 'playing') { state = 'paused'; $('pause').hidden = false; Sfx.engine(0, false); Sfx.burn(false); }
+  else if (!on && state === 'paused') { state = 'playing'; $('pause').hidden = true; if (player) player.burn = false; }   // a burn still held relights, with its sound
 }
 
 // ---------------- damage ----------------
@@ -1500,16 +1511,18 @@ const AB = { boost: 1.7, accel: 2.6, turn: 0.75, burnT: 7, rechargeT: 22, religh
 function afterburnerUpdate(s, dt) {
   const ok = s.alive && s.abWant && !s.abLock && s.abFuel > 0 && s.sub.engines >= 25;
   if (ok && !s.burn) {
-    Sfx.play('torplaunch', (s === player ? 0.7 : volAt(s.pos)), 0.5, { max: 2, gap: 0.3 });
+    const lit = s === player ? Sfx.burn(true) : Sfx.play('afterburner', volAt(s.pos) * 0.7, 1, { max: 2, gap: 0.3 });
+    if (!lit) Sfx.play('torplaunch', (s === player ? 0.7 : volAt(s.pos)), 0.5, { max: 2, gap: 0.3 });   // until the sample has loaded
     if (s === player) { cam.shake = Math.max(cam.shake, 0.35); Voice.say('afterburners', 8); }
   } else if (s === player && s.abWant && !ok && !s.burn && !s._abWarned) {
     showMsg(s.sub.engines < 25 ? 'Engines too damaged to burn' : 'Afterburner recharging', 1.2, true); s._abWarned = true;
   }
   if (!s.abWant) s._abWarned = false;
+  if (s === player && s.burn && !ok) Sfx.burn(false);
   s.burn = ok;
   if (s.burn) {
     s.abFuel = Math.max(0, s.abFuel - dt / (s.C.abBurn || AB.burnT));
-    if (s.abFuel <= 0) { s.abLock = true; s.burn = false; s._abWarned = true; if (s === player) showMsg('Afterburner burnt out', 1.6, true); }
+    if (s.abFuel <= 0) { s.abLock = true; s.burn = false; s._abWarned = true; if (s === player) { showMsg('Afterburner burnt out', 1.6, true); Sfx.burn(false); } }
   } else {
     s.abFuel = Math.min(1, s.abFuel + dt / AB.rechargeT);
     if (s.abLock && s.abFuel >= AB.relight) s.abLock = false;

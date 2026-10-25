@@ -92,6 +92,7 @@ python3 -m http.server 8000
 | Drag / wheel | Orbit / zoom the camera · C looks toward the enemy |
 | Tab | Enlarged tactical plot |
 | G | Cycle graphics quality · P pause · M sound effects on/off · N music on/off |
+| M (campaign screens) | Ship ambience on/off (also the speaker button in the top bar; remembered in this browser) |
 
 ## Tests
 
@@ -137,6 +138,7 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 - Ship models were generated with Tripo (Revenant reuses the Warden hull with a darker tint), then simplified to about 65k triangles each and compressed for the web (meshopt geometry, 1024 px WebP textures) with glTF Transform.
 - Spoken alerts were generated with ElevenLabs (voice: Philippa). To add a line, put its .mp3 in `voice/` and add its name to `VOICE_LINES` in `index.html`; the game already asks for these lines at the right moments: `enemy-shields-down`, `hull-critical`, `torpedoes-inbound`, `mines-detected`, `torpedo-away`, `afterburners`, `brace`, `battle-stations`, `enemy-destroyed`, `ship-lost`.
 - The title screen art and both music tracks ("Weightless Descent" on the title screen, "Untitled" in battle) were supplied by the project owner. The music was re-encoded at 128 kbps.
+- The afterburner roar (`sfx/afterburner.mp3`, credited to freesound_community) and the ship ambience on the campaign screens (`music/ambience.mp3`, "Deep Space Travel Ambience 03", credited to fronbondi_skegs) were supplied by the project owner. The ambience was trimmed and crossfaded end to start so it loops without a seam, and both were level-matched and re-encoded at 128 kbps.
 - Every weapon's sound comes from the supplied pack, pitched differently per weapon. Sound effects come from a sci-fi weapon sound pack supplied by the project owner. The original file names credit universfield, rescopicsound, magiazzz, soundreality and freesound_community; check those creators' licence terms before publishing the game widely.
 
 

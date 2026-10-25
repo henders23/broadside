@@ -135,6 +135,17 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 - Every weapon's sound comes from the supplied pack, pitched differently per weapon. Sound effects come from a sci-fi weapon sound pack supplied by the project owner. The original file names credit universfield, rescopicsound, magiazzz, soundreality and freesound_community; check those creators' licence terms before publishing the game widely.
 
 
+### Artwork and audio still needed
+
+These could not be generated yet (the ElevenLabs account ran out of credits). The game already looks for each file and uses it as soon as it is added; until then the character shows an initials or faction badge, and Harlan's transmissions are text only. Prompts, sizes and the voice description are in [docs/ART-BRIEF.md](docs/ART-BRIEF.md).
+
+- **Eight portraits**, WebP at 768 × 960, in the style of `vex.webp`, `thorne.webp` and `img/admiral-harlan.webp`, saved in `img/commanders/` as:
+  - the hired officers: `adeyemi.webp`, `fenn.webp`, `osei.webp`, `marlow.webp`, `achterberg.webp`;
+  - the enemy commanders: `halloran.webp` (Act I finale), `vigil.webp` (Operation 6), `choir.webp` (Operation 7).
+- **Harlan's voice**, one MP3 per transmission in `voice/`: `harlan-1.mp3` to `harlan-9.mp3` (after each story operation), `harlan-act1.mp3` to `harlan-act3.mp3` (act briefings) and `harlan-end.mp3` (the ending). The lines are in `NARRATIVE` and `ACTS[].briefing` in `crew/campaign-data.js`.
+- Not yet specified: a purpose-built station model for defence missions (they use a Warden hull for now) and an authored civilian transport.
+
+
 ### Bridge officer commands (campaign)
 
 During story battles only, open the bridge deck to activate five named officer abilities with mouse or keys **5–9**: Brace (restore directional shields), Target Solution (+12% outgoing damage for 14 seconds), Damage Control (repair the worst subsystem and suppress one fire), Evasive Pattern (reduce incoming damage for 12 seconds), or Threat Scan (reveal enemy weaknesses). Cooldowns and transmissions are displayed in combat. The campaign map offers portrait dossiers and commander-to-commander mission briefings.

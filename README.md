@@ -85,9 +85,11 @@ python3 -m http.server 8000
 | Tab | Enlarged tactical plot |
 | G | Cycle graphics quality · P pause · M sound effects on/off · N music on/off |
 
-## Fleet encounter regression tests
+## Tests
 
-Run `node tests/fleet-controller.test.js`, `node tests/campaign-data.test.js`, `node tests/environment.test.js`, `node tests/upgrades.test.js` and `node tests/experience.test.js` from the repository root. These test escorts, surrenders, timed holds and two-enemy fights, contract generation, interceptions and act progression, without requiring WebGL. The named enemy commanders have four distinct original SVG illustrations in `img/commanders/`, while ORACLE-9 uses the original portrait atlas. The SVG art is illustrated, not photorealistic.
+- **Rules** (no browser needed): `node tests/<name>.test.js` for each file in `tests/`. They cover the campaign data, fleet and boss objectives, the war and story, experience, upgrades, environments and a syntax check of both pages.
+- **Browser suites**: `tests/browser/` drives the real pages in headless Chromium with software WebGL. It covers the map, officers, starbases, the fleet, bosses, campaign depth, the war, skirmish and the shield look, about 250 checks in all, with screenshots saved to `tests/browser/out/`. Set up with `npm install --no-save playwright three@0.169.0 && npx playwright install chromium`, then run `node tests/browser/run.mjs`, or name suites to run only those (`node tests/browser/run.mjs war bosses`). The suites start their own web server and serve three.js from `node_modules`, so no network access is needed.
+- Both run on every push to `main` and on pull requests (`.github/workflows/campaign-checks.yml`).
 
 ## Performance
 

@@ -28,3 +28,22 @@ jobs:
         run: node tests/depth.test.js
       - name: Run war and story rules (fronts, push back, consequences)
         run: node tests/war.test.js
+
+  browser-suites:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright and three.js
+        run: npm install --no-save --no-package-lock playwright@1.63.0 three@0.169.0 && npx playwright install --with-deps chromium
+      - name: Run the browser suites (headless Chromium, software WebGL)
+        run: node tests/browser/run.mjs
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-screenshots
+          path: tests/browser/out

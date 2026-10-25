@@ -149,6 +149,10 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 - **Still missing:** a purpose-built station model for defence missions (they use a Warden hull for now) and an authored civilian transport. These require GLB models to replace the gameplay meshes, not just portraits or images.
 
 
+### Fleet balance test (October 2026)
+
+A [focused AI-pilot comparison](docs/BALANCE_FOCUSED_2026-10-25.md) across four ship classes and one-, two- and three-ship fleets showed excessive automated escort firepower. NPC escort damage is now 55% of nominal class damage; your flagship remains at 100%. The revised simulation supports more demanding combat but is **not human WebGL playtesting**, and the Arbiter remains a difficult outlier. Headless comparison commands and results are documented alongside the earlier balance baseline.
+
 ### Fleet combat feedback
 
 Escorts now explain their target choice in battle (focus, cover, intercept or nearest threat). Battle-end statistics and campaign after-action reports show each escort's damage dealt, damage absorbed and whether it was disabled. The Halberd's spinal lance now displays how many degrees its target is off the bow or whether it is out of range. `tools/balance.mjs` also records ship accuracy, lance damage and the share of charged-lance time spent aligned with a target; these diagnostics should guide human playtests before modifying ship damage.

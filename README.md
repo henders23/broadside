@@ -144,12 +144,14 @@ Import the repository in Vercel and keep the defaults: framework preset **Other*
 
 **Eight photoreal character images have been generated and integrated** into the game via one optimised WebP atlas at `img/commanders/photoreal-atlas.webp` (4 columns × 2 rows, each in-game tile 96 × 120 pixels). `crew/personnel.js` and `crew/personnel.css` select each character independently. The earlier SVG illustrations remain as fallback/source art. Full-resolution masters were generated separately but are **not committed** to this repository; for future high-resolution dossier use, export individual 768 × 960 WebP files as specified in the [art brief](docs/ART-BRIEF.md).
 
-- **Photographic portrait subjects included in the atlas**, in `img/commanders/`:
-  - the hired officers: `adeyemi.svg`, `fenn.svg`, `osei.svg`, `marlow.svg`, `achterberg.svg`;
-  - the enemy commanders: `halloran.svg` (Act I finale), `vigil.svg` (Operation 6), `choir.svg` (Operation 7).
+- **Photographic portrait subjects included in the atlas** (all eight portraits are stored together in `photoreal-atlas.webp`): Adeyemi, Fenn, Osei, Marlow, Achterberg, Halloran (Act I finale), VIGIL (Operation 6), and the Choir (Operation 7). The eight individual `.svg` files are the earlier illustrated concept art, not the photoreal sources.
 - **Still missing: Harlan's voice**, one MP3 per transmission in `voice/`: `harlan-1.mp3` to `harlan-9.mp3` (after each story operation), `harlan-act1.mp3` to `harlan-act3.mp3` (act briefings) and `harlan-end.mp3` (the ending). The lines are in `NARRATIVE` and `ACTS[].briefing` in `crew/campaign-data.js`.
 - **Still missing:** a purpose-built station model for defence missions (they use a Warden hull for now) and an authored civilian transport. These require GLB models to replace the gameplay meshes, not just portraits or images.
 
+
+### Fleet combat feedback
+
+Escorts now explain their target choice in battle (focus, cover, intercept or nearest threat). Battle-end statistics and campaign after-action reports show each escort's damage dealt, damage absorbed and whether it was disabled. The Halberd's spinal lance now displays how many degrees its target is off the bow or whether it is out of range. `tools/balance.mjs` also records ship accuracy, lance damage and the share of charged-lance time spent aligned with a target; these diagnostics should guide human playtests before modifying ship damage.
 
 ### Bridge officer commands (campaign)
 

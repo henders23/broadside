@@ -1,0 +1,35 @@
+name: Focused fleet balance matrix
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - tools/balance.mjs
+      - .github/workflows/balance-focused.yml
+
+concurrency:
+  group: broadside-balance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  comparative-balance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install headless browser and game runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.63.0 three@0.169.0
+          npx playwright install --with-deps chromium
+      - name: Compare four classes and mixed fleets over five high-stakes operations
+        run: node tools/balance.mjs --only 2,7,8,9,10 --runs 3 --focused --taken --output docs/balance-focused.json
+      - name: Upload balance samples
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: focused-balance-matrix
+          path: docs/balance-focused.json
+          if-no-files-found: warn

@@ -1365,7 +1365,7 @@ function startGame() {
   bridge?.incomingHail(campaignMission ? campaignMission.hail : 0);
   if(fleet)$('fleet-objective').textContent=fleet.status();
   if (field.openingLine) showMsg(field.openingLine, 3.6, true);
-  else showMsg(enemy.name + ' sighted · ' + enemy.C.cls + (enemy.captain ? ' · ' + enemy.captain : '') + ' · ' + DIFF[aiKey].label, 3.4);
+  else showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + (enemy.captain || DIFF[aiKey].label + ' rated'), 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
   setTimeout(() => Voice.say('battle-stations', 0), 2000);
 }
@@ -2334,7 +2334,7 @@ let ownRows = [], foeRows = [], wEls = {}, subEls = {}, pipEls = {};
 function buildHud() {
   _els = {};
   $('own-name').textContent = player.name; $('own-cls').textContent = player.C.cls;
-  $('foe-name').textContent = enemy.name; $('foe-cls').textContent = enemy.C.cls + (enemy.captain ? ' · ' + enemy.captain : '') + ' · ' + (enemy.ai ? enemy.ai.diff.label : '');
+  $('foe-name').textContent = enemy.name; $('foe-cls').textContent = enemy.C.cls + (enemy.captain ? ' · ' + enemy.captain : '') + (enemy.ai ? ' · ' + enemy.ai.diff.label + ' rated' : '');
   $('own-pips').innerHTML = [['eng', 'ENG', '1'], ['shd', 'SHD', '2'], ['wpn', 'WPN', '3']].map(([k, l, key]) =>
     `<div class="pipcol ${k}"><div class="pp" id="pp-${k}">${'<i></i>'.repeat(8)}</div><span>${l} <kbd>${key}</kbd></span></div>`).join('');
   $('own-subs').innerHTML = SUBS.map(k => `<button type="button" class="sub" data-k="${k}" id="sub-${k}"><span>${subName(player, k)}</span><div class="bar"><i></i></div><span>100</span></button>`).join('');

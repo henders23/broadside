@@ -12,7 +12,7 @@ const WELL={core:300,avoid:750,pull:24,ref:1400,maxPull:34,burn:60};
 const LANE={x:570,half:480},POST={x:0,z:1400,r:900};
 
 function create({THREE,scene,V3,ships,asteroids,mines,obstacles,rockGeos,rockMat,showMsg,flash,damage,Sfx,clock}){
- let spec=null,cond=null,line='',added=[],fieldMines=[],surgeT=0,warned=false,sparkT=0,savedFog=null,well=null,rnd=Math.random;
+ let spec=null,cond=null,line='',haze=null,added=[],fieldMines=[],surgeT=0,warned=false,sparkT=0,savedFog=null,well=null,rnd=Math.random;
  const mulberry=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
  const seedOf=str=>{let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;};
  const between=(a,b)=>a+(b-a)*rnd();
@@ -69,7 +69,7 @@ function create({THREE,scene,V3,ships,asteroids,mines,obstacles,rockGeos,rockMat
   }
   if(opening==='close'){
    const side=rnd()<.5?1:-1;
-   foes.forEach((s,i)=>placeShip(s,at(i*380-200,side*(1450+i*420),between(-60,60)),P.yaw+Math.PI));
+   foes.forEach((s,i)=>placeShip(s,at(i*380-200,side*(1750+i*420),between(-60,60)),P.yaw+Math.PI));
    line='Close quarters · hostiles on the '+(side>0?'starboard':'port')+' beam';
   }
   if(opening==='pincer'){
@@ -85,8 +85,13 @@ function create({THREE,scene,V3,ships,asteroids,mines,obstacles,rockGeos,rockMat
    line='Running hot · shields at forty percent, engines and reactor damaged';
   }
   if(opening==='relief'){
-   const picket=allies.find(a=>a.picket);
-   if(picket)for(const s of foes)s.target=picket;
+   // the fight is already going on within reach, close enough to get there before the picket is lost
+   const picket=allies.find(a=>a.picket),lead=foes[0];
+   if(picket&&lead){
+    const d=at(2900,0).sub(lead.pos);d.y=0;
+    for(const s of [...foes,picket])placeShip(s,s.pos.clone().add(d),s.yaw);
+    for(const s of foes)s.target=picket;
+   }
    if(picket)line=picket.name+' under fire · get in there';
   }
  }
@@ -97,7 +102,12 @@ function create({THREE,scene,V3,ships,asteroids,mines,obstacles,rockGeos,rockMat
   if(cond==='rocks')addRocks();
   if(cond==='mines')addMines();
   if(cond==='gravity')addWell();
-  if(cond==='nebula'||cond==='ion'){savedFog=scene.fog;scene.fog=new THREE.FogExp2(cond==='nebula'?NEBULA.color:0x23355a,cond==='nebula'?NEBULA.fog:.00006);}
+  if(cond==='nebula'||cond==='ion'){
+   savedFog=scene.fog;scene.fog=new THREE.FogExp2(cond==='nebula'?NEBULA.color:0x23355a,cond==='nebula'?NEBULA.fog:.00006);
+   // fog only reaches meshes, so a shell of haze inside the sky veils the stars as well
+   const veil=new THREE.Mesh(new THREE.SphereGeometry(30000,24,12),new THREE.MeshBasicMaterial({color:cond==='nebula'?NEBULA.color:0x1c2c4c,transparent:true,opacity:cond==='nebula'?.82:.4,side:THREE.BackSide,depthWrite:false,fog:false}));
+   scene.add(veil);haze={mesh:veil};
+  }
   surgeT=between(...ION.every);warned=false;sparkT=0;
   return cond;
  }
@@ -132,6 +142,7 @@ function create({THREE,scene,V3,ships,asteroids,mines,obstacles,rockGeos,rockMat
   for(const m of fieldMines){m.active=false;m.obj.visible=false;m.field=false;}
   obstacles.length=0;added=[];fieldMines=[];well=null;
   if(savedFog!==null){scene.fog=savedFog;savedFog=null;}
+  if(haze){scene.remove(haze.mesh);haze.mesh.geometry.dispose();haze.mesh.material.dispose();haze=null;}
   cond=null;spec=null;line='';
  }
  return {begin,tick,clear,stage,

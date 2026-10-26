@@ -8,6 +8,7 @@ class V3 {
   clone() { return new V3(this.x, this.y, this.z); }
   copy(p) { return this.set(p.x, p.y, p.z); }
   add(p) { this.x += p.x; this.y += p.y; this.z += p.z; return this; }
+  sub(p) { this.x -= p.x; this.y -= p.y; this.z -= p.z; return this; }
   addScaledVector(p, k) { this.x += p.x * k; this.y += p.y * k; this.z += p.z * k; return this; }
   multiplyScalar(k) { this.x *= k; this.y *= k; this.z *= k; return this; }
   distanceTo(p) { return Math.hypot(this.x - p.x, this.y - p.y, this.z - p.z); }
@@ -18,7 +19,7 @@ class Mesh extends Obj { constructor(geometry, material) { super(); this.geometr
 class Geo { dispose() { this.disposed = true; } }
 class Mat { constructor(p) { Object.assign(this, p); } dispose() { this.disposed = true; } }
 class FogExp2 { constructor(color, density) { this.color = color; this.density = density; } }
-const THREE = { Mesh, Group: Obj, PointLight: Obj, MeshBasicMaterial: Mat, MeshStandardMaterial: Mat, SphereGeometry: Geo, TorusGeometry: Geo, FogExp2 };
+const THREE = { Mesh, Group: Obj, PointLight: Obj, MeshBasicMaterial: Mat, MeshStandardMaterial: Mat, SphereGeometry: Geo, TorusGeometry: Geo, FogExp2, BackSide: 1 };
 const ctx = { window: {} }; vm.runInNewContext(fs.readFileSync('crew/conditions.js', 'utf8'), ctx);
 const K = ctx.window.BroadsideConditions;
 
@@ -32,12 +33,14 @@ function ship(team, x, z, yaw = 0) {
   ships.push(s); return s;
 }
 const placeShip = (s, p, yaw) => { s.pos.copy(p); s.yaw = yaw; s.fwd = new V3(-Math.sin(yaw), 0, -Math.cos(yaw)); };
-function battle(spec) {
+function battle(spec, picketed) {
   ships.length = 0; msgs.length = 0;
   const player = ship('p', 0, 2700), wing = ship('p', 560, 2950); wing.friend = false;
   ship('e', 0, -2700, Math.PI); ship('e', 2100, -1500, Math.PI);
-  field.begin(spec, { player, allies: [wing], placeShip });
-  return { player, wing, foes: ships.filter(s => s.team === 'e') };
+  const allies = [wing];
+  if (picketed) { const pk = ship('p', 650, -1550, Math.PI); pk.picket = pk.friend = true; allies.push(pk); }
+  field.begin(spec, { player, allies, placeShip });
+  return { player, wing, picket: allies[1], foes: ships.filter(s => s.team === 'e') };
 }
 const ahead = (p, s) => (s.pos.x - p.pos.x) * p.fwd.x + (s.pos.z - p.pos.z) * p.fwd.z;
 
@@ -95,6 +98,10 @@ b = battle({ id: 'o3', opening: 'pincer', goal: { type: 'destroy' } });
 assert.ok(ahead(b.player, b.foes[0]) > 2000 && ahead(b.player, b.foes[1]) < -2000, 'one ahead, one astern');
 b = battle({ id: 'o4', opening: 'hot', goal: { type: 'destroy' } });
 assert.ok(b.player.sh.every(v => v === 200) && b.wing.sh[0] === 200 && b.player.sub.engines <= 70 && b.player.sub.reactor <= 75, 'running hot');
+b = battle({ id: 'o6', opening: 'relief', goal: { type: 'destroy' } }, true);
+assert.ok(b.foes.every(f => f.target === b.picket) && Math.abs(b.foes[0].pos.distanceTo(b.player.pos) - 2900) < 1, 'the picket fight is in reach, and the enemy is on the picket');
+assert.ok(b.picket.pos.distanceTo(b.foes[0].pos) < 1400, 'the picket is in the thick of it');
+assert.equal(b.picket.sh[0], 500, 'a relieved picket is not running hot');
 b = battle({ id: 'o5', opening: 'ambush', boss: { phases: [] }, goal: { type: 'boss' } });
 assert.ok(b.foes.every(f => ahead(b.player, f) > 0), 'bosses keep their entrance');
 

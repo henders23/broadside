@@ -481,11 +481,11 @@
   // What makes two fights with the same objective play differently: the space they are fought in, and how they start.
   // The battle page carries out each one (crew/conditions.js); `goals` lists the objectives it suits.
   const CONDITIONS = {
-    ion: { short: 'Ion storm · shields recharge slowly and surges strip them', name: 'Ion storm', note: 'Ion storm: shields recharge at half rate, and every quarter-minute a surge strips a third of every ship’s shields.', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend', 'pursuit'] },
-    nebula: { short: 'Dense nebula · sensors 2.4 km, poor gunnery beyond', name: 'Dense nebula', note: 'Dense nebula: sensors reach 2.4 km and gunnery is poor beyond it. Contacts further out drop off the plot.', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend', 'pursuit'] },
-    rocks: { short: 'Asteroid field · rocks stop shells and torpedoes', name: 'Asteroid field', note: 'Asteroid field: rocks crowd the battlespace. They stop shells and torpedoes, and hurt to hit.', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend'] },
-    mines: { short: 'Old minefield · the mines take no sides', name: 'Old minefield', note: 'Old minefield: a field of drifting war-era mines lies across the battlespace. They take no sides.', goals: ['destroy', 'escort', 'survive', 'surrender'] },
-    gravity: { short: 'Gravity well · stay clear of the core', name: 'Gravity well', note: 'Gravity well: a collapsed star drags every ship toward it, and its core tears hulls apart.', goals: ['destroy', 'survive', 'surrender'] }
+    ion: { short: 'Ion storm · watch for surges', name: 'Ion storm', note: 'Ion storm: shields recharge at half rate, and every quarter-minute a surge strips a third of every ship’s shields.', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend', 'pursuit'] },
+    nebula: { short: 'Dense nebula · sensors 2.4 km', name: 'Dense nebula', note: 'Dense nebula: sensors reach 2.4 km and gunnery is poor beyond it. Contacts further out drop off the plot.', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend', 'pursuit'] },
+    rocks: { short: 'Asteroid field · rocks stop shells', name: 'Asteroid field', note: 'Asteroid field: rocks crowd the battlespace. They stop shells and torpedoes, and hurt to hit.', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend'] },
+    mines: { short: 'Old minefield · mines take no sides', name: 'Old minefield', note: 'Old minefield: a field of drifting war-era mines lies across the battlespace. They take no sides.', goals: ['destroy', 'escort', 'survive', 'surrender'] },
+    gravity: { short: 'Gravity well · keep clear of the core', name: 'Gravity well', note: 'Gravity well: a collapsed star drags every ship toward it, and its core tears hulls apart.', goals: ['destroy', 'survive', 'surrender'] }
   };
   const OPENINGS = {
     ambush: { name: 'Ambushed', note: 'Ambush: the enemy comes out of the jump wake astern of you.', goals: ['destroy', 'escort', 'survive', 'surrender'] },
@@ -676,7 +676,7 @@
       support: Number.isInteger(src.support) ? src.support : null, boss: src.boss && typeof src.boss === 'object' ? JSON.parse(JSON.stringify(src.boss)) : null
     };
     // A picket under fire fights beside the fleet once relieved (index.html places it by the enemy).
-    if (spec.opening === 'relief') spec.friends = [{ cls: 'halberd', name: spec.picket || 'MNS Lantern', hull: 0.45, shield: 0.5, picket: true }];
+    if (spec.opening === 'relief') spec.friends = [{ cls: 'halberd', name: spec.picket || 'MNS Lantern', hull: 0.75, shield: 0.8, picket: true }];
     return shape(spec, story ? src.id : null, ctx);
   }
   const HAILS = {

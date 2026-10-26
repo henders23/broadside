@@ -162,4 +162,18 @@ assert.equal(C.storyEncounter(9).boss.phases[1].lattice, 0.2);
 assert.ok(C.storyEncounter(9).boss.phases[1].spawn.every(e => e.lattice));
 assert.deepEqual(plain(C.storyEncounter(10).boss.phases[2].unlock), ['storm']);
 
+// Enemy ships go by their own names; the captain in command travels alongside and speaks in the hail
+same(C.storyEncounter(1).enemies[0], { cls: 'scrapjaw', name: 'Red Magpie', captain: 'Captain Kora Vex' });
+assert.equal(C.storyEncounter(3).enemies[0].name, C.storyById[3].impound.name, 'Thorne flies the Widow he can surrender');
+for (const st of Object.keys(C.STATIONS)) for (const cyc of [1, 2, 3]) for (const k of C.contracts(st, cyc, 1, true)) for (const e of k.enemies) {
+  assert.ok(!/^(Captain|Commander|Lt\.|Lieutenant|Old) /.test(e.name), `${k.name}: the ship is not named after its captain (${e.name})`);
+  if (k.type === 'bounty' && e === k.enemies[0]) {
+    assert.equal(e.captain, k.captain, 'a bounty is on the captain of the ship');
+    assert.ok(k.objective.includes(e.name) && k.objective.includes(e.captain), k.objective);
+    assert.equal(C.encounter(k).hail.name, e.captain, 'the captain hails');
+  }
+}
+const ambush = C.interception('rednarrows', 1, 3);
+assert.ok(ambush.enemies[0].captain === ambush.captain && ambush.enemies[0].name !== ambush.captain, 'an ambush leader flies a named ship');
+
 console.log('Campaign data tests passed.');

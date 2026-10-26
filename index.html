@@ -1285,7 +1285,7 @@ function startGame() {
   player.target = enemy; enemy.target = player;
   if (campaignMission) {
     player.name = (flagRec && flagRec.shipName) || 'MNS Resolute';
-    enemy.name = campaignMission.enemies[0].name;
+    enemy.name = campaignMission.enemies[0].name; enemy.captain = campaignMission.enemies[0].captain || '';
     if (flagRec) applyRecord(player, flagRec);
   }
   const off = rand(-900, 900);
@@ -1353,7 +1353,7 @@ function startGame() {
   if (campaignMission) $('campaign-objective').textContent = campaignMission.label + ' // ' + campaignMission.objective;
   bridge?.incomingHail(campaignMission ? campaignMission.hail : 0);
   if(fleet)$('fleet-objective').textContent=fleet.status();
-  showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[aiKey].label, 3.4);
+  showMsg(enemy.name + ' sighted · ' + enemy.C.cls + (enemy.captain ? ' · ' + enemy.captain : '') + ' · ' + DIFF[aiKey].label, 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
   setTimeout(() => Voice.say('battle-stations', 0), 2000);
 }
@@ -1971,6 +1971,17 @@ function aiUpdate(s, dt) {
   let err = wrapDeg(b - desired);
   // a quarry running for its jump point weaves a little but never turns to fight (crew/fleet-controller.js, pursuit)
   if (ai.flee) { bearingTo(s, _v5.set(ai.flee.x, s.pos.y, ai.flee.z), _bt); err = _bt.b + Math.sin(game.time * 0.35) * 16; ai.mode = 'flee'; }
+  // give way to friendly hulls: if a ship on our side will pass too close in the next few seconds, turn away from it,
+  // ease off if it is ahead or open the throttle if it is coming up from astern, and climb or dive clear of it
+  let give = null, giveT = 9;
+  if (!s.post) for (const o of ships) {
+    if (o === s || !o.alive || o.team !== s.team) continue;
+    _v2.subVectors(o.pos, s.pos); _v3.subVectors(o.vel, s.vel);
+    const vv = _v3.lengthSq(), tc = vv > 1e-3 ? clamp(-_v2.dot(_v3) / vv, 0, 8) : 0;
+    if (_v4.copy(_v2).addScaledVector(_v3, tc).length() < s.C.hullE.r[2] + o.C.hullE.r[2] + 160 && tc < giveT) { give = o; giveT = tc; }
+  }
+  const giveB = give ? bearingTo(s, give.pos, _bt).b : 0;
+  if (give) err = (giveB >= 0 ? -1 : 1) * 75;
   // steer around rocks in the way
   for (const a of asteroids) {
     _v2.subVectors(a.pos, s.pos); const al = _v2.dot(s.fwd); if (al < 0 || al > 1600 + a.r) continue;
@@ -1985,6 +1996,7 @@ function aiUpdate(s, dt) {
   s.rudder += clamp(rT - s.rudder, -1.1 * dt, 1.1 * dt);
   s.step = ai.mode === 'close' || ai.mode === 'ram' || ai.mode === 'flee' ? 4 : ai.mode === 'lance' ? 3 : dist > pref + 700 ? 4 : 3;
   s.climb = clamp((t.pos.y - s.pos.y) / 500, -1, 1) * 0.7;
+  if (give) { s.step = Math.abs(giveB) < 90 ? 1 : 4; s.climb = s.pos.y >= give.pos.y ? 0.8 : -0.8; }
   // shields: reinforce the facing toward the threat after a reaction delay
   ai.shT -= dt;
   if (ai.shT <= 0) {
@@ -2055,7 +2067,7 @@ function bossEntrance() {
   const B = fleet && fleet.boss; game.bossIntro = 0; game.bossWarn = null; $('bosscard').hidden = true;
   if (!B) return;
   game.bossIntro = BOSS_INTRO;
-  $('bosscard-cls').textContent = B.ship.C.cls; $('bosscard-title').textContent = B.title; $('bosscard-who').textContent = B.ship.name.split(' · ').pop();
+  $('bosscard-cls').textContent = B.ship.C.cls; $('bosscard-title').textContent = B.title; $('bosscard-who').textContent = B.ship.captain || B.ship.name;
   const card = $('bosscard'); card.hidden = false; card.style.opacity = 0;   // faded in and out on the battle clock (updateCamera)
 }
 function endBossEntrance() { if (game && game.bossIntro > 0) { game.bossIntro = 0; $('bosscard').hidden = true; } }
@@ -2309,7 +2321,7 @@ let ownRows = [], foeRows = [], wEls = {}, subEls = {}, pipEls = {};
 function buildHud() {
   _els = {};
   $('own-name').textContent = player.name; $('own-cls').textContent = player.C.cls;
-  $('foe-name').textContent = enemy.name; $('foe-cls').textContent = enemy.C.cls + ' · ' + (enemy.ai ? enemy.ai.diff.label : '');
+  $('foe-name').textContent = enemy.name; $('foe-cls').textContent = enemy.C.cls + (enemy.captain ? ' · ' + enemy.captain : '') + ' · ' + (enemy.ai ? enemy.ai.diff.label : '');
   $('own-pips').innerHTML = [['eng', 'ENG', '1'], ['shd', 'SHD', '2'], ['wpn', 'WPN', '3']].map(([k, l, key]) =>
     `<div class="pipcol ${k}"><div class="pp" id="pp-${k}">${'<i></i>'.repeat(8)}</div><span>${l} <kbd>${key}</kbd></span></div>`).join('');
   $('own-subs').innerHTML = SUBS.map(k => `<button type="button" class="sub" data-k="${k}" id="sub-${k}"><span>${subName(player, k)}</span><div class="bar"><i></i></div><span>100</span></button>`).join('');
@@ -2476,7 +2488,7 @@ function updateHud(dt) {
   if (fleet && fleet.allies.length) { escortHudT -= dt; if (escortHudT <= 0) { escortHudT = 0.25; drawEscorts(); } }
   if (fleet && fleet.boss) drawBossBar();
   const P = player, E = enemy;
-  setT($c('foe-name'),E.name);setT($c('foe-cls'),E.C.cls);
+  setT($c('foe-name'),E.name);setT($c('foe-cls'),E.captain?E.C.cls+' · '+E.captain:E.C.cls);
   camera.updateMatrixWorld();
   project(E.pos, _sc);
   const mk = $c('mk'), oa = $c('offarrow');

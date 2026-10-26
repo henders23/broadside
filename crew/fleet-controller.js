@@ -51,7 +51,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
  function setup(){
   for(const wing of allies) wing.dmgOut=(Number.isFinite(wing.dmgOut)?wing.dmgOut:1)*ESCORT_DMG;
   const base=spec.enemies||[],extra=allies.length&&root.BroadsideCampaign&&base.length?root.BroadsideCampaign.reinforcements(spec,allies.length+1):[],list=[...base,...extra];
-  if(list[0]){primaryEnemy.name=list[0].name||primaryEnemy.name;scale(primaryEnemy,list[0],true);}
+  if(list[0]){primaryEnemy.name=list[0].name||primaryEnemy.name;primaryEnemy.captain=list[0].captain||'';scale(primaryEnemy,list[0],true);}
   if(goal.type==='escort'){
    convoy=makeShip('transport','p');
    convoy.name=goal.convoy||'Civilian transport';
@@ -102,7 +102,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
  }
  function addHostile(e,side,pos){
   const ship=makeShip(e.cls,'e');
-  ship.name=e.name||ship.name;
+  ship.name=e.name||ship.name;ship.captain=e.captain||'';
   scale(ship,e);
   if(e.lattice)ship.latticeNode=true;
   ship.ai={diff:DIFF[e.diff]||DIFF.commander||DIFF.captain,side,flankOffset:side*27,shT:3,pwT:0,mode:'close',sideT:0};

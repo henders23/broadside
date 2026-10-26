@@ -104,21 +104,21 @@
       brief: 'MV Peregrine is carrying evacuees toward the illuminated Kestrel jump beacon. You can win by protecting it until extraction OR by destroying Kora Vex first. Press H or use the on-screen command to hold or resume the convoy. If Peregrine is lost, the operation fails.',
       intel: 'Vex prioritises the unarmed civilian freighter but will turn toward your flagship if you intercept her.',
       hud: 'Defeat Captain Kora Vex and secure the trade lane',
-      enemies: [{ cls: 'scrapjaw', name: 'Captain Kora Vex' }], goal: { type: 'escort', convoy: 'MV Peregrine · Civilian transport', hunter: true },
+      enemies: [{ cls: 'scrapjaw', name: 'Red Magpie', captain: 'Captain Kora Vex' }], goal: { type: 'escort', convoy: 'MV Peregrine · Civilian transport', hunter: true },
       choice: ['Recover civilian survivors', 'Pursue the escaping pirate network'], flags: ['kestrel_rescue', 'kestrel_pursuit'] },
     { id: 2, act: 1, system: 'cinder', name: 'The Cinder Wake', enemy: 'revenant', captain: 'Commander Orren Sable', kind: 'Renegade minelayer', reward: 540, support: 1,
       objective: 'Destroy the Ash Fleet Revenant and its raider escort to recover a navy transponder.',
       brief: 'A military transponder lies among the burning wreckage. Sable’s Revenant minelayer and a fast Scrapjaw pursuer attack from opposite sides. Defeat both to secure the transponder, using J to switch targets. Beware of chasing directly into the mine trail.',
       intel: 'Long-range missile salvos and proximity mines deployed astern. Avoid chasing directly behind the ship.',
       hud: 'Defeat the Ash Fleet minelayer and recover the transponder evidence',
-      enemies: [{ cls: 'revenant', name: 'Commander Orren Sable', hull: 0.85, dmg: 0.75 }, { cls: 'scrapjaw', name: 'Ash Fleet Pursuer', hull: 0.38, shield: 0.58, diff: 'commander' }], goal: { type: 'destroy' },
+      enemies: [{ cls: 'revenant', name: 'ASF Remembrance', captain: 'Commander Orren Sable', hull: 0.85, dmg: 0.75 }, { cls: 'scrapjaw', name: 'Ash Fleet Pursuer', hull: 0.38, shield: 0.58, diff: 'commander' }], goal: { type: 'destroy' },
       choice: ['Rescue the surviving crew', 'Recover the intact coded transponder'], flags: ['vela_rescue', 'vela_transponder'] },
     { id: 3, act: 1, system: 'rednarrows', name: 'The Widow’s Toll', enemy: 'scrapjaw', captain: 'Captain Garrick Thorne', kind: 'Pirate commander', reward: 570, support: 0,
       objective: 'Reopen the Red Narrows trade route.',
       brief: 'An illegal toll operation is strangling the jump route. Captain Garrick Thorne offers a bargain: leave the corridor or take his scrap-armoured cruiser head-on. His crew may surrender if their hull is severely damaged.',
       intel: 'A Scrapjaw rammer. Force Thorne below 28% hull integrity to compel surrender, or destroy the raider.',
       hud: 'Force Captain Thorne to surrender or destroy his toll raider',
-      enemies: [{ cls: 'scrapjaw', name: 'Captain Garrick Thorne' }], goal: { type: 'surrender', at: 0.28 },
+      enemies: [{ cls: 'scrapjaw', name: 'The Widow', captain: 'Captain Garrick Thorne' }], goal: { type: 'surrender', at: 0.28 },
       ends: { surrender: ['Pirate commander surrendered', 'Captain Thorne has powered down his weapons and surrendered the Red Narrows toll lane.'] },
       choice: ['Offer amnesty for intelligence', 'Impound all captured pirate matériel'], flags: ['thorne_amnesty', 'thorne_impounded'],
       impound: { choice: 1, cls: 'scrapjaw', name: 'The Widow', hull: 0.5, needs: 'surrender' } },
@@ -159,7 +159,7 @@
       brief: 'Every stolen transponder, every mine field and every bribed pirate leads back to Grimhold and the dreadnought Pyre. Commodore Ingrid Halloran was a Navy officer once; she taught half the frontier fleet. She will not surrender, and she will not fight alone.',
       intel: 'A Warden-class dreadnought rebuilt as a fortress: siege cannons, flak, missiles and mines. Expect the pirate clans to answer her call, and a final firestorm when she is desperate.',
       hud: 'Destroy the dreadnought Pyre', support: 1,
-      enemies: [{ cls: 'pyre', name: 'ASF Pyre · Commodore Halloran', dmg: 0.38 }, { cls: 'scrapjaw', name: 'Ash Fleet escort', dmg: 0.25, hull: 0.45, shield: 0.6, diff: 'commander' }],
+      enemies: [{ cls: 'pyre', name: 'ASF Pyre', captain: 'Commodore Halloran', dmg: 0.38 }, { cls: 'scrapjaw', name: 'Ash Fleet escort', dmg: 0.25, hull: 0.45, shield: 0.6, diff: 'commander' }],
       goal: { type: 'boss' },
       trophy: 'pyre_plating',
       boss: { title: 'ASF PYRE', phases: [
@@ -374,13 +374,20 @@
 
   // ---------------- generated contracts ----------------
   const FOES = {
-    Pirates: { cls: 'scrapjaw', group: 'Corsair', names: ['Captain Mara Quill', 'Captain Jessup Crane', 'Captain Hollis Teague', 'Captain Dace Varga', 'Captain Tamsin Roe', 'Captain Ivo Strake', 'Captain Bryn Kessler', 'Old Saul Mott'] },
-    Renegades: { cls: 'revenant', group: 'Ash Fleet', names: ['Lt. Cmdr. Halvard Rook', 'Commander Ysolde Marr', 'Lieutenant Cass Ferro', 'Commander Edrik Vane', 'Lt. Cmdr. Juno Albright'] },
+    Pirates: { cls: 'scrapjaw', group: 'Corsair', names: ['Captain Mara Quill', 'Captain Jessup Crane', 'Captain Hollis Teague', 'Captain Dace Varga', 'Captain Tamsin Roe', 'Captain Ivo Strake', 'Captain Bryn Kessler', 'Old Saul Mott'],
+      ships: ['Black Gull', 'Rustmaw', 'Long Odds', 'Gutter Saint', 'Mercy Never', 'Saltjack', 'Lucky Teeth', 'Sixpenny', 'Iron Bastard'] },
+    Renegades: { cls: 'revenant', group: 'Ash Fleet', names: ['Lt. Cmdr. Halvard Rook', 'Commander Ysolde Marr', 'Lieutenant Cass Ferro', 'Commander Edrik Vane', 'Lt. Cmdr. Juno Albright'],
+      ships: ['ASF Recusant', 'ASF Last Ember', 'ASF Grey Oath', 'ASF Severance', 'ASF Cinderfall', 'ASF Vigilance', 'ASF Hollow Crown'] },
     // `alt`: from that act on, a share of the work is against a different hull (a pack of them, for Thralls).
     Machines: { cls: 'seraph', alt: { cls: 'sentinel', act: 2, chance: 0.35 }, group: 'Directorate', names: ['PICKET-12', 'WARDEN-3', 'SENTINEL-8', 'AUGUR-5', 'LATTICE-9', 'CENSOR-1'] },
     Aliens: { cls: 'wraith', alt: { cls: 'thrall', act: 3, chance: 0.4, pack: 3 }, group: 'Wraith', names: ['Brood-singer', 'Spore matron', 'Thorn choir', 'Pale drifter', 'Hollow cantor'] }
   };
   FOES.Unknown = FOES.Aliens;
+  // A named enemy as the battle shows it: the ship, and the captain in command when the faction has captains
+  // (Directorate and Wraith names are the ships themselves). A captain always flies the same ship.
+  function crewed(foe, who) { return foe.ships ? { name: foe.ships[Math.max(0, foe.names.indexOf(who)) % foe.ships.length], captain: who } : { name: who }; }
+  // "Captain Mara Quill's raider, the Black Gull", or the ship's name alone when it has no captain.
+  const commanded = (e, ship) => e.captain ? `${e.captain}’s ${ship}, the ${e.name}` : e.name;
   const CONVOYS = ['MV Calloway', 'MV Sunward', 'MV Brightwater', 'MV Tessaly', 'MV Orison', 'MV Hale', 'MV Quiet Harbour'];
   // The independent and contested systems belong to whoever is raiding them in the current act.
   const LOCAL = { 1: 'Pirates', 2: 'Machines', 3: 'Aliens' };
@@ -421,8 +428,8 @@
       const who = pick(r, foe.names);
       return Object.assign(base, { name: 'Bounty: ' + who, captain: who, reward: 200 + 60 * lvl + 90 * (a - 1),
         brief: `${who} has been raiding traffic out of ${sys.name}. ${STATIONS[station].name} has posted a bounty for the ${ship} and a bonus for doing it quietly.`,
-        objective: `Destroy ${who}.`, intel: `${foe.group} ${ship}, rated ${sys.threat.toLowerCase()} threat.`,
-        enemies: [{ cls: foe.cls, name: who, hull: round(Math.min(1, s + 0.15)), shield: round(Math.min(1, s + 0.2)) }], goal: { type: 'destroy' } });
+        objective: `Destroy ${commanded(crewed(foe, who), ship)}.`, intel: `${foe.group} ${ship}, rated ${sys.threat.toLowerCase()} threat.`,
+        enemies: [{ cls: foe.cls, ...crewed(foe, who), hull: round(Math.min(1, s + 0.15)), shield: round(Math.min(1, s + 0.2)) }], goal: { type: 'destroy' } });
     }
     if (type === 'patrol') {
       return Object.assign(base, { name: `Patrol: ${sys.name} lanes`, captain: `${foe.group} wing`, reward: 230 + 70 * lvl + 90 * (a - 1),
@@ -436,7 +443,7 @@
         brief: who + ' is carrying stolen navigation data out of ' + sys.name + '. Catch the ' + ship + ' before its jump drive spools up; the intelligence is needed intact.',
         objective: 'Disable the quarry below 30% hull before it jumps.',
         intel: 'Quarry fleeing at reduced engine power. 115-second jump window. Disable rather than destroy.',
-        enemies: [{ cls: foe.cls, name: who, hull: round(Math.min(1, s + 0.25)), shield: round(Math.min(1, s + 0.25)) }],
+        enemies: [{ cls: foe.cls, ...crewed(foe, who), hull: round(Math.min(1, s + 0.25)), shield: round(Math.min(1, s + 0.25)) }],
         goal: { type: 'pursuit', seconds: 115, at: 0.3, speed: 0.8 }, support: 0 });
     }
     const convoy = pick(r, CONVOYS);
@@ -463,8 +470,8 @@
       for (let n = 0; n < 4 && out.some(o => o.captain === k.captain); n++) k = contractFor('bounty', station, pick(r, pool), a, r, `c:${station}:${cycle}:p`);
       k.priority = true; k.name = 'Priority ' + k.name.charAt(0).toLowerCase() + k.name.slice(1); k.reward = Math.round(k.reward * 1.4);
       for (const e of k.enemies) { e.hull = round(Math.min(1, e.hull + 0.15)); e.shield = round(Math.min(1, e.shield + 0.15)); }
-      k.enemies.push({ cls: k.enemies[0].cls, name: k.enemies[0].name.split(' ').pop() + '’s wingman', hull: 0.4, shield: 0.55, diff: 'commander' });
-      k.objective = `Destroy ${k.captain} and the wingman.`; k.support = 0;
+      k.enemies.push({ cls: k.enemies[0].cls, name: (k.enemies[0].captain || k.enemies[0].name).split(' ').pop() + '’s wingman', hull: 0.4, shield: 0.55, diff: 'commander' });
+      k.objective = `Destroy ${commanded(k.enemies[0], SHIP_WORD[k.enemy])}, and its wingman.`; k.support = 0;
       out.push(k);
     }
     return out;
@@ -481,10 +488,10 @@
   function interception(id, act, seed) {
     const sys = byId[id], foe = foeFor(sys, act), s = strength(sys, act), r = rng(hash(id + ':' + seed)), pair = threatLevel(sys) >= 4 || r() < 0.3, who = pick(r, foe.names);
     const enemies = pair
-      ? [{ cls: foe.cls, name: who, hull: round(s * 0.6), shield: round(s * 0.7) }, { cls: foe.cls, name: `${foe.group} wingman`, hull: round(s * 0.5), shield: round(s * 0.65), diff: 'commander' }]
-      : [{ cls: foe.cls, name: who, hull: round(Math.min(1, s * 0.85)), shield: round(Math.min(1, s * 0.9)) }];
+      ? [{ cls: foe.cls, ...crewed(foe, who), hull: round(s * 0.6), shield: round(s * 0.7) }, { cls: foe.cls, name: `${foe.group} wingman`, hull: round(s * 0.5), shield: round(s * 0.65), diff: 'commander' }]
+      : [{ cls: foe.cls, ...crewed(foe, who), hull: round(Math.min(1, s * 0.85)), shield: round(Math.min(1, s * 0.9)) }];
     return { id: `x:${id}:${seed}`, kind: 'intercept', system: id, act: Math.min(act, 3), name: `Interception at ${sys.name}`, captain: who, enemy: foe.cls,
-      reward: 90 + 35 * threatLevel(sys) + (pair ? 60 : 0), objective: pair ? 'Destroy both ambushers.' : `Destroy ${who}.`,
+      reward: 90 + 35 * threatLevel(sys) + (pair ? 60 : 0), objective: pair ? 'Destroy both ambushers.' : `Destroy ${commanded(enemies[0], SHIP_WORD[foe.cls])}.`,
       brief: `${foe.group} ships dropped out of the jump lane at ${sys.name} and matched your vector before the drive could cycle.`,
       intel: `${pair ? 'Two' : 'One'} ${foe.group} ${{ scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship' }[foe.cls]}${pair ? 's' : ''}.`, enemies, goal: { type: 'destroy' } };
   }
@@ -619,7 +626,7 @@
       id: story ? 'story:' + src.id : src.id, kind: story ? 'story' : src.kind, story: story ? src.id : null, system: sys.id,
       title: src.name, label, objective: src.hud || src.objective, reward: src.reward || 0,
       env: story && src.id <= 5 ? src.id : ENV_BY_REGION[sys.region] || 0, gate: src.goal.type === 'escort',
-      hail: story ? src.id : { name: lead.name, faction: foe.group, line: src.taunt || HAILS[lead.cls] },
+      hail: story ? src.id : { name: lead.captain || lead.name, faction: foe.group, line: src.taunt || HAILS[lead.cls] },
       enemies: src.enemies.map(e => Object.assign({}, e)), goal: Object.assign({}, src.goal), ends: src.ends || null,
       support: Number.isInteger(src.support) ? src.support : null, boss: src.boss && typeof src.boss === 'object' ? JSON.parse(JSON.stringify(src.boss)) : null
     };

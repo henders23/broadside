@@ -37,6 +37,8 @@ jobs:
         run: node tests/ships.test.js
       - name: Run tutorial steps
         run: node tests/tutorial.test.js
+      - name: Run battlefield conditions and openings
+        run: node tests/conditions.test.js
 
   browser-suites:
     runs-on: ubuntu-latest

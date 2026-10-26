@@ -280,7 +280,7 @@
       brief: 'An Ash Fleet signals officer wants to come home, and she is bringing the fleet’s codebooks with her. Her shuttle is hiding in the Vostok yards with a hunter between it and the jump beacon.',
       objective: 'Escort the shuttle Kittiwake to the jump beacon, or destroy the hunter.', intel: 'A Revenant hunter. It will try to mine the shuttle’s route.',
       enemies: [{ cls: 'revenant', name: 'Ash Fleet hunter', hull: 0.55, shield: 0.7 }], goal: { type: 'escort', convoy: 'Shuttle Kittiwake · Defector', hunter: true } },
-    { id: 'a1-salvage', act: 1, station: 'peregrine', system: 'driftwall', name: 'Salvage Rights', giver: 'Harbourmaster Ines Kaur', reward: 420, support: 1,
+    { id: 'a1-salvage', condition: 'rocks', act: 1, station: 'peregrine', system: 'driftwall', name: 'Salvage Rights', giver: 'Harbourmaster Ines Kaur', reward: 420, support: 1,
       brief: 'Two scavenger crews are cutting apart a Navy frigate wreck in the Driftwall fields. The wreck still has its logs aboard, and the Exchange would rather the Navy read them than the clans.',
       objective: 'Destroy both scavenger raiders.', intel: 'Light Scrapjaw hulls stripped for speed. They will try to box you in.',
       enemies: [{ cls: 'scrapjaw', name: 'Scavenger Rook', hull: 0.42, shield: 0.6 }, { cls: 'scrapjaw', name: 'Scavenger Lark', hull: 0.42, shield: 0.6, diff: 'commander' }], goal: { type: 'destroy' } },
@@ -288,19 +288,19 @@
       brief: 'A refugee transport is trying to leave Emberfall before the Ash Fleet seals the system. An interdictor is already waiting for it. Penn cannot spare a ship; you are the ship.',
       objective: 'Escort the MV Hearthstone to the jump beacon, or destroy the interdictor.', intel: 'A Revenant interdictor laying mines across the transport’s path.',
       enemies: [{ cls: 'revenant', name: 'Ash Fleet interdictor', hull: 0.6, shield: 0.7 }], goal: { type: 'escort', convoy: 'MV Hearthstone · Refugee transport', hunter: true } },
-    { id: 'a1-ledger', act: 1, station: 'peregrine', system: 'scour', name: 'The Scour Ledger', giver: 'Factor Odile Marsh', reward: 520, support: 1,
+    { id: 'a1-ledger', condition: 'mines', act: 1, station: 'peregrine', system: 'scour', name: 'The Scour Ledger', giver: 'Factor Odile Marsh', reward: 520, support: 1,
       brief: 'A smuggler called the Ledger keeps the books for every stolen Navy part sold at Scour. Kill the ship and the market loses its memory. The Exchange will pay handsomely for that.',
       objective: 'Destroy the smuggler ship Ledger.', intel: 'An armed Revenant conversion. Missile salvos at range, mines when chased.',
       enemies: [{ cls: 'revenant', name: 'The Ledger', hull: 0.78, shield: 0.8 }], goal: { type: 'destroy' } },
-    { id: 'a2-scout', act: 2, station: 'meridian', system: 'northpoint', name: 'Eyes on Northpoint', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 520, support: 0,
+    { id: 'a2-scout', opening: 'ambush', act: 2, station: 'meridian', system: 'northpoint', name: 'Eyes on Northpoint', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 520, support: 0,
       brief: 'A Directorate scout has been mapping the northern approaches to Meridian for a week. Whatever it learns goes straight back to the machines. Make sure it learns nothing more.',
       objective: 'Destroy the machine scout.', intel: 'A light Seraph scout. Fast shields, thin hull, and a railgun it will use from extreme range.',
       enemies: [{ cls: 'seraph', name: 'Directorate scout', hull: 0.6, shield: 0.75 }], goal: { type: 'destroy' } },
-    { id: 'a2-survey', act: 2, station: 'elysia', system: 'thalos', name: 'Dead Reckoning', giver: 'Dr. Halima Oduya', reward: 560, support: 1,
+    { id: 'a2-survey', condition: 'gravity', act: 2, station: 'elysia', system: 'thalos', name: 'Dead Reckoning', giver: 'Dr. Halima Oduya', reward: 560, support: 1,
       brief: 'Elysia’s survey buoys can triangulate the machine signal if they get eighty seconds of quiet. A machine hunter is already sweeping Thalos for them. Give them their eighty seconds.',
       objective: 'Hold the survey area for 80 seconds, or destroy the machine hunter.', intel: 'A Seraph hunter. It keeps its distance and works on your shields with beams.',
       enemies: [{ cls: 'seraph', name: 'Directorate hunter', hull: 0.7, shield: 0.8 }], goal: { type: 'survive', seconds: 80, label: 'SURVEY BUOYS // TRIANGULATING' } },
-    { id: 'a2-static', act: 2, station: 'juniper', system: 'citrine', name: 'Static on the Ring', giver: 'Portmaster Tobias Grail', reward: 600, support: 1,
+    { id: 'a2-static', condition: 'ion', act: 2, station: 'juniper', system: 'citrine', name: 'Static on the Ring', giver: 'Portmaster Tobias Grail', reward: 600, support: 1,
       brief: 'Machine pickets have parked over the Citrine supply lanes and every freighter that passes them loses its navigation. Juniper’s portmaster wants them gone before the ring runs out of food.',
       objective: 'Destroy both machine pickets.', intel: 'Two light Seraph pickets. Close the range quickly and they come apart.',
       enemies: [{ cls: 'seraph', name: 'Picket LATTICE-2', hull: 0.5, shield: 0.65 }, { cls: 'seraph', name: 'Picket LATTICE-5', hull: 0.5, shield: 0.65, diff: 'commander' }], goal: { type: 'destroy' } },
@@ -313,7 +313,7 @@
       brief: 'A machine courier lifted the ring’s navigation keys from a freighter it disabled at Citrine and is running for Midway. Once it jumps the keys are gone. Run it down before its drive spools up.',
       objective: 'Disable the courier before it jumps (bring it below 35% hull).', intel: 'A Seraph courier stripped for speed: it will not turn to fight, but its shields are strong. Burn hard and stay on its tail.',
       enemies: [{ cls: 'seraph', name: 'Courier THRESHOLD', hull: 0.7, shield: 0.8, dmg: 0.6 }], goal: { type: 'pursuit', seconds: 110, at: 0.35, speed: 0.78 } },
-    { id: 'a2-sightline', act: 2, station: 'elysia', system: 'halcyon', name: 'The Halcyon Sightline', giver: 'Dr. Halima Oduya', reward: 680, support: 1,
+    { id: 'a2-sightline', condition: 'nebula', act: 2, station: 'elysia', system: 'halcyon', name: 'The Halcyon Sightline', giver: 'Dr. Halima Oduya', reward: 680, support: 1,
       brief: 'Two Directorate lance frigates hold the approaches to Halcyon. From four kilometres out they can put a lance through anything that tries to reach the relay. Elysia needs that line open.',
       objective: 'Destroy both Sentinels.', intel: 'Sentinel lance frigates. Their lances charge with a warning before they fire; turn out of the line when you hear it, then close the range. Up close their broadsides are light.',
       enemies: [{ cls: 'sentinel', name: 'Sentinel AUGUR-2', hull: 0.7, shield: 0.8, dmg: 0.75 }, { cls: 'sentinel', name: 'Sentinel AUGUR-7', hull: 0.6, shield: 0.7, diff: 'commander' }], goal: { type: 'destroy' } },
@@ -334,11 +334,11 @@
       brief: 'A clan smuggler has been buying Wraith spores at Widow and selling them to anyone with a grudge. She is leaving with a full hold. Stop her before she jumps.',
       objective: 'Disable the smuggler before she jumps (bring her below 30% hull).', intel: 'A fast Scrapjaw runner. She will not stop to fight, and an escort will try to block you.',
       enemies: [{ cls: 'scrapjaw', name: 'The Gallowglass', hull: 0.45, shield: 0.6, dmg: 0.6 }, { cls: 'scrapjaw', name: 'Gallowglass escort', hull: 0.4, shield: 0.55, diff: 'commander' }], goal: { type: 'pursuit', seconds: 120, at: 0.3, speed: 0.62 } },
-    { id: 'a3-stowaway', act: 3, station: 'meridian', system: 'innerpost', name: 'Stowaway', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 640, support: 0,
+    { id: 'a3-stowaway', opening: 'close', act: 3, station: 'meridian', system: 'innerpost', name: 'Stowaway', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 640, support: 0,
       brief: 'A freighter out of Juniper arrived at Innerpost with something growing in its hold. The something has left the freighter. It is the first Wraith inside Navy space, and it must be the last.',
       objective: 'Destroy the Wraith before it reaches the core worlds.', intel: 'A young bioship, hungry and fast-growing. Its hull regenerates when it is not under fire.',
       enemies: [{ cls: 'wraith', name: 'Innerpost stowaway', hull: 0.6, shield: 0.7 }], goal: { type: 'destroy' } },
-    { id: 'a3-quarantine', act: 3, station: 'juniper', system: 'bloom', name: 'Quarantine Line', giver: 'Portmaster Tobias Grail', reward: 700, support: 1,
+    { id: 'a3-quarantine', condition: 'nebula', act: 3, station: 'juniper', system: 'bloom', name: 'Quarantine Line', giver: 'Portmaster Tobias Grail', reward: 700, support: 1,
       brief: 'Wraith spawn are budding off the wreckage at Bloom. If they reach the Juniper lanes, the ring has to be abandoned. Burn the nursery out while it is still small.',
       objective: 'Destroy both Wraith spawn.', intel: 'Two young bioships. Their hulls regrow, so finish one before you turn to the next.',
       enemies: [{ cls: 'wraith', name: 'Wraith spawn', hull: 0.45, shield: 0.6 }, { cls: 'wraith', name: 'Wraith spawn', hull: 0.45, shield: 0.6, diff: 'commander' }], goal: { type: 'destroy' } },
@@ -346,7 +346,7 @@
       brief: 'The research vessel Lantern Moth went into Mire to sample the Wraith and has been hiding in the debris for two days. Bring her and her samples home.',
       objective: 'Escort the RV Lantern Moth to the jump beacon, or destroy the Wraith stalking her.', intel: 'A mature Wraith. Expect spore salvos aimed at the slower ship.',
       enemies: [{ cls: 'wraith', name: 'Mire stalker', hull: 0.75, shield: 0.8 }], goal: { type: 'escort', convoy: 'RV Lantern Moth · Research vessel', hunter: true } },
-    { id: 'a3-swarm', act: 3, station: 'tarn', system: 'widow', name: 'The Swarm at Widow', giver: 'Commodore Aris Penn', reward: 780, support: 1,
+    { id: 'a3-swarm', opening: 'pincer', act: 3, station: 'tarn', system: 'widow', name: 'The Swarm at Widow', giver: 'Commodore Aris Penn', reward: 780, support: 1,
       brief: 'Something small and fast is stripping the picket buoys at Widow, four at a time. The last buoy saw them before it went dark: a swarm of young Wraith, hunting together. Burn it out before it grows.',
       objective: 'Destroy the Thrall swarm.', intel: 'Four Thralls: small, quick Wraith swarmers that close to ram and spit plasma. Thin hulls that knit fast. Pick one and finish it before turning to the next.',
       enemies: [{ cls: 'thrall', name: 'Thrall swarm-leader', hull: 0.9, shield: 0.9, dmg: 0.7 }, { cls: 'thrall', name: 'Thrall', hull: 0.7, shield: 0.7, diff: 'commander' }, { cls: 'thrall', name: 'Thrall', hull: 0.7, shield: 0.7, diff: 'commander' }, { cls: 'thrall', name: 'Thrall', hull: 0.7, shield: 0.7, diff: 'commander' }],
@@ -408,7 +408,7 @@
   };
   const SHIP_WORD = { scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship', sentinel: 'lance frigate', thrall: 'swarm' };
   function contractFor(type, station, sys, act, r, id) {
-    const k = contractBase(type, station, sys, act, r, id), alt = foeFor(sys, act).alt;
+    const k = battlefield(contractBase(type, station, sys, act, r, id), sys), alt = foeFor(sys, act).alt;
     // A Thrall swarm comes as a pack: the contract's ships, topped up to the pack size, at nearly full strength (they are small).
     if (k.enemy === 'thrall' && k.type !== 'pursuit') {
       for (const e of k.enemies) { e.hull = round(Math.min(1, e.hull + 0.35)); e.shield = round(Math.min(1, e.shield + 0.3)); }
@@ -477,6 +477,48 @@
     return out;
   }
 
+  // ---------------- battlefield conditions and openings ----------------
+  // What makes two fights with the same objective play differently: the space they are fought in, and how they start.
+  // The battle page carries out each one (crew/conditions.js); `goals` lists the objectives it suits.
+  const CONDITIONS = {
+    ion: { short: 'Ion storm · shields recharge slowly and surges strip them', name: 'Ion storm', note: 'Ion storm: shields recharge at half rate, and every quarter-minute a surge strips a third of every ship’s shields.', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend', 'pursuit'] },
+    nebula: { short: 'Dense nebula · sensors 2.4 km, poor gunnery beyond', name: 'Dense nebula', note: 'Dense nebula: sensors reach 2.4 km and gunnery is poor beyond it. Contacts further out drop off the plot.', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend', 'pursuit'] },
+    rocks: { short: 'Asteroid field · rocks stop shells and torpedoes', name: 'Asteroid field', note: 'Asteroid field: rocks crowd the battlespace. They stop shells and torpedoes, and hurt to hit.', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend'] },
+    mines: { short: 'Old minefield · the mines take no sides', name: 'Old minefield', note: 'Old minefield: a field of drifting war-era mines lies across the battlespace. They take no sides.', goals: ['destroy', 'escort', 'survive', 'surrender'] },
+    gravity: { short: 'Gravity well · stay clear of the core', name: 'Gravity well', note: 'Gravity well: a collapsed star drags every ship toward it, and its core tears hulls apart.', goals: ['destroy', 'survive', 'surrender'] }
+  };
+  const OPENINGS = {
+    ambush: { name: 'Ambushed', note: 'Ambush: the enemy comes out of the jump wake astern of you.', goals: ['destroy', 'escort', 'survive', 'surrender'] },
+    close: { name: 'Close quarters', note: 'Close quarters: you drop out of the jump on top of them, broadside to broadside.', goals: ['destroy', 'survive', 'surrender'] },
+    pincer: { name: 'Surrounded', note: 'Surrounded: they have spread out and close from ahead and astern at once.', goals: ['destroy', 'survive'], pair: true },
+    hot: { name: 'Running hot', note: 'Running hot: you arrive straight from another fight, shields low and engines and reactor damaged.', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend', 'pursuit'] },
+    relief: { name: 'Picket under fire', note: 'Picket under fire: a Navy picket is already fighting here. Reach it in time and it fights beside you.', goals: ['destroy', 'survive'] }
+  };
+  // The kinds of space each region is known for.
+  const REGION_CONDITIONS = {
+    'Meridian Core': ['rocks', 'ion'], 'Kestrel Verge': ['rocks', 'nebula', 'ion'], 'Red Narrows': ['rocks', 'mines', 'gravity'],
+    'Ash Marches': ['mines', 'gravity', 'rocks'], 'Halcyon Belt': ['ion', 'nebula', 'gravity'], 'Harrow Expanse': ['nebula', 'ion', 'rocks']
+  };
+  const HAZARD_PAY = 0.15, OPENING_PAY = 0.1;
+  const PICKETS = ['MNS Lantern', 'MNS Tern', 'MNS Watchful', 'MNS Hollis', 'MNS Starling'];
+  const fits = (table, k, goal, pair) => !!table[k] && table[k].goals.includes(goal) && (!table[k].pair || pair);
+  // Rolls a contract's or ambush's battlefield from its own seed (so the board's other rolls are unchanged) and adds the
+  // hazard pay. opts.openings: the openings to draw from; opts.condition / opts.opening: chances.
+  function battlefield(k, sys, opts = {}) {
+    const r = rng(hash(k.id + ':field')), goal = k.goal.type, pair = k.enemies.length > 1;
+    const conds = (REGION_CONDITIONS[sys.region] || ['rocks']).filter(c => fits(CONDITIONS, c, goal, pair));
+    if (conds.length && r() < (opts.condition == null ? 0.55 : opts.condition)) k.condition = pick(r, conds);
+    const opens = (opts.openings || Object.keys(OPENINGS)).filter(o => fits(OPENINGS, o, goal, pair));
+    if (opens.length && r() < (opts.opening == null ? 0.5 : opts.opening)) k.opening = pick(r, opens);
+    if (k.opening === 'relief') k.picket = pick(r, PICKETS);
+    k.reward = Math.round(k.reward * (1 + (k.condition ? HAZARD_PAY : 0) + (k.opening && k.opening !== 'relief' ? OPENING_PAY : 0)));
+    return k;
+  }
+  // The briefing lines for a mission's battlefield.
+  function battlefieldNotes(m) {
+    return [m.condition && CONDITIONS[m.condition] && CONDITIONS[m.condition].note, m.opening && OPENINGS[m.opening] && OPENINGS[m.opening].note.replace('a Navy picket', m.picket || 'a Navy picket')].filter(Boolean);
+  }
+
   // ---------------- interceptions ----------------
   const INTERCEPT_CHANCE = [0, 0.06, 0.12, 0.18, 0.24, 0.3];   // by threat level
   // Returns the first system on the way (not counting the start) where hostiles drop out of the lane, or null.
@@ -490,10 +532,12 @@
     const enemies = pair
       ? [{ cls: foe.cls, ...crewed(foe, who), hull: round(s * 0.6), shield: round(s * 0.7) }, { cls: foe.cls, name: `${foe.group} wingman`, hull: round(s * 0.5), shield: round(s * 0.65), diff: 'commander' }]
       : [{ cls: foe.cls, ...crewed(foe, who), hull: round(Math.min(1, s * 0.85)), shield: round(Math.min(1, s * 0.9)) }];
-    return { id: `x:${id}:${seed}`, kind: 'intercept', system: id, act: Math.min(act, 3), name: `Interception at ${sys.name}`, captain: who, enemy: foe.cls,
+    const x = { id: `x:${id}:${seed}`, kind: 'intercept', system: id, act: Math.min(act, 3), name: `Interception at ${sys.name}`, captain: who, enemy: foe.cls,
       reward: 90 + 35 * threatLevel(sys) + (pair ? 60 : 0), objective: pair ? 'Destroy both ambushers.' : `Destroy ${commanded(enemies[0], SHIP_WORD[foe.cls])}.`,
       brief: `${foe.group} ships dropped out of the jump lane at ${sys.name} and matched your vector before the drive could cycle.`,
       intel: `${pair ? 'Two' : 'One'} ${foe.group} ${{ scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship' }[foe.cls]}${pair ? 's' : ''}.`, enemies, goal: { type: 'destroy' } };
+    // An ambush is sprung, so it never starts as a fair head-on approach.
+    return battlefield(x, sys, { condition: 0.4, opening: 1, openings: ['ambush', 'close', 'pincer'] });
   }
   // The chance of slipping an ambush: fast hulls and healthy engines get away more often.
   const FLEE = { sabre: 0.8, halberd: 0.7, bastion: 0.5, warden: 0.4, scrapjaw: 0.75, seraph: 0.7, revenant: 0.5 };
@@ -628,8 +672,11 @@
       env: story && src.id <= 5 ? src.id : ENV_BY_REGION[sys.region] || 0, gate: src.goal.type === 'escort',
       hail: story ? src.id : { name: lead.captain || lead.name, faction: foe.group, line: src.taunt || HAILS[lead.cls] },
       enemies: src.enemies.map(e => Object.assign({}, e)), goal: Object.assign({}, src.goal), ends: src.ends || null,
+      condition: src.condition || null, opening: src.opening || null, picket: src.picket || null,
       support: Number.isInteger(src.support) ? src.support : null, boss: src.boss && typeof src.boss === 'object' ? JSON.parse(JSON.stringify(src.boss)) : null
     };
+    // A picket under fire fights beside the fleet once relieved (index.html places it by the enemy).
+    if (spec.opening === 'relief') spec.friends = [{ cls: 'halberd', name: spec.picket || 'MNS Lantern', hull: 0.45, shield: 0.5, picket: true }];
     return shape(spec, story ? src.id : null, ctx);
   }
   const HAILS = {
@@ -677,6 +724,7 @@
     ACTS, STORY, STORY_ORDER, storyById, actOf, storyUnlocked, storyAvailable, openStory,
     STATIONS, nearestStation, SIDE, sideById, sideMissions, sideLeg,
     CONTRACT_TYPES, contracts, hostile, rollInterception, interception, fleeChance,
+    CONDITIONS, OPENINGS, REGION_CONDITIONS, battlefield, battlefieldNotes,
     ENV_BY_REGION, encounter, storyEncounter, supportCap, NARRATIVE, CONSEQUENCES, CHOICE_STAKES,
     FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle,
     SAVE_BASE, SLOT_KEY, SLOTS, slotKey, activeSlot, saveKey, DIFFICULTY, difficulty,

@@ -78,7 +78,11 @@ const Ambience={ctx:null,gain:null,started:false,on:(()=>{try{return localStorag
  mark(){const b=$('ambToggle');if(b){b.setAttribute('aria-pressed',String(this.on));b.title=this.on?'Ship ambience on (M)':'Ship ambience off (M)';b.classList.toggle('off',!this.on);}}};
 for(const ev of ['pointerdown','keydown'])window.addEventListener(ev,()=>{Ambience.start();if(Ambience.ctx&&Ambience.ctx.state==='suspended')Ambience.ctx.resume();},{passive:true});
 document.addEventListener('visibilitychange',()=>Ambience.level());
-function notesHtml(spec){return spec&&spec.notes&&spec.notes.length?`<div class="notes"><small>WHAT HAS CHANGED</small>${spec.notes.map(n=>`<div>${n}</div>`).join('')}</div>`:'';}
+function notesHtml(spec){return battlefieldHtml(spec)+(spec&&spec.notes&&spec.notes.length?`<div class="notes"><small>WHAT HAS CHANGED</small>${spec.notes.map(n=>`<div>${n}</div>`).join('')}</div>`:'');}
+// The space a fight happens in and how it starts (Campaign.CONDITIONS and OPENINGS), and the hazard pay they bring.
+function battlefieldHtml(m){const lines=m?Campaign.battlefieldNotes(m):[];return lines.length?`<div class="notes"><small>BATTLEFIELD${m.condition||m.opening&&m.opening!=='relief'?' · HAZARD PAY INCLUDED':''}</small>${lines.map(n=>`<div>${n}</div>`).join('')}</div>`:'';}
+// Short tags for a job card: "Ion storm · Ambushed".
+function battlefieldTags(m){return [m.condition&&Campaign.CONDITIONS[m.condition]?.name,m.opening&&Campaign.OPENINGS[m.opening]?.name].filter(Boolean).join(' · ');}
 const ORDER_LINES={win:['Clean work, captain. The station will hear about this.','That is one less threat on the lanes. The crew earned their pay today.','Job done. The yards will want to know what we broke this time.'],loss:['We got hurt, captain. The order is still open when we are ready.','That went badly. We regroup, repair, and go back.']};
 function gainRep(kind,win,station,system,apply=true){let rep=state.rep;const out=[];for(const [id,d] of Campaign.repChanges(kind,win,station,system)){const before=Campaign.standing(rep,id);rep=Campaign.adjustRep(rep,id,d);const after=Campaign.standing(rep,id);out.push({id,d:after.value-before.value,tier:after.level>before.level?after.name:null});}if(apply)state.rep=rep;return out;}
 function repHtml(list){const l=list.filter(x=>x.d);return l.length?`<p>${l.map(x=>`<b>${STATIONS[x.id].name}</b> ${x.d>0?'+':''}${x.d} standing${x.tier?` · now <b>${x.tier}</b>`:''}`).join('<br>')}</p>`:'';}

@@ -176,4 +176,27 @@ for (const st of Object.keys(C.STATIONS)) for (const cyc of [1, 2, 3]) for (cons
 const ambush = C.interception('rednarrows', 1, 3);
 assert.ok(ambush.enemies[0].captain === ambush.captain && ambush.enemies[0].name !== ambush.captain, 'an ambush leader flies a named ship');
 
+// Battlefield conditions and openings: rolled per contract from its own seed, only where they suit the objective
+const board = Object.keys(C.STATIONS).flatMap(st => [1, 2, 3, 4, 5, 6].flatMap(cyc => [1, 2, 3].flatMap(a => C.contracts(st, cyc, a, true))));
+for (const k of board) {
+  if (k.condition) assert.ok(C.CONDITIONS[k.condition].goals.includes(k.goal.type) && C.REGION_CONDITIONS[C.byId[k.system].region].includes(k.condition), `${k.name}: ${k.condition} suits it`);
+  if (k.opening) assert.ok(C.OPENINGS[k.opening].goals.includes(k.goal.type) && (!C.OPENINGS[k.opening].pair || k.enemies.length > 1), `${k.name}: ${k.opening} suits it`);
+}
+const share = f => board.filter(f).length / board.length;
+assert.ok(share(k => k.condition) > 0.35 && share(k => k.condition) < 0.75, 'about half the work has a condition: ' + share(k => k.condition));
+assert.ok(share(k => k.opening) > 0.2 && share(k => !k.opening && !k.condition) > 0.1, 'openings vary and some fights stay plain');
+for (const c of Object.keys(C.CONDITIONS)) assert.ok(board.some(k => k.condition === c), 'contracts roll ' + c);
+for (const o of Object.keys(C.OPENINGS)) assert.ok(board.some(k => k.opening === o), 'contracts roll ' + o);
+same(C.contracts('tarn', 3, 2), C.contracts('tarn', 3, 2), 'the board is stable for a cycle');
+const plainK = board.find(k => !k.condition && !k.opening && k.type === 'bounty'), hazardK = board.find(k => k.condition && !k.opening && k.type === 'bounty');
+assert.ok(plainK && hazardK && hazardK.reward > 200 + 60 * C.threatLevel(C.byId[hazardK.system]) + 90 * (hazardK.act - 1), 'hazard pay on a condition');
+const relief = board.find(k => k.opening === 'relief'), rspec = C.encounter(relief);
+assert.ok(rspec.friends.length === 1 && rspec.friends[0].picket && rspec.friends[0].name === relief.picket, 'a relieved picket fights beside the fleet');
+assert.ok(C.battlefieldNotes(relief).some(n => n.includes(relief.picket + ' is already fighting')), 'the briefing names the picket');
+for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) { const x = C.interception('rednarrows', 1, seed); assert.ok(['ambush', 'close', 'pincer'].includes(x.opening), 'an ambush is sprung: ' + x.opening); }
+const sideStatic = C.encounter(C.sideById['a2-static']);
+assert.equal(sideStatic.condition, 'ion', 'station missions can set their own battlefield');
+assert.equal(C.storyEncounter(1).condition, null, 'story operations keep their designed battlefield');
+assert.equal(C.storyEncounter(8).opening, null);
+
 console.log('Campaign data tests passed.');

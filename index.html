@@ -437,6 +437,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <script src="crew/campaign-data.js"></script>
 <script src="crew/fleet-controller.js"></script>
 <script src="crew/battle-environments.js"></script>
+<script src="crew/conditions.js"></script>
 <script src="crew/upgrades.js"></script>
 <script src="crew/ships.js"></script>
 <script src="crew/tutorial.js"></script>
@@ -1220,7 +1221,7 @@ function launchMissile(s, g, mount, target, first) {
 const MINE_GEO = new THREE.IcosahedronGeometry(6, 0);
 const MINE_MAT = new THREE.MeshStandardMaterial({ color: 0x3a2a2a, metalness: 0.6, roughness: 0.5, flatShading: true });
 const mines = [];
-for (let i = 0; i < 40; i++) {
+for (let i = 0; i < 72; i++) {   // room for an old minefield as well as the Revenants' own
   const g = new THREE.Group(); g.add(new THREE.Mesh(MINE_GEO, MINE_MAT)); const gl = makeGlow(new THREE.Color(4, 0.5, 0.3), 18); g.add(gl);
   g.visible = false; scene.add(g); mines.push({ obj: g, glow: gl, active: false, pos: g.position, vel: new V3(), life: 0, armT: 0, team: 'e', owner: null, dmg: 0, trig: 0 });
 }
@@ -1255,6 +1256,11 @@ function minesUpdate(dt) {
   }
 }
 
+// Battlefield conditions (ion storm, nebula, rocks, minefield, gravity well) and openings (crew/conditions.js).
+// fieldObstacles: the old minefield's mines, which the AI steers around like rocks.
+const fieldObstacles = [];
+const field = window.BroadsideConditions.create({ THREE, scene, V3, ships, asteroids, mines, obstacles: fieldObstacles, rockGeos, rockMat, showMsg, flash, damage, Sfx });
+
 // ---------------- game state ----------------
 let state = 'loading', game = null, menuT = 0;
 const cam = { yaw: 0.5, pitch: 0.28, dist: 760, mode: 'chase', curYaw: 0, curPitch: undefined, drag: false, lx: 0, ly: 0, shake: 0 };
@@ -1264,7 +1270,7 @@ function showMsg(text, dur = 2.4, bad = false) { const el = $('msg'); el.textCon
 let vignetteA = 0;
 
 function clearWorld() {
-  battleEnvironment.clear();
+  field.clear(); battleEnvironment.clear();
   for (const s of ships.slice()) removeShip(s);
   for (const b of shells) b.active = false;
   for (const t of torps) { t.active = false; t.obj.visible = false; }
@@ -1307,6 +1313,8 @@ function startGame() {
     if (f.shield) { e.sh = e.sh.map(v => Math.round(v * f.shield)); e.cap = e.cap.map(v => Math.round(v * f.shield)); }
     e.ai = { diff: DIFF.captain, side, flankOffset: side * 18, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
     e.target = enemy; placeShip(e, new V3(off * 0.3 + side * 900, 0, 3150), 0);
+    // A picket already under fire (the relief opening) starts out by the enemy, fighting it.
+    if (f.picket) { e.picket = true; e.ai.mode = 'broadside'; placeShip(e, new V3(enemy.pos.x + side * 650, 0, enemy.pos.z + 1150), Math.PI * 0.85); }
     allies.push(e);
   }
   campaignDiff = campaignMission && window.BroadsideCampaign ? window.BroadsideCampaign.difficulty(campaignSave && campaignSave.difficulty) : null;
@@ -1319,6 +1327,7 @@ function startGame() {
     DIFF,endGame,showMsg,hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>ship.key==='transport'&&templates.transport?null:battleEnvironment.buildFreighter(ship)
   }):null;
   fleet?.setup();
+  if (campaignMission) field.begin(campaignMission, { player, allies, placeShip });
   // Campaign difficulty and the state of the region's front scale enemy hulls; on Admiral the lesser captains fight a
   // grade better. Earlier decisions can silence a weapon or start enemy shields low.
   const frontHull = campaignMission && campaignMission.front ? campaignMission.front.hull : 1;
@@ -1350,10 +1359,13 @@ function startGame() {
   $('escorts').hidden = !allies.length; escortHudT = 0;
   $('escort-hold').hidden = !fleet?.convoy;
   $('escort-hold').textContent='HOLD CONVOY [H]';
-  if (campaignMission) $('campaign-objective').textContent = campaignMission.label + ' // ' + campaignMission.objective;
+  const fieldName = field.condition && window.BroadsideCampaign ? window.BroadsideCampaign.CONDITIONS[field.condition].name : '';
+  if (campaignMission) $('campaign-objective').textContent = campaignMission.label + ' // ' + campaignMission.objective + (fieldName ? ' // ' + fieldName.toUpperCase() : '');
+  if (fieldName) { const line = window.BroadsideCampaign.CONDITIONS[field.condition].short; setTimeout(() => { if (state === 'playing' && field.condition) showMsg(line, 4); }, 3800); }
   bridge?.incomingHail(campaignMission ? campaignMission.hail : 0);
   if(fleet)$('fleet-objective').textContent=fleet.status();
-  showMsg(enemy.name + ' sighted · ' + enemy.C.cls + (enemy.captain ? ' · ' + enemy.captain : '') + ' · ' + DIFF[aiKey].label, 3.4);
+  if (field.openingLine) showMsg(field.openingLine, 3.6, true);
+  else showMsg(enemy.name + ' sighted · ' + enemy.C.cls + (enemy.captain ? ' · ' + enemy.captain : '') + ' · ' + DIFF[aiKey].label, 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
   setTimeout(() => Voice.say('battle-stations', 0), 2000);
 }
@@ -1592,7 +1604,7 @@ function shieldsUpdate(s, dt) {
       if (s.focus >= 0 && s.focus !== i) s.sh[s.focus] = Math.min(s.cap[s.focus], s.sh[s.focus] + ex * 0.85);
     }
     const pause = t - s.hitT[i] < 1.5 ? 0.35 : 1;
-    s.sh[i] = Math.min(s.cap[i], s.sh[i] + C.regen * e.shd * w[i] * pause * (s.burn ? 0.5 : 1) * dt);
+    s.sh[i] = Math.min(s.cap[i], s.sh[i] + C.regen * e.shd * w[i] * pause * (s.burn ? 0.5 : 1) * field.regen * dt);
   }
   u.uStr.value.set(s.sh[0] / C.shield, s.sh[1] / C.shield, s.sh[2] / C.shield, s.sh[3] / C.shield); u.uFocus.value = s.focus; u.uT.value = t;
 }
@@ -1694,7 +1706,7 @@ function weaponsUpdate(s, dt) {
     if (f.missile) { launchMissile(s, f.g, f.m, tgt, f.first); continue; }
     const G = f.g;
     _v1.copy(f.m.local).applyMatrix4(s.obj.matrixWorld);
-    const err = (s.ai ? s.ai.diff.err : 0.012) + Math.abs(s.yawRate) * 0.3;   // a turning hull spoils the gunlaying
+    const err = ((s.ai ? s.ai.diff.err : 0.012) + Math.abs(s.yawRate) * 0.3) * field.scatter(s.pos.distanceTo(tgt.pos));   // a turning hull spoils the gunlaying; so does a nebula at range
     aimDir(s, tgt, _v1, G.speed, err, _v3);
     _v1.addScaledVector(_v3, 10);
     for (let k = 0; k < (G.pellets || 1); k++) {   // scatterguns throw a spread of pellets per shot
@@ -1941,7 +1953,7 @@ function collisions() {
 }
 
 // ---------------- AI captain ----------------
-const _br = {}, _bt = {};
+const _br = {}, _bt = {}, AVOID = [asteroids, fieldObstacles];
 function aiUpdate(s, dt) {
   const ai = s.ai, D = ai.diff, t = s.target;
   if (!s.alive) return;
@@ -1982,11 +1994,12 @@ function aiUpdate(s, dt) {
   }
   const giveB = give ? bearingTo(s, give.pos, _bt).b : 0;
   if (give) err = (giveB >= 0 ? -1 : 1) * 75;
-  // steer around rocks in the way
-  for (const a of asteroids) {
+  // steer around rocks (and a gravity well, and an old minefield's mines) in the way
+  avoid: for (const list of AVOID) for (const a of list) {
+    if (a.mine && !a.mine.active) continue;
     _v2.subVectors(a.pos, s.pos); const al = _v2.dot(s.fwd); if (al < 0 || al > 1600 + a.r) continue;
     _v3.copy(s.pos).addScaledVector(s.fwd, al).sub(a.pos);
-    if (Math.hypot(_v3.x, _v3.z) < a.r + 260) { _v4.copy(_v3).transformDirection(s.inv); err = (_v4.x >= 0 ? 1 : -1) * 60; break; }
+    if (Math.hypot(_v3.x, _v3.z) < a.r + (a.avoid || 260)) { _v4.copy(_v3).transformDirection(s.inv); err = (_v4.x >= 0 ? 1 : -1) * 60; break avoid; }
   }
   // do not ram: if the enemy is close and ahead, turn away from it
   if (dist < 750 && Math.abs(b) < 50 && ai.mode !== 'ram' && ai.mode !== 'flee') err = (b >= 0 ? -1 : 1) * 70;
@@ -2403,22 +2416,27 @@ function drawTac(cv, full) {
     g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, gr.range * sc, a0, a1); g.closePath(); g.fill(); g.stroke();
   }
   // enemy arcs and ship
-  const ep = toMap(E.pos, _mpE); const rel = -(E.yaw - P.yaw);
-  if (E.alive) for (const gr of E.groups) {
+  const ep = toMap(E.pos, _mpE); const rel = -(E.yaw - P.yaw), faint = dist > field.sensor;   // a nebula hides what its sensors cannot reach
+  if (field.sensor < Infinity) { g.strokeStyle = 'rgba(143,211,255,.35)'; g.setLineDash([2 * pr, 5 * pr]); g.beginPath(); g.arc(cx, cy, field.sensor * sc, 0, 7); g.stroke(); g.setLineDash([]); }
+  if (E.alive && !faint) for (const gr of E.groups) {
     if (gr.type === 'torpedo' || gr.type === 'missile') continue;
     const a0 = deg(gr.center - gr.half) + rel - Math.PI / 2, a1 = deg(gr.center + gr.half) + rel - Math.PI / 2;
     const hot = P.alive && inArc(E, gr, P.pos);
     g.fillStyle = hot ? 'rgba(255,91,79,.11)' : 'rgba(255,91,79,.035)'; g.strokeStyle = hot ? 'rgba(255,91,79,.6)' : 'rgba(255,91,79,.18)';
     g.beginPath(); g.moveTo(ep.x, ep.y); g.arc(ep.x, ep.y, gr.range * sc, a0, a1); g.closePath(); g.fill(); g.stroke();
   }
+  if (faint) { g.strokeStyle = 'rgba(255,91,79,.45)'; g.setLineDash([2 * pr, 3 * pr]); g.beginPath(); g.arc(ep.x, ep.y, 9 * pr, 0, 7); g.stroke(); g.setLineDash([]); g.fillStyle = 'rgba(255,179,170,.6)'; g.fillText('faint contact', ep.x + 12 * pr, ep.y - 8 * pr); }
+  else {
   _v2.copy(E.pos).addScaledVector(E.vel, 20); const vp = toMap(_v2, _mpV);
   g.strokeStyle = 'rgba(255,91,79,.55)'; g.setLineDash([3 * pr, 3 * pr]); g.beginPath(); g.moveTo(ep.x, ep.y); g.lineTo(vp.x, vp.y); g.stroke(); g.setLineDash([]);
   drawShip2D(g, ep.x, ep.y, rel, E, Math.max(sc, 6 * pr / E.C.hullE.r[2]), E.alive ? '#ff5b4f' : '#7a4a44', 'rgba(255,91,79,.25)');
   g.fillStyle = '#ffb3aa'; g.fillText((dist / 1000).toFixed(2) + ' km' + (Math.abs(ep.alt) > 60 ? (ep.alt > 0 ? ' ▲' : ' ▼') + Math.round(Math.abs(ep.alt)) + ' m' : ''), ep.x + 10 * pr, ep.y - 8 * pr);
+  }
   for(const ship of ships){
     if(ship===P||ship===E)continue;
-    const q=toMap(ship.pos,_mp);
     const friendly=ship.team===P.team;
+    if(!friendly&&ship.pos.distanceTo(P.pos)>field.sensor)continue;
+    const q=toMap(ship.pos,_mp);
     drawShip2D(g,q.x,q.y,-(ship.yaw-P.yaw),ship,Math.max(sc,5*pr/ship.C.hullE.r[2]),friendly?'#81e7ab':'#ff836b',friendly?'rgba(90,230,164,.22)':'rgba(255,90,70,.22)');
     g.fillStyle=friendly?'#9fe9c5':'#ffb39d';g.fillText(ship.name.slice(0,22),q.x+8*pr,q.y-8*pr);
   }
@@ -2436,6 +2454,7 @@ function drawTac(cv, full) {
     g.fillStyle = '#ffd796'; for (let i = 20; i < n; i += 20) { const m = toMap(PATH[i], _mp); g.fillRect(m.x - 2 * pr, m.y - 2 * pr, 4 * pr, 4 * pr); }
   }
   g.fillStyle = 'rgba(147,160,179,.35)';
+  if (field.well) { const m = toMap(field.well.pos, _mp); g.strokeStyle = 'rgba(255,140,70,.7)'; g.beginPath(); g.arc(m.x, m.y, Math.max(6 * pr, field.well.r * 2.2 * sc), 0, 7); g.stroke(); g.fillStyle = '#ffb27a'; g.fillText('GRAVITY WELL', m.x + 10 * pr, m.y - 10 * pr); }
   for (const a of asteroids) { const m = toMap(a.pos, _mp); if (m.x < -60 || m.y < -60 || m.x > w + 60 || m.y > h + 60) continue; g.beginPath(); g.arc(m.x, m.y, Math.max(1.5 * pr, a.r * sc), 0, 7); g.fill(); }
   for (const t of torps) if (t.active) { const m = toMap(t.pos, _mp); g.fillStyle = t.team === 'p' ? '#8fd3ff' : '#ff5b4f'; g.beginPath(); g.arc(m.x, m.y, (t.kind === 'missile' ? 1.8 : 3) * pr, 0, 7); g.fill(); }
   g.strokeStyle = '#ff5b4f'; g.lineWidth = 1.5 * pr;
@@ -2606,6 +2625,7 @@ function updateGame(dt) {
     pointDefence(s, dt); firesUpdate(s, dt);
     if (s.alive && s.pos.length() > ARENA + 600) damage(s, 12 * dt, 'shell', _v1.set(0, 0, 0), null);
   }
+  field.tick(dt, player);
   shellsUpdate(dt); torpsUpdate(dt); minesUpdate(dt); collisions();
   if (game.ending) { game.endT -= dt; if (game.endT <= 0) showOver(); }
 }
@@ -2707,7 +2727,7 @@ function frame(now) {
 }
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
-  get state() { return state; }, get game() { return game; }, get bridge() { return bridge; }, get fleet() {return fleet;}, get cam() { return cam; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
+  get state() { return state; }, get game() { return game; }, field, asteroids, get bridge() { return bridge; }, get fleet() {return fleet;}, get cam() { return cam; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
   start: startGame, setPips, fireGroup, inArc, Sfx, damage, armed, get tutorial() { return tutorial; },
   step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } },
   // Balance testing (tools/balance.mjs): stage an encounter from the current save, let the AI fly the player's ship

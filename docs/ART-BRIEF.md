@@ -24,7 +24,7 @@ For a future high-resolution per-character replacement pass, save each image as 
 
 ## Harlan's voice
 
-**Status.** All 13 are recorded, generated with ElevenLabs in the voice The Clay Jockey (Broadside collection). In the Act I briefing `{ship}` is read as "your ship".
+**Status.** All 13 are recorded, generated with ElevenLabs in the voice The Clay Jockey (Broadside collection). In the Act I briefing `{ship}` is read as "your ship". Each clip is then softened (a cut around 2.6 kHz, a gentle de-ess and a high-shelf cut above 7 kHz, a small lift at 220 Hz) and mixed over a low-passed loop of `sfx/engine.mp3` about 22 dB under the voice, with a 0.35 s lead-in and 0.6 s tail of hum; loudness stays matched to the original take. A re-recorded line should get the same treatment.
 
 One MP3 per transmission in `voice/`, with the file names below. The voice should be an older British or mid-Atlantic man: measured, weary and authoritative, warm underneath. Speak each line as written. In the Act I briefing, `[ship name]` is the player's ship; record it as "your ship" or leave the phrase out. The source text is `NARRATIVE` and `ACTS[].briefing` in `crew/campaign-data.js`.
 

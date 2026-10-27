@@ -792,9 +792,8 @@ const SFX_FILES = ['cannon', 'lasercannon', 'turret', 'lance', 'pd1', 'pd2', 'to
 const sfxRaw = {};
 // spoken bridge alerts, voiced with ElevenLabs. Only lines listed here are fetched; every other line the game asks for
 // is skipped quietly, so a new line needs just its file in voice/ and its name added below.
-// Wanted, not yet recorded: enemy-shields-down, hull-critical, torpedoes-inbound, mines-detected, torpedo-away,
-// afterburners, brace, battle-stations, enemy-destroyed, ship-lost
-const VOICE_LINES = ['shields-down', 'missiles-inbound'];
+const VOICE_LINES = ['shields-down', 'enemy-shields-down', 'missiles-inbound', 'torpedoes-inbound', 'mines-detected', 'hull-critical',
+  'torpedo-away', 'afterburners', 'brace', 'battle-stations', 'enemy-destroyed', 'ship-lost'];
 function prefetchSfx() {
   for (const n of SFX_FILES) sfxRaw[n] = fetch('sfx/' + n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).catch(() => null);
   for (const n of VOICE_LINES) sfxRaw['v:' + n] = fetch('voice/' + n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).catch(() => null);

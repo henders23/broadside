@@ -2,7 +2,7 @@
 
 Still needed: thirteen voice clips for Fleet Admiral Harlan, and one ship model (the Bloom-Mother). The portraits and the other seven models below are in the game; their prompts are kept for reference.
 
-**25 October 2026 status:** all eight named characters now display distinct **photorealistic generated portraits**, cropped from `img/commanders/photoreal-atlas.webp` (4 × 2; 96 × 120 pixels per tile), through `crew/personnel.js` and `crew/personnel.css`. Earlier 768 × 960-viewBox SVG concept portraits remain as fallbacks in `img/commanders/<id>.svg`. High-resolution per-character WebP masters were generated but are not in GitHub; the current atlas is optimised for the small in-game UI. Harlan's 13 MP3 recordings and dedicated station/transport GLB models remain outstanding.
+**25 October 2026 status:** all eight named characters now display distinct **photorealistic generated portraits**, cropped from `img/commanders/photoreal-atlas.webp` (4 × 2; 96 × 120 pixels per tile), through `crew/personnel.js` and `crew/personnel.css`. Earlier 768 × 960-viewBox SVG concept portraits remain as fallbacks in `img/commanders/<id>.svg`. High-resolution per-character WebP masters were generated but are not in GitHub; the current atlas is optimised for the small in-game UI. Harlan's 13 transmissions are now recorded (see below).
 
 - **Voice** is picked up automatically once the files exist: each clip plays when its transmission opens (and stops when it closes). Until then Harlan's transmissions are text only.
 - **Ship models** need a small code change each when they arrive (file, length and proportions in `crew/ships.js`; `refit()` fits the hit and shield ellipsoids and the gun and engine mounts).
@@ -23,6 +23,8 @@ For a future high-resolution per-character replacement pass, save each image as 
 | `choir.webp` | The Choir, Wraith brood (Operation 7) | An alien collective: three translucent organic forms grown together like coral and orchid, ridged membranes with bioluminescent green veins, a suggestion of eyeless faces in the folds. The living interior of a bioship, green spore haze. |
 
 ## Harlan's voice
+
+**Status.** All 13 are recorded, generated with ElevenLabs in the voice The Clay Jockey (Broadside collection). In the Act I briefing `{ship}` is read as "your ship". Each clip is then softened (a cut around 2.6 kHz, a gentle de-ess and a high-shelf cut above 7 kHz, a small lift at 220 Hz) and mixed over a low-passed loop of `sfx/engine.mp3` about 22 dB under the voice, with a 0.35 s lead-in and 0.6 s tail of hum; loudness stays matched to the original take. A re-recorded line should get the same treatment.
 
 One MP3 per transmission in `voice/`, with the file names below. The voice should be an older British or mid-Atlantic man: measured, weary and authoritative, warm underneath. Speak each line as written. In the Act I briefing, `[ship name]` is the player's ship; record it as "your ship" or leave the phrase out. The source text is `NARRATIVE` and `ACTS[].briefing` in `crew/campaign-data.js`.
 

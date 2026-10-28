@@ -107,9 +107,9 @@ await suite('content', { random: 0.99 }, async ({ page, ctx, base, KEY, check, s
   st = await read();
   check(st.pendingResult.tacticalOutcome === 'station_held' && st.pendingResult.outcome === 'win', 'the win is saved');
 
-  // --- Pursuit: the Midway courier
+  // --- Pursuit: the Midway courier, without its bait twist (tests/fleet-controller.test.js covers that)
   await fresh({ completed: [1, 2, 3, 8], actBriefed: 2, system: 'midway', tutorial: 'done' });
-  await battle("C.encounter({ ...C.sideById['a2-courier'], kind: 'side' }, ctx)");
+  await battle("C.encounter({ ...C.sideById['a2-courier'], kind: 'side', twist: null }, ctx)");
   const z0 = await S(() => window.__sim.enemy.pos.z);
   await S(() => window.__sim.step(300)); await page.waitForTimeout(300);
   const p = await S(() => { const s = window.__sim, q = s.fleet.quarry; return { z: q.pos.z, mode: q.ai.mode, vmax: q.C.vmax, base: s.CLASSES.seraph.vmax }; });
@@ -121,7 +121,7 @@ await suite('content', { random: 0.99 }, async ({ page, ctx, base, KEY, check, s
   await page.goto(base + '/campaign.html'); await page.waitForTimeout(1200);
   check((await page.textContent('#modalbody')).includes('is dead in space'), 'the report says the quarry was taken');
   // and a quarry that gets away
-  await battle("C.encounter({ ...C.sideById['a2-courier'], kind: 'side' }, ctx)");
+  await battle("C.encounter({ ...C.sideById['a2-courier'], kind: 'side', twist: null }, ctx)");
   await S(() => { const s = window.__sim; for (let i = 0; i < 12 && s.state === 'playing'; i++) s.step(300); });
   check(await over() && (await page.textContent('#over-word')) === 'Quarry escaped', 'the clock runs out: quarry escaped');
   await page.goto(base + '/campaign.html'); await page.waitForTimeout(1200);

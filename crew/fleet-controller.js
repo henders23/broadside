@@ -288,14 +288,14 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   const t=twist.type;twist.fired=true;
   if(t==='reinforce'){
    ambush(twist.enemies||[]);
-   showMsg('Contacts jumping in astern · '+(twist.enemies||[]).length+' more hostile'+((twist.enemies||[]).length===1?'':'s'),3.4,true);
+   showMsg('Contacts jumping in astern',3.4,true);
    leadSays(twist.line);
   }
   if(t==='defect'){
    const d=defector();if(!d)return;
    d.team='p';d.friend=true;d.escort=true;d.defector=true;d.ai.flankOffset=0;allies.push(d);
    const foes=hostile();d.target=foes.reduce((b,h)=>!b||distance(h.pos,d.pos)<distance(b.pos,d.pos)?h:b,null);
-   showMsg(d.name+' is breaking formation · it has turned on its own side',3.4);
+   showMsg(d.name+' has changed sides',3.4);
    hail?.({name:d.captain||d.name,faction:spec.hail&&spec.hail.faction||'',line:'We are done dying for them. Firing on your target.'});
    if(getSelected()===d){const n=foes[0];if(n){setSelected(n);player.target=n;}}
    if(!foes.length)finish('win',hostileCount>1?'fleet_destroyed':'enemy_destroyed');
@@ -306,7 +306,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    fleeing=l;fleeT=45;fleeAt={x:ux*6000,z:uz*6000};
    l.C={...l.C,vmax:l.C.vmax*.75};   // running on damaged engines, so it can be caught
    if(l.ai)l.ai.flee=fleeAt;
-   showMsg(l.name+' is breaking off · it is running for the jump point',3.4,true);
+   showMsg(l.name+' is running for it',3.4,true);
    setObjective?.('Catch the '+l.name+' before it jumps');
    leadSays(twist.line);
   }
@@ -322,11 +322,11 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    gate=Object.freeze({x:GATE.x>0?-2500:2500,y:GATE.y,z:-700,radius:GATE.radius});
    gateFrom=Math.hypot(convoy.pos.x-gate.x,convoy.pos.z-gate.z);noticeStage=Math.max(noticeStage,1);
    moveGate?.(gate);
-   showMsg('Jump beacon compromised · '+convoyName()+' rerouting to the auxiliary beacon',3.6,true);
+   showMsg('Beacon compromised · convoy rerouting',3.6,true);
    setObjective?.('Get the '+convoyName()+' to the auxiliary beacon');
   }
-  if(t==='stall'&&convoy){twist.until=elapsed+30;showMsg(convoyName()+': drive failure · one-third speed for thirty seconds',3.4,true);}
-  if(t==='blackout'&&station){twist.until=elapsed+35;station.sh=station.sh.map(()=>0);showMsg(station.name.split(' · ')[0]+': shield generator down · thirty-five seconds to repair',3.4,true);}
+  if(t==='stall'&&convoy){twist.until=elapsed+30;showMsg(convoyName()+': drive failure',3.4,true);}
+  if(t==='blackout'&&station){twist.until=elapsed+35;station.sh=station.sh.map(()=>0);showMsg('Station shields down · 35 seconds',3.4,true);}
  }
  function twistTick(dt){
   if(!twist.fired){

@@ -161,7 +161,7 @@ const pair=[{cls:'scrapjaw',name:'Corsair lead'},{cls:'scrapjaw',name:'Corsair w
  f.fleet.tick(.1);assert.equal(wing.team,'e');
  wing.hull=20;f.fleet.tick(.1);
  assert.equal(wing.team,'p');assert.ok(f.allies.includes(wing)&&wing.target===f.boss,'the defector fights for us');
- assert.ok(f.events.some(e=>e.includes('turned on its own side')));
+ assert.ok(f.events.some(e=>e==='Corsair wingman has changed sides'));
  f.boss.alive=false;f.fleet.onDestroyed(f.boss);assert.equal(f.outcome(),'win');
 }
 {

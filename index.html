@@ -1323,7 +1323,7 @@ function startGame() {
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
     encounter:campaignMission,allies,makeShip,placeShip,ships,player,primaryEnemy:enemy,
     getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
-    DIFF,endGame,showMsg,moveGate:p=>battleEnvironment.moveGate(p),hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>ship.key==='transport'&&templates.transport?null:battleEnvironment.buildFreighter(ship)
+    DIFF,endGame,showMsg,moveGate:p=>battleEnvironment.moveGate(p),setObjective:t=>{$('campaign-objective').textContent=campaignMission.label+' // '+t;},hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>ship.key==='transport'&&templates.transport?null:battleEnvironment.buildFreighter(ship)
   }):null;
   fleet?.setup();
   if (campaignMission) field.begin(campaignMission, { player, allies, placeShip });
@@ -2334,7 +2334,7 @@ let ownRows = [], foeRows = [], wEls = {}, subEls = {}, pipEls = {};
 function buildHud() {
   _els = {};
   $('own-name').textContent = player.name; $('own-cls').textContent = player.C.cls;
-  $('foe-name').textContent = enemy.name; $('foe-cls').textContent = enemy.C.cls + (enemy.captain ? ' · ' + enemy.captain : '') + (enemy.ai ? ' · ' + enemy.ai.diff.label + ' rated' : '');
+  $('foe-name').textContent = enemy.name; $('foe-cls').textContent = enemy.C.cls + (enemy.captain ? ' · ' + enemy.captain.split(' ').pop() : '') + (enemy.ai ? ' · ' + enemy.ai.diff.label + ' rated' : '');
   $('own-pips').innerHTML = [['eng', 'ENG', '1'], ['shd', 'SHD', '2'], ['wpn', 'WPN', '3']].map(([k, l, key]) =>
     `<div class="pipcol ${k}"><div class="pp" id="pp-${k}">${'<i></i>'.repeat(8)}</div><span>${l} <kbd>${key}</kbd></span></div>`).join('');
   $('own-subs').innerHTML = SUBS.map(k => `<button type="button" class="sub" data-k="${k}" id="sub-${k}"><span>${subName(player, k)}</span><div class="bar"><i></i></div><span>100</span></button>`).join('');
@@ -2507,7 +2507,7 @@ function updateHud(dt) {
   if (fleet && fleet.allies.length) { escortHudT -= dt; if (escortHudT <= 0) { escortHudT = 0.25; drawEscorts(); } }
   if (fleet && fleet.boss) drawBossBar();
   const P = player, E = enemy;
-  setT($c('foe-name'),E.name);setT($c('foe-cls'),E.captain?E.C.cls+' · '+E.captain:E.C.cls);
+  setT($c('foe-name'),E.name);setT($c('foe-cls'),E.captain?E.C.cls+' · '+E.captain.split(' ').pop():E.C.cls);   // the captain by surname; the full name is in the hail
   camera.updateMatrixWorld();
   project(E.pos, _sc);
   const mk = $c('mk'), oa = $c('offarrow');

@@ -388,6 +388,8 @@
   function crewed(foe, who) { return foe.ships ? { name: foe.ships[Math.max(0, foe.names.indexOf(who)) % foe.ships.length], captain: who } : { name: who }; }
   // "Captain Mara Quill's raider, the Black Gull", or the ship's name alone when it has no captain.
   const commanded = (e, ship) => e.captain ? `${e.captain}’s ${ship}, the ${e.name}` : e.name;
+  // The battle HUD's shorter objective: the ship alone.
+  const shipOnly = e => e.captain ? 'the ' + e.name : e.name;
   const CONVOYS = ['MV Calloway', 'MV Sunward', 'MV Brightwater', 'MV Tessaly', 'MV Orison', 'MV Hale', 'MV Quiet Harbour'];
   // The independent and contested systems belong to whoever is raiding them in the current act.
   const LOCAL = { 1: 'Pirates', 2: 'Machines', 3: 'Aliens' };
@@ -428,7 +430,7 @@
       const who = pick(r, foe.names);
       return Object.assign(base, { name: 'Bounty: ' + who, captain: who, reward: 200 + 60 * lvl + 90 * (a - 1),
         brief: `${who} has been raiding traffic out of ${sys.name}. ${STATIONS[station].name} has posted a bounty for the ${ship} and a bonus for doing it quietly.`,
-        objective: `Destroy ${commanded(crewed(foe, who), ship)}.`, intel: `${foe.group} ${ship}, rated ${sys.threat.toLowerCase()} threat.`,
+        objective: `Destroy ${commanded(crewed(foe, who), ship)}.`, hud: `Destroy ${shipOnly(crewed(foe, who))}`, intel: `${foe.group} ${ship}, rated ${sys.threat.toLowerCase()} threat.`,
         enemies: [{ cls: foe.cls, ...crewed(foe, who), hull: round(Math.min(1, s + 0.15)), shield: round(Math.min(1, s + 0.2)) }], goal: { type: 'destroy' } });
     }
     if (type === 'patrol') {
@@ -471,7 +473,7 @@
       k.priority = true; k.name = 'Priority ' + k.name.charAt(0).toLowerCase() + k.name.slice(1); k.reward = Math.round(k.reward * 1.4);
       for (const e of k.enemies) { e.hull = round(Math.min(1, e.hull + 0.15)); e.shield = round(Math.min(1, e.shield + 0.15)); }
       k.enemies.push({ cls: k.enemies[0].cls, name: (k.enemies[0].captain || k.enemies[0].name).split(' ').pop() + '’s wingman', hull: 0.4, shield: 0.55, diff: 'commander' });
-      k.objective = `Destroy ${commanded(k.enemies[0], SHIP_WORD[k.enemy])}, and its wingman.`; k.support = 0;
+      k.objective = `Destroy ${commanded(k.enemies[0], SHIP_WORD[k.enemy])}, and its wingman.`; k.hud = `Destroy ${shipOnly(k.enemies[0])} and its wingman`; k.support = 0;
       out.push(k);
     }
     return out;
@@ -570,7 +572,7 @@
       ? [{ cls: foe.cls, ...crewed(foe, who), hull: round(s * 0.6), shield: round(s * 0.7) }, { cls: foe.cls, name: `${foe.group} wingman`, hull: round(s * 0.5), shield: round(s * 0.65), diff: 'commander' }]
       : [{ cls: foe.cls, ...crewed(foe, who), hull: round(Math.min(1, s * 0.85)), shield: round(Math.min(1, s * 0.9)) }];
     const x = { id: `x:${id}:${seed}`, kind: 'intercept', system: id, act: Math.min(act, 3), name: `Interception at ${sys.name}`, captain: who, enemy: foe.cls,
-      reward: 90 + 35 * threatLevel(sys) + (pair ? 60 : 0), objective: pair ? 'Destroy both ambushers.' : `Destroy ${commanded(enemies[0], SHIP_WORD[foe.cls])}.`,
+      reward: 90 + 35 * threatLevel(sys) + (pair ? 60 : 0), objective: pair ? 'Destroy both ambushers.' : `Destroy ${commanded(enemies[0], SHIP_WORD[foe.cls])}.`, hud: pair ? 'Destroy both ambushers' : `Destroy ${shipOnly(enemies[0])}`,
       brief: `${foe.group} ships dropped out of the jump lane at ${sys.name} and matched your vector before the drive could cycle.`,
       intel: `${pair ? 'Two' : 'One'} ${foe.group} ${{ scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship' }[foe.cls]}${pair ? 's' : ''}.`, enemies, goal: { type: 'destroy' } };
     // An ambush is sprung, so it never starts as a fair head-on approach.

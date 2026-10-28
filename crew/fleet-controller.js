@@ -12,7 +12,7 @@ const ESCAPE=Object.freeze({x:0,z:-6200});
 // free picks the hostile nearest the escort itself.
 const ORDERS=Object.freeze({focus:'Focus my target',defend:'Defend the flagship',free:'Engage freely'});
 
-function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnemy,allies=[],getSelected,setSelected,DIFF,endGame,showMsg,hail,game,V3,buildFreighter,moveGate}){
+function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnemy,allies=[],getSelected,setSelected,DIFF,endGame,showMsg,hail,game,V3,buildFreighter,moveGate,setObjective}){
  const spec=encounter||(missionId&&root.BroadsideCampaign?root.BroadsideCampaign.storyEncounter(Number(missionId)):null)||{enemies:[],goal:{type:'destroy'}};
  const goal=spec.goal||{type:'destroy'},extras=[];
  let convoy=null,station=null,quarry=null,gate=GATE,gateFrom=0,kills=0,fleeing=null,fleeAt=null,fleeT=0,wave=0,waveT=0,held=false,phase='transit',retargetTimer=0,noticeStage=0,elapsed=0,hostileCount=1,order='focus',escortT=0,spreadT=4,bossPhase=0;
@@ -307,6 +307,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    l.C={...l.C,vmax:l.C.vmax*.75};   // running on damaged engines, so it can be caught
    if(l.ai)l.ai.flee=fleeAt;
    showMsg(l.name+' is breaking off · it is running for the jump point',3.4,true);
+   setObjective?.('Catch the '+l.name+' before it jumps');
    leadSays(twist.line);
   }
   if(t==='bait'&&quarry){
@@ -314,6 +315,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    quarry=null;goal.type='destroy';
    ambush(twist.enemies||[]);
    showMsg('It was bait · ambushers jumping in astern',3.4,true);
+   setObjective?.('Destroy the '+q.name+' and the ambushers');
    hail?.({name:q.captain||q.name,faction:spec.hail&&spec.hail.faction||'',line:'You took the bait, Navy. Now you are the quarry.'});
   }
   if(t==='divert'&&convoy){
@@ -321,6 +323,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    gateFrom=Math.hypot(convoy.pos.x-gate.x,convoy.pos.z-gate.z);noticeStage=Math.max(noticeStage,1);
    moveGate?.(gate);
    showMsg('Jump beacon compromised · '+convoyName()+' rerouting to the auxiliary beacon',3.6,true);
+   setObjective?.('Get the '+convoyName()+' to the auxiliary beacon');
   }
   if(t==='stall'&&convoy){twist.until=elapsed+30;showMsg(convoyName()+': drive failure · one-third speed for thirty seconds',3.4,true);}
   if(t==='blackout'&&station){twist.until=elapsed+35;station.sh=station.sh.map(()=>0);showMsg(station.name.split(' · ')[0]+': shield generator down · thirty-five seconds to repair',3.4,true);}

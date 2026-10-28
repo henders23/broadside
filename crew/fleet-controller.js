@@ -12,11 +12,13 @@ const ESCAPE=Object.freeze({x:0,z:-6200});
 // free picks the hostile nearest the escort itself.
 const ORDERS=Object.freeze({focus:'Focus my target',defend:'Defend the flagship',free:'Engage freely'});
 
-function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnemy,allies=[],getSelected,setSelected,DIFF,endGame,showMsg,hail,game,V3,buildFreighter}){
+function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnemy,allies=[],getSelected,setSelected,DIFF,endGame,showMsg,hail,game,V3,buildFreighter,moveGate}){
  const spec=encounter||(missionId&&root.BroadsideCampaign?root.BroadsideCampaign.storyEncounter(Number(missionId)):null)||{enemies:[],goal:{type:'destroy'}};
  const goal=spec.goal||{type:'destroy'},extras=[];
- let convoy=null,station=null,quarry=null,wave=0,waveT=0,held=false,phase='transit',retargetTimer=0,noticeStage=0,elapsed=0,hostileCount=1,order='focus',escortT=0,spreadT=4,bossPhase=0;
+ let convoy=null,station=null,quarry=null,gate=GATE,gateFrom=0,kills=0,fleeing=null,fleeAt=null,fleeT=0,wave=0,waveT=0,held=false,phase='transit',retargetTimer=0,noticeStage=0,elapsed=0,hostileCount=1,order='focus',escortT=0,spreadT=4,bossPhase=0;
  const boss=spec.boss&&spec.boss.phases?{...spec.boss,ship:primaryEnemy}:null;
+ // A mid-battle twist (crew/campaign-data.js TWISTS): sprung once, when its trigger is met. Bosses have phases instead.
+ const twist=spec.twist&&spec.twist.type&&!boss?{...spec.twist,fired:false,until:0}:null;
  const hostile=()=>ships.filter(s=>s.team==='e'&&s.alive);
  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
@@ -100,14 +102,14 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    primaryEnemy.isBoss=true;
   }
  }
- function addHostile(e,side,pos){
+ function addHostile(e,side,pos,yaw=Math.PI){
   const ship=makeShip(e.cls,'e');
   ship.name=e.name||ship.name;ship.captain=e.captain||'';
   scale(ship,e);
   if(e.lattice)ship.latticeNode=true;
   ship.ai={diff:DIFF[e.diff]||DIFF.commander||DIFF.captain,side,flankOffset:side*27,shT:3,pwT:0,mode:'close',sideT:0};
   ship.target=station?.alive&&Math.random()<.5?station:player;
-  placeShip(ship,pos,Math.PI);
+  placeShip(ship,pos,yaw);
   extras.push(ship);
   return ship;
  }
@@ -174,6 +176,8 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
  }
  function onDestroyed(ship){
   if(game.ending)return;
+  if(ship.team==='e')kills++;
+  if(ship===fleeing)fleeing=null;
   if(ship===player){finish('lose','flagship_lost');return;}
   if(ship.civilian){finish('lose','convoy_lost');return;}
   if(ship.post){finish('lose','station_lost');return;}
@@ -218,18 +222,20 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    finish('win','surrender');game.endT=.35;return;
   }
   if(boss)bossTick();
+  if(twist){twistTick(dt);if(game.ending)return;}
   if(goal.type==='survive'&&player.alive&&elapsed>=(goal.seconds||100)){
    finish('win','extracted');game.endT=.35;return;
   }
   if(convoy?.alive){
-   convoy.step=held?1:3;
-   convoy.rudder=0;
+   convoy.step=held?1:stalled()?2:3;
+   convoy.rudder=steerConvoy();
    convoy.climb=0;
-   // Holding is deliberate; extraction requires entering the visual gate.
-   if(!held&&convoy.pos.z<=GATE.z&&Math.abs(convoy.pos.x-GATE.x)<GATE.radius&&Math.abs(convoy.pos.y-GATE.y)<GATE.radius){
+   // Holding is deliberate; extraction requires entering the visual gate (wherever it now is).
+   const inGate=gate===GATE?convoy.pos.z<=GATE.z&&Math.abs(convoy.pos.x-GATE.x)<GATE.radius:Math.hypot(convoy.pos.x-gate.x,convoy.pos.z-gate.z)<gate.radius;
+   if(!held&&inGate&&Math.abs(convoy.pos.y-gate.y)<gate.radius){
     phase='extracted';finish('win','escort_extracted');return;
    }
-   const progress=clamp((3650-convoy.pos.z)/(3650-GATE.z),0,1);
+   const progress=convoyProgress();
    if(progress>.4&&noticeStage===0){noticeStage=1;showMsg(convoyName()+': halfway to the extraction corridor',2.8);}
    if(progress>.78&&noticeStage===1){noticeStage=2;showMsg(convoyName()+': jump beacon in range soon',2.8);}
    // The lead hunter alternates between the easier civilian target and a captain who interferes.
@@ -253,16 +259,106 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   }
   for(const ship of hostile())if(!ship.target?.alive)ship.target=player.alive?player:escorts()[0]||(convoy?.alive?convoy:null);
  }
+ // ---- mid-battle twists ----
+ const towards=(from,to)=>Math.atan2(-(to.x-from.x),-(to.z-from.z));   // the yaw that points from one spot at another
+ const wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
+ // Spots astern of the flagship, alternating sides, for ships jumping in behind it.
+ function astern(i){
+  const f=player.fwd||{x:0,z:-1},side=i%2?1:-1,w=500+i*380;
+  return new V3(player.pos.x-f.x*2400-f.z*side*w,(player.pos.y||0)+60,player.pos.z-f.z*2400+f.x*side*w);
+ }
+ function convoyProgress(){
+  if(gate===GATE)return clamp((3650-convoy.pos.z)/(3650-GATE.z),0,1);
+  return clamp(1-Math.hypot(convoy.pos.x-gate.x,convoy.pos.z-gate.z)/(gateFrom||1),0,1);
+ }
+ // The convoy flies straight for the beacon, and turns for a new one when it has been rerouted.
+ function steerConvoy(){
+  if(gate===GATE||!Number.isFinite(convoy.yaw))return 0;
+  return clamp(-wrap(towards(convoy.pos,gate)-convoy.yaw)*3,-1,1);
+ }
+ const stalled=()=>twist?.type==='stall'&&twist.fired&&elapsed<twist.until;
+ const blackedOut=()=>twist?.type==='blackout'&&twist.fired&&elapsed<twist.until;
+ const defector=()=>hostile().find(s=>s!==primaryEnemy&&!s.isBoss&&s.hull<(s.maxHull||s.C.hull)*.45);
+ const leadSays=line=>{if(line&&primaryEnemy.alive)hail?.({name:primaryEnemy.captain||primaryEnemy.name,faction:spec.hail&&spec.hail.faction||'',line});};
+ function ambush(list){
+  list.forEach((e,i)=>{const p=astern(i);addHostile(e,i%2?1:-1,p,towards(p,player.pos));hostileCount++;});
+  if(list.length&&!getSelected()?.alive){const t=hostile()[0];setSelected(t);player.target=t;}
+ }
+ function spring(){
+  const t=twist.type;twist.fired=true;
+  if(t==='reinforce'){
+   ambush(twist.enemies||[]);
+   showMsg('Contacts jumping in astern · '+(twist.enemies||[]).length+' more hostile'+((twist.enemies||[]).length===1?'':'s'),3.4,true);
+   leadSays(twist.line);
+  }
+  if(t==='defect'){
+   const d=defector();if(!d)return;
+   d.team='p';d.friend=true;d.escort=true;d.defector=true;d.ai.flankOffset=0;allies.push(d);
+   const foes=hostile();d.target=foes.reduce((b,h)=>!b||distance(h.pos,d.pos)<distance(b.pos,d.pos)?h:b,null);
+   showMsg(d.name+' is breaking formation · it has turned on its own side',3.4);
+   hail?.({name:d.captain||d.name,faction:spec.hail&&spec.hail.faction||'',line:'We are done dying for them. Firing on your target.'});
+   if(getSelected()===d){const n=foes[0];if(n){setSelected(n);player.target=n;}}
+   if(!foes.length)finish('win',hostileCount>1?'fleet_destroyed':'enemy_destroyed');
+  }
+  if(t==='flee'){
+   // it runs for the edge of the system on the far side from the flagship
+   const l=primaryEnemy,dx=l.pos.x-player.pos.x,dz=l.pos.z-player.pos.z,d=Math.hypot(dx,dz),ux=d>1?dx/d:0,uz=d>1?dz/d:-1;
+   fleeing=l;fleeT=45;fleeAt={x:ux*6000,z:uz*6000};
+   l.C={...l.C,vmax:l.C.vmax*.75};   // running on damaged engines, so it can be caught
+   if(l.ai)l.ai.flee=fleeAt;
+   showMsg(l.name+' is breaking off · it is running for the jump point',3.4,true);
+   leadSays(twist.line);
+  }
+  if(t==='bait'&&quarry){
+   const q=quarry;q.C={...q.C,vmax:q.C.vmax/(goal.speed||.8)};if(q.ai)q.ai.flee=null;
+   quarry=null;goal.type='destroy';
+   ambush(twist.enemies||[]);
+   showMsg('It was bait · ambushers jumping in astern',3.4,true);
+   hail?.({name:q.captain||q.name,faction:spec.hail&&spec.hail.faction||'',line:'You took the bait, Navy. Now you are the quarry.'});
+  }
+  if(t==='divert'&&convoy){
+   gate=Object.freeze({x:GATE.x>0?-2500:2500,y:GATE.y,z:-700,radius:GATE.radius});
+   gateFrom=Math.hypot(convoy.pos.x-gate.x,convoy.pos.z-gate.z);noticeStage=Math.max(noticeStage,1);
+   moveGate?.(gate);
+   showMsg('Jump beacon compromised · '+convoyName()+' rerouting to the auxiliary beacon',3.6,true);
+  }
+  if(t==='stall'&&convoy){twist.until=elapsed+30;showMsg(convoyName()+': drive failure · one-third speed for thirty seconds',3.4,true);}
+  if(t==='blackout'&&station){twist.until=elapsed+35;station.sh=station.sh.map(()=>0);showMsg(station.name.split(' · ')[0]+': shield generator down · thirty-five seconds to repair',3.4,true);}
+ }
+ function twistTick(dt){
+  if(!twist.fired){
+   const t=twist.type,l=primaryEnemy,f=l.alive?l.hull/(l.maxHull||l.C.hull):1;
+   const go=t==='reinforce'?kills>0||f<.55||elapsed>75
+    :t==='defect'?!!defector()
+    :t==='flee'?l.alive&&f<.35&&hostile().includes(l)
+    :t==='bait'?!!quarry?.alive&&(elapsed>(goal.seconds||100)*.35||f<.6)
+    :t==='divert'?!!convoy?.alive&&convoyProgress()>.35
+    :t==='stall'?!!convoy?.alive&&convoyProgress()>.22
+    :t==='blackout'?!!station?.alive&&(wave>=1||station.hull<station.maxHull*.6):false;
+   if(go)spring();
+   return;
+  }
+  if(blackedOut())station.sh=station.sh.map(()=>0);
+  if(fleeing?.alive){
+   fleeT-=dt;
+   if(fleeT<=15&&fleeT+dt>15)showMsg(fleeing.name+': jump drive spooling',2.4,true);
+   if(fleeT<=0||Math.hypot(fleeing.pos.x-fleeAt.x,fleeing.pos.z-fleeAt.z)<400){setSelected(fleeing);finish('lose','quarry_escaped');game.endT=.35;}
+  }
+ }
  function status(){
-  const n=hostile().length,contacts=n+(n===1?' HOSTILE':' HOSTILES');
+  const n=hostile().length,contacts=n+(n===1?' HOSTILE':' HOSTILES'),left=()=>Math.max(0,Math.ceil(twist.until-elapsed));
+  if(fleeing?.alive){
+   const hp=Math.round(100*Math.max(0,fleeing.hull)/(fleeing.maxHull||fleeing.C.hull));
+   return 'RUNNING · '+fleeing.name.toUpperCase()+' '+hp+'% HULL · JUMPS IN '+Math.max(0,Math.ceil(fleeT))+' S · '+contacts;
+  }
   if(convoy){
-   const pct=clamp(Math.round(100*(3650-convoy.pos.z)/(3650-GATE.z)),0,100);
+   const pct=Math.round(100*convoyProgress());
    const health=Math.max(0,Math.round(convoy.hull/(convoy.C.hull*.65)*100));
-   return 'ESCORT · '+convoyName().toUpperCase()+' '+health+'% HULL · '+(held?'HOLDING':'EXTRACTION '+pct+'%')+' · H HOLD/RESUME · '+contacts;
+   return 'ESCORT · '+convoyName().toUpperCase()+' '+health+'% HULL · '+(held?'HOLDING':stalled()?'DRIVE FAILURE · '+left()+' S':(gate===GATE?'EXTRACTION ':'REROUTED ')+pct+'%')+' · H HOLD/RESUME · '+contacts;
   }
   if(station){
    const hp=Math.max(0,Math.round(100*station.hull/station.maxHull));
-   return 'DEFEND · '+station.name.split(' · ')[0].toUpperCase()+' '+hp+'% HULL · WAVE '+(wave+1)+' OF '+waves().length+' · '+contacts;
+   return 'DEFEND · '+station.name.split(' · ')[0].toUpperCase()+' '+hp+'% HULL · WAVE '+(wave+1)+' OF '+waves().length+(blackedOut()?' · SHIELDS DOWN '+left()+' S':'')+' · '+contacts;
   }
   if(quarry){
    const left=Math.max(0,Math.ceil((goal.seconds||100)-elapsed)),hp=Math.round(100*Math.max(0,quarry.hull)/(quarry.maxHull||quarry.C.hull));
@@ -282,7 +378,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    name:a.name,alive:!!a.alive,damage:Math.round(a.stats?.dealt||0),taken:Math.round(a.stats?.taken||0),
    shots:a.stats?.shots||0,hits:a.stats?.hits||0,orderIntent:a.orderIntent||'Awaiting orders'
  }));}
- return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,escortReport,get order(){return order},get boss(){return boss?{title:boss.title,phase:bossPhase,phases:boss.phases.map(p=>({name:p.name,at:p.at||1})),ship:boss.ship,lattice:boss.ship.dmgTaken<1}:null},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get station(){return station},get quarry(){return quarry},get wave(){return wave},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed}};
+ return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,escortReport,get order(){return order},get boss(){return boss?{title:boss.title,phase:bossPhase,phases:boss.phases.map(p=>({name:p.name,at:p.at||1})),ship:boss.ship,lattice:boss.ship.dmgTaken<1}:null},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get station(){return station},get quarry(){return quarry},get wave(){return wave},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return gate},get twist(){return twist&&twist.fired?twist.type:null},get elapsed(){return elapsed}};
 }
 root.BroadsideFleet=Object.freeze({create,GATE,ORDERS});
 

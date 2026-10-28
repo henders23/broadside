@@ -199,4 +199,16 @@ assert.equal(sideStatic.condition, 'ion', 'station missions can set their own ba
 assert.equal(C.storyEncounter(1).condition, null, 'story operations keep their designed battlefield');
 assert.equal(C.storyEncounter(8).opening, null);
 
+// Mid-battle twists: rolled from their own seed, only where they suit the objective, never named in the briefing
+for (const k of board) if (k.twist) {
+  const T = C.TWISTS[k.twist.type];
+  assert.ok(T && T.goals.includes(k.goal.type) && (!T.pair || k.enemies.length > 1), `${k.name}: ${k.twist.type} suits it`);
+  if (['reinforce', 'bait'].includes(k.twist.type)) assert.ok(k.twist.enemies.length >= 1 && k.twist.enemies.every(e => e.cls && e.hull < 1), 'reinforcements are support ships');
+  assert.ok(!C.battlefieldNotes(k).join(' ').includes(T.name) && !k.brief.includes(T.name), 'the briefing keeps it secret');
+}
+assert.ok(share(k => k.twist) > 0.2 && share(k => k.twist) < 0.5, 'about a third of the work has a twist: ' + share(k => k.twist));
+for (const t of ['reinforce', 'defect', 'flee', 'bait', 'divert', 'stall']) assert.ok(board.some(k => k.twist && k.twist.type === t), 'contracts roll ' + t);
+same(C.encounter(C.sideById['a2-courier']).twist.type, 'bait', 'station missions can name a twist');
+assert.equal(C.storyEncounter(7).twist, null, 'story operations have no twists');
+
 console.log('Campaign data tests passed.');

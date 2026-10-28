@@ -276,7 +276,7 @@
   // ---------------- station missions ----------------
   // Hand-written side missions, posted at one starbase from their act onwards.
   const SIDE = [
-    { id: 'a1-deserter', act: 1, station: 'meridian', system: 'vostok', name: 'The Deserter', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 460, support: 0,
+    { id: 'a1-deserter', twist: 'divert', act: 1, station: 'meridian', system: 'vostok', name: 'The Deserter', giver: 'Commander Lena Ashdown, Navy Intelligence', reward: 460, support: 0,
       brief: 'An Ash Fleet signals officer wants to come home, and she is bringing the fleet’s codebooks with her. Her shuttle is hiding in the Vostok yards with a hunter between it and the jump beacon.',
       objective: 'Escort the shuttle Kittiwake to the jump beacon, or destroy the hunter.', intel: 'A Revenant hunter. It will try to mine the shuttle’s route.',
       enemies: [{ cls: 'revenant', name: 'Ash Fleet hunter', hull: 0.55, shield: 0.7 }], goal: { type: 'escort', convoy: 'Shuttle Kittiwake · Defector', hunter: true } },
@@ -304,12 +304,12 @@
       brief: 'Machine pickets have parked over the Citrine supply lanes and every freighter that passes them loses its navigation. Juniper’s portmaster wants them gone before the ring runs out of food.',
       objective: 'Destroy both machine pickets.', intel: 'Two light Seraph pickets. Close the range quickly and they come apart.',
       enemies: [{ cls: 'seraph', name: 'Picket LATTICE-2', hull: 0.5, shield: 0.65 }, { cls: 'seraph', name: 'Picket LATTICE-5', hull: 0.5, shield: 0.65, diff: 'commander' }], goal: { type: 'destroy' } },
-    { id: 'a2-listening', act: 2, station: 'tarn', system: 'northpoint', name: 'The Northpoint Watch', giver: 'Commodore Aris Penn', reward: 640, support: 1,
+    { id: 'a2-listening', twist: 'blackout', act: 2, station: 'tarn', system: 'northpoint', name: 'The Northpoint Watch', giver: 'Commodore Aris Penn', reward: 640, support: 1,
       brief: 'The Navy listening post at Northpoint is the only thing that hears the machines coming. The machines have worked that out. Two waves of pickets are on their way to switch it off.',
       objective: 'Defend the listening post through both waves.', intel: 'Seraph pickets. The first wave goes for the post; the second comes in faster. The post has guns of its own and will fight beside you.',
       enemies: [{ cls: 'seraph', name: 'Strike picket', hull: 0.5, shield: 0.65, dmg: 0.75 }, { cls: 'seraph', name: 'Strike picket', hull: 0.45, shield: 0.6, diff: 'commander' }],
       goal: { type: 'defend', station: 'Northpoint listening post · Navy', waves: [[{ cls: 'seraph', name: 'Assault picket', hull: 0.55, shield: 0.7, dmg: 0.6 }, { cls: 'seraph', name: 'Assault picket', hull: 0.45, shield: 0.6, diff: 'commander' }]] } },
-    { id: 'a2-courier', act: 2, station: 'juniper', system: 'midway', name: 'The Midway Courier', giver: 'Portmaster Tobias Grail', reward: 620, support: 0,
+    { id: 'a2-courier', twist: 'bait', act: 2, station: 'juniper', system: 'midway', name: 'The Midway Courier', giver: 'Portmaster Tobias Grail', reward: 620, support: 0,
       brief: 'A machine courier lifted the ring’s navigation keys from a freighter it disabled at Citrine and is running for Midway. Once it jumps the keys are gone. Run it down before its drive spools up.',
       objective: 'Disable the courier before it jumps (bring it below 35% hull).', intel: 'A Seraph courier stripped for speed: it will not turn to fight, but its shields are strong. Burn hard and stay on its tail.',
       enemies: [{ cls: 'seraph', name: 'Courier THRESHOLD', hull: 0.7, shield: 0.8, dmg: 0.6 }], goal: { type: 'pursuit', seconds: 110, at: 0.35, speed: 0.78 } },
@@ -342,7 +342,7 @@
       brief: 'Wraith spawn are budding off the wreckage at Bloom. If they reach the Juniper lanes, the ring has to be abandoned. Burn the nursery out while it is still small.',
       objective: 'Destroy both Wraith spawn.', intel: 'Two young bioships. Their hulls regrow, so finish one before you turn to the next.',
       enemies: [{ cls: 'wraith', name: 'Wraith spawn', hull: 0.45, shield: 0.6 }, { cls: 'wraith', name: 'Wraith spawn', hull: 0.45, shield: 0.6, diff: 'commander' }], goal: { type: 'destroy' } },
-    { id: 'a3-lastlight', act: 3, station: 'elysia', system: 'mire', name: 'Last Light', giver: 'Dr. Halima Oduya', reward: 760, support: 0,
+    { id: 'a3-lastlight', twist: 'stall', act: 3, station: 'elysia', system: 'mire', name: 'Last Light', giver: 'Dr. Halima Oduya', reward: 760, support: 0,
       brief: 'The research vessel Lantern Moth went into Mire to sample the Wraith and has been hiding in the debris for two days. Bring her and her samples home.',
       objective: 'Escort the RV Lantern Moth to the jump beacon, or destroy the Wraith stalking her.', intel: 'A mature Wraith. Expect spore salvos aimed at the slower ship.',
       enemies: [{ cls: 'wraith', name: 'Mire stalker', hull: 0.75, shield: 0.8 }], goal: { type: 'escort', convoy: 'RV Lantern Moth · Research vessel', hunter: true } },
@@ -408,7 +408,7 @@
   };
   const SHIP_WORD = { scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship', sentinel: 'lance frigate', thrall: 'swarm' };
   function contractFor(type, station, sys, act, r, id) {
-    const k = battlefield(contractBase(type, station, sys, act, r, id), sys), alt = foeFor(sys, act).alt;
+    const k = twistFor(battlefield(contractBase(type, station, sys, act, r, id), sys), sys, 0.4), alt = foeFor(sys, act).alt;
     // A Thrall swarm comes as a pack: the contract's ships, topped up to the pack size, at nearly full strength (they are small).
     if (k.enemy === 'thrall' && k.type !== 'pursuit') {
       for (const e of k.enemies) { e.hull = round(Math.min(1, e.hull + 0.35)); e.shield = round(Math.min(1, e.shield + 0.3)); }
@@ -519,6 +519,43 @@
     return [m.condition && CONDITIONS[m.condition] && CONDITIONS[m.condition].note, m.opening && OPENINGS[m.opening] && OPENINGS[m.opening].note.replace('a Navy picket', m.picket || 'a Navy picket')].filter(Boolean);
   }
 
+  // ---------------- mid-battle twists ----------------
+  // Something that changes a fight partway through. The briefing never mentions one; crew/fleet-controller.js springs it
+  // when its trigger is met, and a fight won through one pays TWIST_BONUS more. `after` is the line for the after-action report.
+  const TWISTS = {
+    reinforce: { name: 'Reinforcements', goals: ['destroy', 'escort', 'survive', 'surrender', 'defend'], after: 'They had ships waiting in reserve, and you beat those too.' },
+    defect: { name: 'A defector', goals: ['destroy', 'survive', 'defend'], pair: true, after: 'One of their crews turned its guns on its own side.' },
+    flee: { name: 'Breaks and runs', goals: ['destroy'], after: 'Their lead broke and ran for the jump point, and you caught it.' },
+    bait: { name: 'The bait', goals: ['pursuit'], after: 'The quarry was bait for an ambush, and the ambush failed.' },
+    divert: { name: 'Beacon compromised', goals: ['escort'], after: 'The jump beacon was compromised and the convoy rerouted under fire.' },
+    stall: { name: 'Drive failure', goals: ['escort'], after: 'The convoy’s drive failed halfway, and you held them off until it came back.' },
+    blackout: { name: 'Generator down', goals: ['defend'], after: 'The station lost its shields partway through and you covered it.' }
+  };
+  const TWIST_BONUS = 0.2;
+  // What each enemy says when its twist springs, by the lead's hull.
+  const TWIST_LINES = {
+    reinforce: { scrapjaw: 'Did you think we came alone? Check your stern, Navy.', revenant: 'Ash Fleet, close the net.', seraph: 'Additional platforms assigned. Outcome unchanged.', sentinel: 'Additional platforms assigned. Outcome unchanged.', wraith: '...the hunting call is answered from behind you.', thrall: '...more clicking, from behind you now.' },
+    flee: { scrapjaw: 'Not today. Not for this pay.', revenant: 'Break off. Break off! Get us out of here.', seraph: 'Probability of success revised. Withdrawing.', sentinel: 'Probability of success revised. Withdrawing.', wraith: '...the harmonic falls to a thin, wounded keening.', thrall: '...a sharp, frightened chatter.' }
+  };
+  // Rolls a contract's or ambush's twist from its own seed. Reinforcements and ambushers are the lead's usual support ships.
+  function twistFor(k, sys, chance) {
+    const r = rng(hash(k.id + ':twist')), goal = k.goal.type, pair = k.enemies.length > 1;
+    if (r() >= chance) return k;
+    const options = Object.keys(TWISTS).filter(t => TWISTS[t].goals.includes(goal) && (!TWISTS[t].pair || pair));
+    if (!options.length) return k;
+    k.twist = twistSpec(pick(r, options), k.enemies[0].cls, foeFor(sys, k.act || 1).group, r() < 0.5 ? 1 : 2);
+    return k;
+  }
+  function twistSpec(type, cls, group, count) {
+    const t = { type };
+    if (type === 'reinforce' || type === 'bait') {
+      const sup = SUPPORT[cls] || SUPPORT[{ sentinel: 'seraph', pyre: 'revenant', arbiter: 'seraph', mother: 'wraith' }[cls]] || SUPPORT.scrapjaw;
+      t.enemies = Array.from({ length: type === 'bait' ? 2 : count }, () => ({ cls: sup.cls, name: (group ? group + ' ' : '') + (type === 'bait' ? 'ambusher' : 'reserve'), hull: 0.45, shield: 0.6, diff: 'commander' }));
+    }
+    if (TWIST_LINES[type]) t.line = TWIST_LINES[type][cls] || TWIST_LINES[type].scrapjaw;
+    return t;
+  }
+
   // ---------------- interceptions ----------------
   const INTERCEPT_CHANCE = [0, 0.06, 0.12, 0.18, 0.24, 0.3];   // by threat level
   // Returns the first system on the way (not counting the start) where hostiles drop out of the lane, or null.
@@ -537,7 +574,7 @@
       brief: `${foe.group} ships dropped out of the jump lane at ${sys.name} and matched your vector before the drive could cycle.`,
       intel: `${pair ? 'Two' : 'One'} ${foe.group} ${{ scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship' }[foe.cls]}${pair ? 's' : ''}.`, enemies, goal: { type: 'destroy' } };
     // An ambush is sprung, so it never starts as a fair head-on approach.
-    return battlefield(x, sys, { condition: 0.4, opening: 1, openings: ['ambush', 'close', 'pincer'] });
+    return twistFor(battlefield(x, sys, { condition: 0.4, opening: 1, openings: ['ambush', 'close', 'pincer'] }), sys, 0.25);
   }
   // The chance of slipping an ambush: fast hulls and healthy engines get away more often.
   const FLEE = { sabre: 0.8, halberd: 0.7, bastion: 0.5, warden: 0.4, scrapjaw: 0.75, seraph: 0.7, revenant: 0.5 };
@@ -673,6 +710,8 @@
       hail: story ? src.id : { name: lead.captain || lead.name, faction: foe.group, line: src.taunt || HAILS[lead.cls] },
       enemies: src.enemies.map(e => Object.assign({}, e)), goal: Object.assign({}, src.goal), ends: src.ends || null,
       condition: src.condition || null, opening: src.opening || null, picket: src.picket || null,
+      // a station mission names its twist; generated work carries the whole twist
+      twist: typeof src.twist === 'string' ? twistSpec(src.twist, lead.cls, foe.group, 1) : src.twist ? JSON.parse(JSON.stringify(src.twist)) : null,
       support: Number.isInteger(src.support) ? src.support : null, boss: src.boss && typeof src.boss === 'object' ? JSON.parse(JSON.stringify(src.boss)) : null
     };
     // A picket under fire fights beside the fleet once relieved (index.html places it by the enemy).
@@ -724,7 +763,7 @@
     ACTS, STORY, STORY_ORDER, storyById, actOf, storyUnlocked, storyAvailable, openStory,
     STATIONS, nearestStation, SIDE, sideById, sideMissions, sideLeg,
     CONTRACT_TYPES, contracts, hostile, rollInterception, interception, fleeChance,
-    CONDITIONS, OPENINGS, REGION_CONDITIONS, battlefield, battlefieldNotes,
+    CONDITIONS, OPENINGS, REGION_CONDITIONS, battlefield, battlefieldNotes, TWISTS, TWIST_BONUS, twistSpec,
     ENV_BY_REGION, encounter, storyEncounter, supportCap, NARRATIVE, CONSEQUENCES, CHOICE_STAKES,
     FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle,
     SAVE_BASE, SLOT_KEY, SLOTS, slotKey, activeSlot, saveKey, DIFFICULTY, difficulty,

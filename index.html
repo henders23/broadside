@@ -1323,7 +1323,7 @@ function startGame() {
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
     encounter:campaignMission,allies,makeShip,placeShip,ships,player,primaryEnemy:enemy,
     getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
-    DIFF,endGame,showMsg,hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>ship.key==='transport'&&templates.transport?null:battleEnvironment.buildFreighter(ship)
+    DIFF,endGame,showMsg,moveGate:p=>battleEnvironment.moveGate(p),hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>ship.key==='transport'&&templates.transport?null:battleEnvironment.buildFreighter(ship)
   }):null;
   fleet?.setup();
   if (campaignMission) field.begin(campaignMission, { player, allies, placeShip });
@@ -1421,6 +1421,7 @@ function showOver() {
       else Object.assign(saved, record(player));
       saved.pendingResult.lost = lost;
       if(fleet?.allies.length)saved.pendingResult.escortReport=fleet.escortReport();
+      if(fleet?.twist)saved.pendingResult.twist=fleet.twist;   // a mid-battle twist that sprang (and pays a bonus if won)
       if (fleet?.convoy) saved.pendingResult.convoyHull = fleet.convoy.alive ? Math.round(1000 * clamp(fleet.convoy.hull / (fleet.convoy.C.hull * 0.65), 0, 1)) / 1000 : 0;   // carried into a convoy run's next leg
       // Wrecks the salvage crews can claim: destroyed capturable hostiles, or a commander who surrendered.
       if (win) saved.pendingResult.wrecks = ships.filter(s => s.team === 'e' && s.C.capturable && !s.isBoss && (!s.alive || game.campaignOutcome === 'surrender' && s === enemy))

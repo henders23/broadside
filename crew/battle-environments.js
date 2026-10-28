@@ -10,7 +10,7 @@ const PRESETS={
 };
 function create({THREE,scene,sky,planet,rockMat,rebakeSky}){
   const savedFog=scene.fog,savedPlanet=planet.position.clone(),savedRock=rockMat.color.clone();
-  let group=null;const geometries=[],materials=[],ships=[];
+  let group=null,gate=null;const geometries=[],materials=[],ships=[];
   function material(hex,glow=0){const m=new THREE.MeshStandardMaterial({color:hex,roughness:.42,metalness:.62,emissive:glow,emissiveIntensity:glow?.72:0});materials.push(m);return m;}
   function add(geometry,paint,parent=group){geometries.push(geometry);const o=new THREE.Mesh(geometry,paint);parent.add(o);return o;}
   function cube(parent,x,y,z,w,h,d,paint){const o=add(new THREE.BoxGeometry(w,h,d),paint,parent);o.position.set(x,y,z);return o;}
@@ -37,7 +37,7 @@ function create({THREE,scene,sky,planet,rockMat,rebakeSky}){
   // The illuminated jump beacon an escorted convoy has to reach (crew/fleet-controller.js GATE).
   function jumpGate(){
     const m=material(0x486078),lit=material(0x82cfea,0x139fff),amber=material(0xb7a17c,0x7d4c1d);
-    const p=new THREE.Group();p.position.set(570,0,-1550);group.add(p);
+    const p=new THREE.Group();p.position.set(570,0,-1550);group.add(p);gate=p;
     hoop(p,0,0,0,308,lit);hoop(p,0,0,-20,274,amber);
     for(let i=0;i<8;i++){const a=i*Math.PI/4,c=cube(p,315*Math.cos(a),315*Math.sin(a),0,24,36,108,m);c.rotation.z=a;}
     const beacon=new THREE.PointLight(0x4ba8ff,400,1800);p.add(beacon);
@@ -95,7 +95,7 @@ function create({THREE,scene,sky,planet,rockMat,rebakeSky}){
     for(let z=-95;z<105;z+=40)cube(g,0,-26,z,60,5,7,stripe);
   }
   function clear(){
-    if(group){scene.remove(group);group=null;}
+    if(group){scene.remove(group);group=null;}gate=null;
     for(const s of ships)s.removeFromParent();ships.length=0;
     for(const g of geometries)g.dispose();geometries.length=0;
     for(const m of materials)m.dispose();materials.length=0;
@@ -117,7 +117,9 @@ function create({THREE,scene,sky,planet,rockMat,rebakeSky}){
     }
     rebakeSky();return preset.name;
   }
-  return {configure,clear,buildFreighter};
+  // A compromised beacon (crew/fleet-controller.js, the divert twist): the gate moves to the auxiliary beacon.
+  function moveGate(p){if(gate)gate.position.set(p.x,p.y,p.z);return !!gate;}
+  return {configure,clear,buildFreighter,moveGate};
 }
 root.BroadsideEnvironments=Object.freeze({create,PRESETS});
 })(window);

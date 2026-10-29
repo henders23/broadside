@@ -385,6 +385,7 @@
   // The independent and contested systems belong to whoever is raiding them in the current act.
   const LOCAL = { 1: 'Pirates', 2: 'Machines', 3: 'Aliens' };
   function foeFor(sys, act) { return FOES[sys.faction] || FOES[LOCAL[Math.min(act, 3)]] || FOES.Pirates; }
+  const foeGroup = (sys, act) => foeFor(sys, act).group;
   function hostile(sys, act) { const a = ACTS[Math.min(act, ACTS.length) - 1]; return !!(a && a.foes.includes(sys.faction)); }
 
   function hash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -623,7 +624,10 @@
       enemies: src.enemies.map(e => Object.assign({}, e)), goal: Object.assign({}, src.goal), ends: src.ends || null,
       support: Number.isInteger(src.support) ? src.support : null, boss: src.boss && typeof src.boss === 'object' ? JSON.parse(JSON.stringify(src.boss)) : null
     };
-    return shape(spec, story ? src.id : null, ctx);
+    shape(spec, story ? src.id : null, ctx);
+    // Rivals (crew/rivals.js): a named captain who may run, or one who got away before and is back, refitted.
+    if (root.BroadsideRivals) root.BroadsideRivals.shape(spec, src, ctx);
+    return spec;
   }
   const HAILS = {
     scrapjaw: 'Cut your engines, Navy. Whatever is in your hold is ours now.',
@@ -669,7 +673,7 @@
     SYSTEMS, byId, ROUTES, THREATS, threatLevel, neighbors, path, jumps,
     ACTS, STORY, STORY_ORDER, storyById, actOf, storyUnlocked, storyAvailable, openStory,
     STATIONS, nearestStation, SIDE, sideById, sideMissions, sideLeg,
-    CONTRACT_TYPES, contracts, hostile, rollInterception, interception, fleeChance,
+    CONTRACT_TYPES, contracts, hostile, foeGroup, strength, rollInterception, interception, fleeChance,
     ENV_BY_REGION, encounter, storyEncounter, supportCap, NARRATIVE, CONSEQUENCES, CHOICE_STAKES,
     FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle,
     SAVE_BASE, SLOT_KEY, SLOTS, slotKey, activeSlot, saveKey, DIFFICULTY, difficulty,

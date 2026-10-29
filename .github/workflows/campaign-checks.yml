@@ -37,6 +37,8 @@ jobs:
         run: node tests/ships.test.js
       - name: Run tutorial steps
         run: node tests/tutorial.test.js
+      - name: Run campaign drama rules (rivals, lane events, casualties, honours)
+        run: node tests/drama.test.js
 
   browser-suites:
     runs-on: ubuntu-latest

@@ -12,11 +12,15 @@ const ESCAPE=Object.freeze({x:0,z:-6200});
 // free picks the hostile nearest the escort itself.
 const ORDERS=Object.freeze({focus:'Focus my target',defend:'Defend the flagship',free:'Engage freely'});
 
-function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnemy,allies=[],getSelected,setSelected,DIFF,endGame,showMsg,hail,game,V3,buildFreighter}){
+function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnemy,allies=[],getSelected,setSelected,DIFF,endGame,showMsg,hail,game,V3,buildFreighter,jumpOut}){
  const spec=encounter||(missionId&&root.BroadsideCampaign?root.BroadsideCampaign.storyEncounter(Number(missionId)):null)||{enemies:[],goal:{type:'destroy'}};
  const goal=spec.goal||{type:'destroy'},extras=[];
  let convoy=null,station=null,quarry=null,wave=0,waveT=0,held=false,phase='transit',retargetTimer=0,noticeStage=0,elapsed=0,hostileCount=1,order='focus',escortT=0,spreadT=4,bossPhase=0;
  const boss=spec.boss&&spec.boss.phases?{...spec.boss,ship:primaryEnemy}:null;
+ // A rival (crew/rivals.js) speaks as the fight turns, and may run for it below spec.escape.at hull.
+ const rival=spec.rival||null,flight=rival&&spec.escape&&goal.type==='destroy'?spec.escape:null;
+ let escapeT=0,escaped=null,hurtSaid=false;
+ const rivalSays=line=>hail?.({name:rival.name,faction:rival.faction,line,asset:rival.asset||undefined});
  const hostile=()=>ships.filter(s=>s.team==='e'&&s.alive);
  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
@@ -32,6 +36,10 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   ship.dmgOut=Number.isFinite(e.dmg)?e.dmg:lead?1:SUPPORT_DMG;
   if(e.hull&&e.hull!==1)ship.hull=Math.round(ship.C.hull*e.hull);
   if(e.shield&&e.shield!==1){ship.sh=ship.sh.map(v=>Math.round(v*e.shield));ship.cap=ship.cap.map(v=>Math.round(v*e.shield));}
+  // A rival's refits: tuned drives, and the shield facing you broke last time doubled.
+  if(e.speed&&e.speed!==1)ship.C={...ship.C,vmax:ship.C.vmax*e.speed,accel:ship.C.accel*e.speed};
+  if(e.shieldK||Array.isArray(e.facing)){ship.facingK=[1,1,1,1].map(()=>e.shieldK||1);if(Array.isArray(e.facing))ship.facingK[e.facing[0]]*=e.facing[1];ship.sh=ship.sh.map((v,i)=>Math.round(v*ship.facingK[i]));ship.cap=ship.cap.map((v,i)=>Math.round(v*ship.facingK[i]));}
+  if(e.rival){ship.rival=true;ship.rivalLine=rival?rival.lines.death:'';}
   ship.maxHull=ship.hull;
  }
  function stopHostiles(){
@@ -218,6 +226,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    finish('win','surrender');game.endT=.35;return;
   }
   if(boss)bossTick();
+  if(rivalTick(dt))return;
   if(goal.type==='survive'&&player.alive&&elapsed>=(goal.seconds||100)){
    finish('win','extracted');game.endT=.35;return;
   }
@@ -253,6 +262,27 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   }
   for(const ship of hostile())if(!ship.target?.alive)ship.target=player.alive?player:escorts()[0]||(convoy?.alive?convoy:null);
  }
+ // The rival at half hull says so; below the escape line the jump drive spools, and when it is ready the ship is gone.
+ function rivalTick(dt){
+  const R=primaryEnemy;if(!rival||!R.rival)return false;
+  if(R.alive&&!hurtSaid&&R.hull<=(R.maxHull||R.C.hull)*.5){hurtSaid=true;rivalSays(rival.lines.hurt);}
+  if(flight&&R.alive&&!escapeT&&!escaped&&player.alive&&R.hull<=(R.maxHull||R.C.hull)*flight.at){
+   escapeT=flight.window;
+   if(R.ai){const dx=R.pos.x-player.pos.x,dz=R.pos.z-player.pos.z,d=Math.hypot(dx,dz)||1;R.ai.flee={x:R.pos.x+dx/d*7000,z:R.pos.z+dz/d*7000};}
+   showMsg(R.name+' is spooling a jump drive · '+flight.window+' s to stop it',3.2,true);rivalSays(rival.lines.flee);
+  }
+  if(escapeT>0&&R.alive){
+   escapeT-=dt;
+   if(escapeT<=0){
+    escaped=R;game.rivalEscaped=true;jumpOut?.(R);
+    showMsg(R.name+' jumped out',3,true);
+    const alive=hostile();
+    if(!alive.length){finish('win','driven_off');return true;}
+    if(getSelected()===R||!getSelected()?.alive){setSelected(alive[0]);player.target=alive[0];}
+   }
+  }
+  return false;
+ }
  function status(){
   const n=hostile().length,contacts=n+(n===1?' HOSTILE':' HOSTILES');
   if(convoy){
@@ -274,6 +304,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   }
   if(boss){const p=boss.phases[bossPhase];return boss.title+' · PHASE '+(bossPhase+1)+' OF '+boss.phases.length+' · '+p.name.toUpperCase()+(boss.ship.dmgTaken<1?' · LATTICE UP: DESTROY THE NODES':'')+' · '+contacts;}
   if(goal.type==='surrender')return 'FORCE SURRENDER BELOW '+Math.round((goal.at||.28)*100)+'% HULL · '+contacts;
+  if(escapeT>0&&primaryEnemy.alive)return primaryEnemy.name.toUpperCase()+' JUMPS IN '+Math.ceil(escapeT)+' S · STOP THEM · '+contacts;
   return 'CONTACTS · '+contacts+(n>1?' · J CYCLE TARGET':'');
  }
 
@@ -282,7 +313,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    name:a.name,alive:!!a.alive,damage:Math.round(a.stats?.dealt||0),taken:Math.round(a.stats?.taken||0),
    shots:a.stats?.shots||0,hits:a.stats?.hits||0,orderIntent:a.orderIntent||'Awaiting orders'
  }));}
- return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,escortReport,get order(){return order},get boss(){return boss?{title:boss.title,phase:bossPhase,phases:boss.phases.map(p=>({name:p.name,at:p.at||1})),ship:boss.ship,lattice:boss.ship.dmgTaken<1}:null},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get station(){return station},get quarry(){return quarry},get wave(){return wave},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed}};
+ return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,escortReport,get order(){return order},get boss(){return boss?{title:boss.title,phase:bossPhase,phases:boss.phases.map(p=>({name:p.name,at:p.at||1})),ship:boss.ship,lattice:boss.ship.dmgTaken<1}:null},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get station(){return station},get quarry(){return quarry},get wave(){return wave},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed},get escaping(){return escapeT>0?escapeT:0},get escaped(){return escaped},get rival(){return rival}};
 }
 root.BroadsideFleet=Object.freeze({create,GATE,ORDERS});
 

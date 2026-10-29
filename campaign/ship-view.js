@@ -54,13 +54,14 @@ function frame(t) {
 }
 window.BroadsideShipView = {
   // Switching ships loads another model; only the latest request wins, and the old hull is hidden meanwhile.
-  async show(c, k, pts, cb) {
+  async show(c, k, pts, cb, tint) {   // tint: the ship's paint scheme (crew/honours.js), or null
     active = true; const req = ++showReq;
     if (!renderer) init(c);
     if (current && current !== loaded[k]) { hold.visible = false; onFrame = null; }
     const m = await model(k);
     if (!active || req !== showReq) return;
     loaded[k] = m; points = pts; onFrame = cb; hold.visible = true;
+    m.traverse(o => { if (o.isMesh) { if (!o.material.userData.paint0) { o.material = o.material.clone(); o.material.userData.paint0 = o.material.color.clone(); } o.material.color.copy(o.material.userData.paint0); if (tint) o.material.color.multiply(new THREE.Color().fromArray(tint)); } });
     if (current !== m) { if (current) hold.remove(current); hold.add(m); current = m; size = [0, 0, 0]; }
     if (!raf) raf = requestAnimationFrame(frame);
   },

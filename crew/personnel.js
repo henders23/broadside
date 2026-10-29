@@ -56,10 +56,15 @@
   ];
   const POSTS = crew.map(c => c.id);   // post order sets the command keys 5–9
   // The five officers on duty: `assign` maps each post (its regular officer's id) to whoever holds it.
-  function activeCrew(assign) {
+  // `extra.replacements` maps a post to the officer posted after its regular fell (crew/casualties.js): they bring the
+  // post's own command, so `cmd` names which command an officer gives.
+  function activeCrew(assign, extra) {
+    const reps = (extra && extra.replacements) || {};
     return POSTS.map((post, i) => {
       const base = crew[i], id = assign && assign[post], r = id && id !== post ? recruits.find(x => x.id === id && x.post === post) : null;
-      return r ? Object.assign({}, r, { key: base.key, post: base.post, slot: post }) : Object.assign({}, base, { slot: post });
+      const p = !r && id && reps[post] && reps[post].id === id ? reps[post] : null;
+      if (p) return Object.assign({}, base, p, { key: base.key, post: base.post, slot: post, cmd: post, rank: undefined, portrait: null });
+      return r ? Object.assign({}, r, { key: base.key, post: base.post, slot: post, cmd: r.id }) : Object.assign({}, base, { slot: post, cmd: post });
     });
   }
   const commanders = {

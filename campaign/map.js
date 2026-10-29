@@ -68,15 +68,22 @@ function setView(v){view=v;$('codexview').hidden=v!=='codex';$('tabCodex').class
 function travel(id){const here=state.system&&byId[state.system]?state.system:HOME;if(id===here){showArrival(id,here,0);return;}const path=getPath(here,id);if(path.length<2){toast('No established jump route.');return;}
  const hit=Campaign.rollInterception(path,act(),rand,id=>{const f=frontAt(id);return diff().intercept*(f?Campaign.FRONT_EFFECTS.ambush[f.level]:1);});
  if(hit){arriveAt(hit);ambush(hit,id);return;}
- arriveAt(id);showArrival(id,here,path.length-1);}
+ // A rival who got away may be waiting in their own space (crew/rivals.js), and anything can happen on the lane (crew/events.js).
+ const rv=Rivals.ambush(state.rivals,path,Math.min(act(),3),state.attempts,rand);
+ if(rv){arriveAt(rv.at);rivalAmbush(rv.rival,rv.at,id);return;}
+ arriveAt(id);
+ const ev=Events.roll(eventCtx(id),rand);
+ if(ev){state.laneEvent={id:ev.id,at:id,from:here};persist();showLaneEvent();return;}
+ showArrival(id,here,path.length-1);}
 function arriveAt(id){state.system=id;selected=id;if(!state.visited.includes(id))state.visited.push(id);persist();refresh();}
 // Interceptions: hostiles drop out of the lane in enemy space. Fight, or try to break away and carry on.
-function ambush(at,dest){state.interceptSeed++;state.ambush={x:Campaign.interception(at,act(),state.interceptSeed),dest};persist();showAmbush();}
+// A captain you killed as a rival does not come back from the dead under the same name: draw again.
+function ambush(at,dest){const dead=new Set((state.rivals||[]).filter(r=>r.status==='dead').map(r=>r.name));let x;for(let i=0;i<6;i++){state.interceptSeed++;x=Campaign.interception(at,act(),state.interceptSeed);if(!dead.has(x.captain))break;}state.ambush={x,dest};persist();showAmbush();}
 function showAmbush(){const a=state.ambush;if(!a)return;const x=a.x,spec=Campaign.encounter(x,cctx()),fleet=deployedShips(),eng=Math.round(Math.min(...fleet.map(r=>(r.sub||{}).engines??100))),chance=Campaign.fleetFleeChance(fleet),pct=Math.round(chance*100),onward=a.dest&&a.dest!==x.system;setView('map');selectSystem(x.system);
- openModal(x.name,'CONTACT / HOSTILES IN THE LANE',`<p>${x.brief}</p><div class="commander-brief">${Personnel.portrait({name:x.captain,faction:spec.hail.faction})}<div><small>${spec.hail.faction}</small><b>${x.captain}</b><blockquote>“${spec.hail.line}”</blockquote><p>${x.intel}</p></div></div><p>Turn and fight for salvage worth about <b>${pay(x)}</b> requisition, or try to break away${onward?' and carry on to '+byId[a.dest].name:''}. ${fleet.length>1?'Your fleet moves at the pace of its slowest ship and':flag().shipName} has a <b>${pct}%</b> chance of slipping them${eng<100?` with ${fleet.length>1?'the worst':'her'} engines at ${eng}%`:''}.</p>${flagshipLine()}`,[
+ openModal(x.name,'CONTACT / HOSTILES IN THE LANE',`<p>${x.brief}</p><div class="commander-brief">${Personnel.portrait({name:x.captain,faction:spec.hail.faction,asset:spec.hail.asset})}<div><small>${spec.hail.faction}</small><b>${x.captain}</b><blockquote>“${spec.hail.line}”</blockquote><p>${x.intel}</p></div></div><p>Turn and fight for salvage worth about <b>${pay(x)}</b> requisition, or try to break away${onward?' and carry on to '+byId[a.dest].name:''}. ${fleet.length>1?'Your fleet moves at the pace of its slowest ship and':flag().shipName} has a <b>${pct}%</b> chance of slipping them${eng<100?` with ${fleet.length>1?'the worst':'her'} engines at ${eng}%`:''}.</p>${flagshipLine()}`,[
   {label:`Break away · ${pct}%`,run:()=>flee(chance)},{label:'Battle stations',primary:true,run:()=>launch(spec)}],{locked:true});}
 function flee(chance){const a=state.ambush;if(!a)return;const x=a.x;
- if(rand()<chance){state.ambush=null;scrape(.03);persist();closeModal();if(a.dest&&a.dest!==x.system){arriveAt(a.dest);showArrival(a.dest,x.system,getPath(x.system,a.dest).length-1);}else refresh();toast(deployedShips().length>1?'The fleet slipped the ambush with minor damage.':'You slipped the ambush with minor damage.');return;}
+ if(rand()<chance){if(x.rivalId)state.rivals=state.rivals.map(r=>r.id===x.rivalId?{...r,readyAt:state.attempts+1}:r);state.ambush=null;scrape(.03);persist();closeModal();if(a.dest&&a.dest!==x.system){arriveAt(a.dest);showArrival(a.dest,x.system,getPath(x.system,a.dest).length-1);}else refresh();toast(deployedShips().length>1?'The fleet slipped the ambush with minor damage.':'You slipped the ambush with minor damage.');return;}
  scrape(.06);a.failed=true;persist();refresh();
  openModal('They have matched your vector','CONTACT / BREAKAWAY FAILED',`<p>The drive spooled too slowly. ${x.captain} raked your hulls as you turned, costing 6% of each, and is closing to engage.</p>${flagshipLine()}`,[{label:'Battle stations',primary:true,run:()=>launch(Campaign.encounter(x,cctx()))}],{locked:true});}
 function flagshipLine(){const f=deployedShips(),row=r=>`${esc(r.shipName)} (${r.ship}, hull ${Math.round((r.hull??1)*100)}%)`;return `<p><b>${f.length>1?'Fleet':'Flagship'}:</b> ${f.map(row).join(' · ')} · Requisition ${state.credits.toLocaleString()}</p>`;}

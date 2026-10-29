@@ -109,6 +109,17 @@
 /* modal */
 #veil{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:22px}#veil[hidden]{display:none}#modal{width:min(650px,100%);max-height:min(90vh,800px);overflow:auto;background:#07090d;border:1px solid rgba(255,255,255,.18);border-radius:20px;box-shadow:0 25px 90px #000;padding:28px 33px 26px}#modalheader{font:11px 'JetBrains Mono',monospace;color:var(--amber);letter-spacing:.2em;margin-bottom:12px}#modaltitle{font-weight:300;letter-spacing:-.01em;font-size:40px;margin:0 0 15px;line-height:1.05}#modalbody{color:rgba(255,255,255,.8);font-size:15px;line-height:1.6}#modalbody p{margin:0 0 12px}#modalbody b{color:#fff;font-weight:600}#modalbody .choice{margin:6px 0 12px;display:block;border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:10px 14px;background:none;text-align:left;width:100%}#modalbody .choice:hover{background:rgba(255,255,255,.08)}#modalbody select{width:100%;background:#0d1118;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:12px;margin-top:10px}#modalactions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:22px}#modalactions button{min-height:44px;background:transparent;border:1px solid rgba(255,255,255,.35);border-radius:22px;padding:0 20px;letter-spacing:.12em;text-transform:uppercase;font-size:12px;font-weight:500}#modalactions .primary{background:#fff;border-color:#fff;color:#000;font-weight:600}#modalactions button:hover:not(:disabled){filter:brightness(1.2)}
 @media(max-width:700px){body{font-size:15px}}
+/* Campaign drama (campaign/drama.js): casualties, rivals, medals and kill marks, service records, paint */
+.casualties>div{display:flex;gap:12px;align-items:center;padding:6px 0}.casualties .crew-portrait{width:48px;height:54px;border-radius:8px}.casualties .kia b{color:#ff9a8a}
+.rivalcard{border-color:#c49a4a;background:linear-gradient(120deg,rgba(60,40,18,.75),rgba(24,14,10,.8))}.rivalcard p{margin:6px 0 0;font-size:14px;line-height:1.5;color:#e6dccb}
+.ribbon{display:inline-block;flex:none;width:34px;height:12px;border-radius:2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.45),0 1px 3px #0008;vertical-align:middle}
+.medal{display:flex;gap:12px;align-items:center;font-size:13px;line-height:1.45;padding:3px 0}.medal b{color:#ffe1a8}.medals{display:grid;gap:4px;margin:8px 0 12px}
+.honours span{font-size:13px;color:#e8dcc4}
+.tallies{display:inline-flex;gap:9px;vertical-align:middle;margin-right:6px}.tg{position:relative;display:inline-flex;gap:3px}.tally{display:inline-block;width:3px;height:18px;background:#e8c27a;border-radius:1px}.tally.bar{position:absolute;left:-3px;top:6px;width:24px;height:2px;transform:rotate(-24deg)}
+.record{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:6px 0 12px}.record div{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.05)}.record b{display:block;font-size:22px;font-weight:500;margin-top:4px}
+#modalbody .choice.paint{display:flex;gap:14px;align-items:center;text-align:left}#modalbody .choice.paint .swatch{display:block;flex:none;width:42px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.35);box-shadow:inset 0 -8px 12px rgba(0,0,0,.35)}
+.officer.fallen{opacity:.72}.officer.fallen b{color:#c9cdd4}.foe.dead{opacity:.6}.foe.rival{border-color:rgba(196,154,74,.6)}.rivals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 12px}
+#dosduty .wounded{color:#ff9a8a}.fallen div{font-size:14px;line-height:1.6}.dim{color:var(--dim);font-size:13px}
 </style>
 </head>
 <body>
@@ -187,6 +198,10 @@
 <div id="veil" hidden><section id="modal" role="dialog" aria-modal="true" aria-labelledby="modaltitle"><div id="modalheader"></div><h2 id="modaltitle"></h2><div id="modalbody"></div><div id="modalactions"></div></section></div>
 <script src="crew/personnel.js"></script>
 <script src="crew/campaign-data.js"></script>
+<script src="crew/rivals.js"></script>
+<script src="crew/events.js"></script>
+<script src="crew/casualties.js"></script>
+<script src="crew/honours.js"></script>
 <script src="crew/codex.js"></script>
 <script src="crew/upgrades.js"></script>
 <script src="crew/ships.js"></script>
@@ -196,6 +211,7 @@
 <script src="campaign/board.js"></script>
 <script src="campaign/shipyard.js"></script>
 <script src="campaign/crew.js"></script>
+<script src="campaign/drama.js"></script>
 <script src="campaign/reports.js"></script>
 <script type="importmap">
 {"imports":{

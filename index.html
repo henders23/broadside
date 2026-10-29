@@ -454,6 +454,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 </script>
 <script src="crew/personnel.js"></script>
 <script src="crew/experience.js"></script>
+<script src="crew/casualties.js"></script>
 <script src="crew/bridge-controller.js"></script>
 <script src="crew/campaign-data.js"></script>
 <script src="crew/fleet-controller.js"></script>
@@ -461,6 +462,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <script src="crew/upgrades.js"></script>
 <script src="crew/ships.js"></script>
 <script src="crew/tutorial.js"></script>
+<script src="crew/honours.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -525,6 +527,11 @@ function applyRecord(s, rec) {
   if (rec.sub) for (const k of SUBS) if (typeof rec.sub[k] === 'number') s.sub[k] = clamp(rec.sub[k], 0, 100);
   const torps = s.groups.find(g => g.type === 'torpedo');
   if (torps && Number.isInteger(rec.torps)) torps.ammo = clamp(rec.torps, 0, torps.ammo);
+}
+// A campaign ship's paint scheme (crew/honours.js), over the hull's own finish.
+function paintShip(s, id) {
+  const t = id && window.BroadsideHonours ? window.BroadsideHonours.tint(id) : null; if (!t) return;
+  s.model.traverse(o => { if (o.isMesh) { o.material.color.multiply(new THREE.Color().fromArray(t)); o.material.userData.base = o.material.color.clone(); } });
 }
 function readCampaignSave() { try { const v = JSON.parse(localStorage.getItem(CAMPAIGN_KEY) || 'null'); return v && v.version === 1 ? v : null; } catch(e) { return null; } }
 try { const s = JSON.parse(localStorage.getItem('broadside') || '{}'); if (CLASSES[s.ship] && !CLASSES[s.ship].enemyOnly) choice.ship = s.ship; if (DIFF[s.diff]) choice.diff = s.diff; } catch (e) {}
@@ -1122,7 +1129,7 @@ function makeShip(key, team, C = CLASSES[key]) {   // C: the class data, or an u
     rudder: 0, step: 3, climb: 0, hull: C.hull, sh: [C.shield, C.shield, C.shield, C.shield], cap: [C.shield, C.shield, C.shield, C.shield],
     focus: -1, pips: { eng: 4, shd: 4, wpn: 4 }, avail: 12, sub: Object.fromEntries(SUBS.map(k => [k, 100])), repair: null,
     alive: true, dying: 0, fires: [], hitT: [-9, -9, -9, -9], hitIdx: 0, autofire: false, inv: new THREE.Matrix4(), tumble: new V3(),
-    stats: { shots: 0, hits: 0, dealt: 0, taken: 0, torpHits: 0, lanceDmg: 0 }, ai: null, target: null, fireQ: [], isWinner: false,
+    stats: { shots: 0, hits: 0, dealt: 0, taken: 0, torpHits: 0, lanceDmg: 0 }, hitBy: [0, 0, 0, 0], kindBy: {}, killedBy: null, ai: null, target: null, fireQ: [], isWinner: false,
     burn: false, abWant: false, abFuel: 1, abLock: false
   };
   ships.push(s);
@@ -1310,7 +1317,7 @@ function startGame() {
   const ek = campaignMission && CLASSES[campaignMission.enemies[0].cls] ? campaignMission.enemies[0].cls : others[Math.floor(Math.random() * others.length)];
   const fitted = rec => rec && window.BroadsideUpgrades ? window.BroadsideUpgrades.apply(CLASSES[rec.ship], rec.upgrades) : CLASSES[rec ? rec.ship : pk];
   player = makeShip(pk, 'p', flagRec ? fitted(flagRec) : CLASSES[pk]); enemy = makeShip(ek, 'e');
-  if (flagRec) player.recId = flagRec.id;
+  if (flagRec) { player.recId = flagRec.id; paintShip(player, flagRec.paint); }
   player.target = enemy; enemy.target = player;
   if (campaignMission) {
     player.name = (flagRec && flagRec.shipName) || 'MNS Resolute';
@@ -1323,7 +1330,7 @@ function startGame() {
   // Escorts form up either side of the flagship and fly under the AI, following the standing order.
   const allies = fleetRecs.slice(1).map((rec, i) => {
     const e = makeShip(rec.ship, 'p', fitted(rec)), side = i ? 1 : -1;
-    e.name = rec.shipName || 'Escort'; e.recId = rec.id; e.escort = true; applyRecord(e, rec);
+    e.name = rec.shipName || 'Escort'; e.recId = rec.id; e.escort = true; applyRecord(e, rec); paintShip(e, rec.paint);
     e.ai = { diff: DIFF.captain, side, flankOffset: side * 18, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
     e.target = enemy; placeShip(e, new V3(off * 0.3 + side * 560, 0, 2950), 0);
     return e;
@@ -1341,11 +1348,11 @@ function startGame() {
   campaignDiff = campaignMission && window.BroadsideCampaign ? window.BroadsideCampaign.difficulty(campaignSave && campaignSave.difficulty) : null;
   const aiKey = campaignDiff ? campaignDiff.ai : choice.diff;
   enemy.ai = { diff: DIFF[aiKey], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
-  game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [] };
+  game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [], bridgeHits: { time: 0, last: -99, count: 0 } };
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
     encounter:campaignMission,allies,makeShip,placeShip,ships,player,primaryEnemy:enemy,
     getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
-    DIFF,endGame,showMsg,hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>ship.key==='transport'&&templates.transport?null:battleEnvironment.buildFreighter(ship)
+    DIFF,endGame,showMsg,hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>ship.key==='transport'&&templates.transport?null:battleEnvironment.buildFreighter(ship),jumpOut
   }):null;
   fleet?.setup();
   // Campaign difficulty and the state of the region's front scale enemy hulls; on Admiral the lesser captains fight a
@@ -1358,8 +1365,9 @@ function startGame() {
     if (s === enemy) for (const g of s.groups) if ((campaignMission.disable || []).includes(g.id)) { g.locked = true; g.disabled = true; }
     if (campaignDiff.ai === 'admiral' && s.ai && s.ai.diff === DIFF.commander) s.ai.diff = DIFF.captain;
   }
-  bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,getTarget:()=>player.target,showMsg,facings:FACINGS,levels:window.BroadsideExperience&&campaignSave?window.BroadsideExperience.levels(campaignSave.officers):null,crew:window.BroadsidePersonnel?window.BroadsidePersonnel.activeCrew(campaignSave&&campaignSave.crew):null,world:{torps}}) : null;
+  bridge = campaignMission && window.BroadsideBridge ? window.BroadsideBridge.create({player,enemy,getTarget:()=>player.target,showMsg,facings:FACINGS,levels:window.BroadsideExperience&&campaignSave?window.BroadsideExperience.levels(campaignSave.officers):null,crew:window.BroadsidePersonnel?window.BroadsidePersonnel.activeCrew(campaignSave&&campaignSave.crew,{replacements:campaignSave&&campaignSave.replacements}):null,world:{torps},wounds:Object.keys((campaignSave&&campaignSave.wounds)||{})}) : null;
   bridge?.mount();
+  game.hullStart = player.hull / player.C.hull;
   cam.yaw = 0.55; cam.pitch = 0.3; cam.dist = player.C.camDist; cam.mode = 'chase'; cam.curYaw = player.yaw + cam.yaw; cam.curPitch = undefined;
   tacFull = false; $('tacfull').hidden = true;
   buildHud();
@@ -1386,13 +1394,19 @@ function startGame() {
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
   setTimeout(() => Voice.say('battle-stations', 0), 2000);
 }
+// A rival's jump drive fires: a blue flash, and the ship is gone from the battle (crew/fleet-controller.js).
+function jumpOut(s) {
+  flash(s.pos, 1100, 1.4, 2.6, 4.8, 0.9); sparks(s.pos, 70, 1.2, 2.6, 4.6, 280, 6); Sfx.play('afterburner', volAt(s.pos) * 0.8, 1.4, { max: 1 });
+  s.alive = false; s.jumped = true; s.burn = false; removeShip(s);
+  if (enemy === s) { const n = ships.find(x => x.team === 'e' && x.alive); if (n) { enemy = n; player.target = n; } }
+}
 function endGame(outcome) {
   if (game.ending) return;
   game.ending = true; game.outcome = outcome; game.endT = 7; bridge?.onEnd();
   $('coach').hidden = true; endBossEntrance(); Sfx.burn(false);
   // Mission 3 can end in surrender and mission 5 by transmitting/escaping.
   // Neither should trigger the destroyed-enemy VO.
-  if (!(outcome === 'win' && ['surrender','extracted','escort_extracted'].includes(game.campaignOutcome)))
+  if (!(outcome === 'win' && ['surrender','extracted','escort_extracted','driven_off'].includes(game.campaignOutcome)))
     Voice.say(outcome === 'win' ? 'enemy-destroyed' : 'ship-lost', 0, true);
 }
 function showOver() {
@@ -1422,7 +1436,8 @@ function showOver() {
       surrender: ['Enemy commander surrendered', enemy.name + ' has powered down weapons and surrendered.'],
       extracted: ['Objective complete', 'You held on long enough. ' + enemy.name + ' remains at large, but the job is done.'],
       station_held: ['Station held', (fleet?.station?.name || 'The station').split(' · ')[0] + ' is still standing. Every attacking wave has been broken.'],
-      quarry_disabled: ['Quarry disabled', enemy.name + ' is dead in space with its jump drive cold. Boarding parties are on the way.']
+      quarry_disabled: ['Quarry disabled', enemy.name + ' is dead in space with its jump drive cold. Boarding parties are on the way.'],
+      driven_off: ['Driven off', enemy.name + ' jumped out before you could finish the job. The lane is clear, for now.']
     };
     const pick = custom || ends[code];
     if (pick) { $('over-word').textContent = pick[0]; $('over-sub').textContent = pick[1]; }
@@ -1430,7 +1445,7 @@ function showOver() {
   if (campaignMission) {
     const saved = readCampaignSave();
     if (saved) {
-      saved.pendingResult = { id: campaignMission.story || campaignMission.id, kind: campaignMission.kind, ref: campaignMission.id, system: campaignMission.system, outcome: win ? 'win' : 'loss', time: Math.round(game.time), tacticalOutcome: game.campaignOutcome || (win ? 'enemy_destroyed' : 'flagship_lost'), officerUses: bridge ? bridge.uses : null };
+      saved.pendingResult = { id: campaignMission.story || campaignMission.id, kind: campaignMission.kind, ref: campaignMission.id, system: campaignMission.system, outcome: win ? 'win' : 'loss', time: Math.round(game.time), tacticalOutcome: game.campaignOutcome || (win ? 'enemy_destroyed' : 'flagship_lost'), officerUses: bridge ? bridge.uses : null, casualties: bridge ? bridge.casualties : [] };
       // Every ship that flew writes back its condition; a disabled ship is recovered badly damaged.
       // (A lost convoy is not the destruction of the player's flagship.)
       const flown = ships.filter(s => s.team === 'p' && s.recId), lost = [];
@@ -1445,6 +1460,24 @@ function showOver() {
       if (win) saved.pendingResult.wrecks = ships.filter(s => s.team === 'e' && s.C.capturable && !s.isBoss && (!s.alive || game.campaignOutcome === 'surrender' && s === enemy))
         .map(s => ({ cls: s.key, name: s.name })).filter((w, i, a) => a.findIndex(x => x.cls === w.cls) === i).slice(0, 2);
       saved.pendingResult.met = [...new Set(ships.filter(s => s.team === 'e').map(s => s.key))];   // ship classes seen, for the codex
+      // What the battle earns (crew/honours.js): the flagship's record, and each ship's damage, kills and whether she was disabled.
+      const foes = ships.filter(s => s.team === 'e'), dead = foes.filter(s => !s.alive);
+      saved.pendingResult.honours = { win, kind: campaignMission.kind, code: game.campaignOutcome || (win ? 'enemy_destroyed' : 'flagship_lost'), time: Math.round(game.time),
+        hullStart: Math.round((game.hullStart ?? 1) * 1000) / 1000, hullEnd: player.alive ? Math.round(Math.max(0, player.hull / player.C.hull) * 1000) / 1000 : 0,
+        shots: player.stats.shots, hits: player.stats.hits, torpHits: player.stats.torpHits, lanceDmg: Math.round(player.stats.lanceDmg),
+        shieldMax: Math.round(Math.max(...player.sh.map((v, i) => v / Math.max(1, player.cap[i]))) * 100) / 100,
+        hostiles: foes.length + (fleet && fleet.escaped ? 1 : 0), escorts: flown.length - 1, escortsLost: lost.length, boss: dead.some(s => s.isBoss),
+        rivalKilled: dead.some(s => s.rival && campaignMission.rival && campaignMission.rival.returning), convoyHull: fleet?.convoy ? saved.pendingResult.convoyHull : null,
+        rams: dead.filter(s => s.killKind === 'ram' && s.killedBy && s.killedBy.team === 'p').length };
+      saved.pendingResult.ships = flown.map(s => ({ id: s.recId, dealt: Math.round(s.stats.dealt), disabled: !s.alive,
+        kills: dead.filter(d => d.killedBy === s).map(d => ({ cls: d.key, name: d.name, boss: !!d.isBoss, rival: !!d.rival })) }));
+      // A rival in the fight (crew/rivals.js): how it ended for them, and what they remember of it.
+      const rv = fleet && fleet.rival, rs = fleet && (fleet.escaped || ships.find(s => s.rival));
+      if (rv && rs) {
+        const i = rs.hitBy.indexOf(Math.max(...rs.hitBy)), all = rs.hitBy.reduce((a, b) => a + b, 0), kinds = Object.entries(rs.kindBy).sort((a, b) => b[1] - a[1]);
+        const fate = fleet.escaped ? 'escaped' : !rs.alive ? 'killed' : win ? 'escaped' : 'won';   // alive at a win: the convoy got out and the rival got away
+        saved.pendingResult.rival = { ...rv, fate, memory: { facing: i, share: all ? Math.round(rs.hitBy[i] / all * 100) / 100 : 0, weapon: kinds.length ? kinds[0][0] : 'shell', ship: player.name } };
+      }
       if (!win) saved.credits = Math.max(0, (saved.credits || 0) - 100);
       if (tutorial) saved.tutorial = 'done';   // shown once (Intel can ask for it again)
       try { localStorage.setItem(CAMPAIGN_KEY, JSON.stringify(saved)); } catch (e) { console.warn('Could not save campaign outcome', e); }
@@ -1604,7 +1637,7 @@ function startKillCam(s, by) {
   kc = { s, by, t: 0, real: 0, a0: Math.atan2(_ix.x, _ix.z), side: Math.random() < 0.5 ? 1 : -1 };
   const lost = s.team === 'p';
   $('kc-word').textContent = s.name + (lost ? ' lost' : ' destroyed'); $('kc-word').className = lost ? 'lose' : '';
-  $('kc-sub').textContent = (s.name === s.C.name ? s.C.cls : s.C.name + ' ' + s.C.cls.toLowerCase()) + (!lost && by && by !== player && by.team === 'p' ? ' · finished by ' + by.name : '');
+  $('kc-sub').textContent = s.rival && s.rivalLine ? '“' + s.rivalLine + '”' : (s.name === s.C.name ? s.C.cls : s.C.name + ' ' + s.C.cls.toLowerCase()) + (!lost && by && by !== player && by.team === 'p' ? ' · finished by ' + by.name : '');
   $('letterbox').classList.add('on'); $('hud').classList.add('cine');
   hitStop(0.14, true); slowMo(0.22, 1.1, 0.9);
 }
@@ -1675,12 +1708,18 @@ function damage(s, dmg, kind, local, src) {
     }
     if (s.fires.length < 14 && Math.random() < hullD / 120) s.fires.push(local.clone().multiplyScalar(0.92));
     if (s === player) { vignetteA = Math.min(0.8, vignetteA + hullD / 120); cam.shake = Math.max(cam.shake, clamp(hullD / 60, 0.2, 2)); if (hullD >= 120) hitStop(0.06); }
+    // A heavy hit on a badly damaged flagship can reach the bridge and wound or kill an officer (crew/casualties.js).
+    if (s === player && bridge && window.BroadsideCasualties && s.hull > 0) {
+      const b = game.bridgeHits; b.time = game.time;
+      if (window.BroadsideCasualties.bridgeHit(s.hull / s.C.hull, hullD, b, Math.random) && bridge.bridgeHit()) { b.last = game.time; b.count++; cam.shake = Math.max(cam.shake, 1.4); }
+    }
   }
   if (src && src === player && s.team === 'e') playerHit(s, dmg, hullD, kind);
   if (src) { src.stats.dealt += dmg; if (kind === 'lance') src.stats.lanceDmg += dmg; }
+  if (src && src.team === 'p' && s.team === 'e') { s.hitBy[f] += dmg; s.kindBy[kind] = (s.kindBy[kind] || 0) + dmg; }   // what a rival remembers
   s.stats.taken += dmg;
   if (game.tally && s === player) { const k = (src ? (src.C.boss ? 'boss' : src === enemy ? 'lead' : 'add') : 'env') + ':' + kind; game.tally[k] = (game.tally[k] || 0) + Math.round(dmg); }   // balance tool
-  if (s.hull <= 0) killShip(s, src);
+  if (s.hull <= 0) { s.killKind = kind; killShip(s, src); }
 }
 function facingDown(s, f, src) {
   if (s === player) { showMsg(FACINGS[f] + ' shield down', 2.2, true); Sfx.alarm(); Voice.say('shields-down', 8); }
@@ -1689,6 +1728,7 @@ function facingDown(s, f, src) {
 }
 function killShip(s, src) {
   const wasEnding = !!(game && game.ending);
+  s.killedBy = src || null;
   s.alive = false; s.hull = 0; s.dying = 5; s.shieldMesh.visible = false; s.speed *= 0.5;
   s.tumble.set(rand(-0.02, 0.02), rand(-0.03, 0.03), rand(-0.04, 0.04));
   hideBeams(s);
@@ -1779,7 +1819,7 @@ function shieldsUpdate(s, dt) {
   if (!s.alive) { s.sh.fill(0); u.uStr.value.set(0, 0, 0, 0); return; }
   const C = s.C, e = fx(s), w = weights(s.focus), t = game.time;
   const gen = C.shieldHardened ? 0.75 + 0.25 * s.sub.shields / 100 : 0.5 + 0.5 * s.sub.shields / 100;
-  for (let i = 0; i < 4; i++) s.cap[i] = C.shield * (0.6 + 1.6 * w[i]) * gen;
+  for (let i = 0; i < 4; i++) s.cap[i] = C.shield * (0.6 + 1.6 * w[i]) * gen * (s.facingK ? s.facingK[i] : 1);   // facingK: a rival's shield refits
   for (let i = 0; i < 4; i++) {
     if (s.sh[i] > s.cap[i]) {   // strength bleeds out of over-cap facings into the reinforced one
       const ex = Math.min(s.sh[i] - s.cap[i], 60 * dt); s.sh[i] -= ex;
@@ -2128,8 +2168,8 @@ function collisions() {
           pa.vel.addScaledVector(_v3, -rel * 0.7); foe.vel.addScaledVector(_v3, rel * 0.7);
           const dmg = Math.min(220, -rel * 3.5), mid = _v5.copy(_v1).lerp(_v2, 0.5);
           explode(mid, 2);
-          damage(pa, dmg * (foe.C.ramDmg || 1) * (pa.C.ram || 1) * (pa.team===foe.team?.12:1), 'shell', _v1.applyMatrix4(pa.inv), foe);
-          damage(foe, dmg * (pa.C.ramDmg || 1) * (foe.C.ram || 1) * (pa.team===foe.team?.12:1), 'shell', _v2.applyMatrix4(foe.inv), pa);
+          damage(pa, dmg * (foe.C.ramDmg || 1) * (pa.C.ram || 1) * (pa.team===foe.team?.12:1), 'ram', _v1.applyMatrix4(pa.inv), foe);
+          damage(foe, dmg * (pa.C.ramDmg || 1) * (foe.C.ram || 1) * (pa.team===foe.team?.12:1), 'ram', _v2.applyMatrix4(foe.inv), pa);
           if(pa===player||foe===player){showMsg('Ramming', 1.5, true); Voice.say('brace', 8, true);}
         }
         break;
@@ -2789,7 +2829,7 @@ function updateGame(dt) {
   bridge?.tick(dt);
   fleet?.tick(dt);
   tutorialTick(dt);
-  if(fleet&&Math.floor(game.time*4)!==Math.floor((game.time-dt)*4))$('fleet-objective').textContent=fleet.status();
+  if(fleet&&Math.floor(game.time*4)!==Math.floor((game.time-dt)*4)){$('fleet-objective').textContent=fleet.status();if(fleet.escaping)$('fleet-objective').hidden=false;}
   for (const a of asteroids) { a.mesh.rotation.x += a.spin.x * dt; a.mesh.rotation.y += a.spin.y * dt; }
   if (player.alive) playerHelm(dt);
   for (const s of ships) {

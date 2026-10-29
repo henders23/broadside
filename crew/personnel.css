@@ -12,3 +12,7 @@
 .crew-portrait .art-halloran{background-position:33.3333% 100%}
 .crew-portrait .art-vigil{background-position:66.6667% 100%}
 .crew-portrait .art-choir{background-position:100% 100%}
+
+/* Bridge casualties: a wounded officer's command, and one whose officer is down or killed */
+#bridge-orders .order.hurt small{color:#ffb36b}#bridge-orders .order.down{border-color:#7a3a36;background:#1e0f12}#bridge-orders .order.down small{color:#ff7a6a}
+.crew-portrait.fallen{filter:grayscale(1) brightness(.75)}.crew-portrait .wound{position:absolute;right:2px;bottom:2px;width:12px;height:12px;border-radius:50%;background:#c8403a;box-shadow:0 0 0 2px #0a0f16}

@@ -8,7 +8,7 @@
     enlisted: ['Petty Officer', 'Chief Petty Officer', 'Senior Chief', 'Master Chief', 'Chief Warrant Officer']
   };
   const TRACK_OF = { vale: 'enlisted', osei: 'enlisted' };   // the engineers rose through the enlisted rates
-  const ranks = id => TRACKS[TRACK_OF[id] || 'officer'];
+  const ranks = id => TRACKS[TRACK_OF[id] || TRACK_OF[String(id).split('-')[1]] || 'officer'];   // a replacement (rep-vale-1) follows its post
   const LEVEL_XP = [0, 100, 250, 450, 700];   // XP needed to reach each rank
   const XP = { win: 60, loss: 30, perUse: 15, maxUses: 3 };
   const IDS = ['varro', 'okoye', 'vale', 'sato', 'renn'];
@@ -28,9 +28,9 @@ const levels = officers => Object.fromEntries([...new Set([...IDS, ...Object.key
   const displayName = (officer, level) => `${ranks(officer.id)[level - 1]} ${officer.given || officer.name}`;
 
   // Command text at a given rank, matching what the bridge controller applies in battle.
-  function effect(officer, level) {
-    const s = scale(level).strength, r = v => Math.round(v * s);
-    switch (officer.id) {
+  function effect(officer, level, k = 1) {   // k: a wounded officer's command is weaker (crew/casualties.js)
+    const s = scale(level).strength * k, r = v => Math.round(v * s);
+    switch (officer.cmd || officer.id) {
       case 'varro': return `Restore ${r(16)}% of each directional shield bank immediately.`;
       case 'okoye': return `Weapons deal ${r(12)}% more damage for ${officer.duration} seconds.`;
       case 'vale': return `Restore ${r(24)} integrity to the worst damaged subsystem and suppress one onboard fire.`;

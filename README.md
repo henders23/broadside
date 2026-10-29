@@ -94,10 +94,17 @@ python3 -m http.server 8000
 | G | Cycle graphics quality · P pause · M sound effects on/off · N music on/off |
 | M (campaign screens) | Ship ambience on/off (also the speaker button in the top bar; remembered in this browser) |
 
+### Hit feel and the kill cam
+
+- **Damage numbers** rise off the ship you hit: blue while the hit lands on shields, amber once it reaches the hull. Hits in quick succession add into one number that grows, so a full broadside reads as one total. Crippling one of the enemy's systems shows as a red tag (*Engines crippled*).
+- **Hit pauses**: heavy blows (torpedoes, siege cannons, a whole broadside landing, the lance first biting, an enemy shield facing collapsing) freeze the battle for a few hundredths of a second, with a small zoom punch. A collapsing enemy shield also bursts in blue sparks where it failed. Your own guns rock the camera as they fire.
+- **Kills**: a kill mid-battle drops briefly into slow motion. The kill that ends a battle starts the **kill cam**. Letterbox bars close in, the instruments fade and the battle slows. The camera films the wreck in three cuts: close on the burning hull, over the victor's shoulder, then wide for the reactor blast, which throws out a shockwave ring and debris. Any key skips to the results. Sound is muffled while the battle is slowed.
+- Both can be turned off on the title screen's **Graphics** page (*Kill cam, hit pauses and slow motion*; *Damage numbers*). They only change how fast battle time runs on screen, so the tests and the balance tool, which step the battle directly, are unaffected.
+
 ## Tests
 
 - **Rules** (no browser needed): `node tests/<name>.test.js` for each file in `tests/`. They cover the campaign data, fleet, boss, defence and pursuit objectives, the war and story, experience, upgrades and trophies, the shared ship table, the tutorial, environments and a syntax check of both pages.
-- **Browser suites**: `tests/browser/` drives the real pages in headless Chromium with software WebGL. It covers the map, officers, starbases, the fleet, bosses, campaign depth, the war, skirmish, the shield look, and the tutorial, boss entrances and trophies, defences and pursuits, about 270 checks in all, with screenshots saved to `tests/browser/out/`. Set up with `npm install --no-save playwright three@0.169.0 && npx playwright install chromium`, then run `node tests/browser/run.mjs`, or name suites to run only those (`node tests/browser/run.mjs war bosses`). The suites start their own web server and serve three.js from `node_modules`, so no network access is needed.
+- **Browser suites**: `tests/browser/` drives the real pages in headless Chromium with software WebGL. It covers the map, officers, starbases, the fleet, bosses, campaign depth, the war, skirmish, the shield look, hit feel and the kill cam, and the tutorial, boss entrances and trophies, defences and pursuits, about 270 checks in all, with screenshots saved to `tests/browser/out/`. Set up with `npm install --no-save playwright three@0.169.0 && npx playwright install chromium`, then run `node tests/browser/run.mjs`, or name suites to run only those (`node tests/browser/run.mjs war bosses`). The suites start their own web server and serve three.js from `node_modules`, so no network access is needed.
 - Both run on every push to `main` and on pull requests (`.github/workflows/campaign-checks.yml`).
 - **Balance**: `node tools/balance.mjs [--runs 4] [--only 8,9,10] [--quick]` has the AI fly the flagship through every story operation and finale, faster than real time, and writes win rates to `docs/balance-results.json`. See [docs/BALANCE.md](docs/BALANCE.md) for the targets and the last tuning pass.
 

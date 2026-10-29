@@ -135,6 +135,23 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #tip{position:absolute;left:50%;bottom:calc(190px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(560px,calc(100% - 32px));background:var(--panel);border:1px solid var(--line);padding:10px 14px;font-size:12px;line-height:1.6;color:var(--text);letter-spacing:.02em;transition:opacity .8s}
 #tip b{color:var(--hud-hi);font-weight:400}
 #vignette{position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse at center,transparent 50%,rgba(255,60,40,.5) 100%)}
+/* damage numbers over the ship you hit: blue while it lands on shields, amber once it reaches the hull */
+#dmgnums{position:absolute;inset:0;overflow:hidden}
+.dn{position:absolute;left:0;top:0;font-family:var(--f-display);font-weight:800;font-size:22px;letter-spacing:.04em;color:var(--hud-hi);text-shadow:0 0 10px rgba(255,120,40,.7),0 1px 2px #000;white-space:nowrap;will-change:transform,opacity}
+.dn.shd{color:var(--ice);font-size:17px;font-weight:600;text-shadow:0 0 10px rgba(80,170,255,.7),0 1px 2px #000}
+.dn.big{font-size:30px;color:#fff1d6}
+.dn.tag{font-size:13px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--hostile);text-shadow:0 0 8px #000}
+/* kill cam: the instruments fade and letterbox bars close in while the camera films the wreck */
+#hud.cine>*:not(#dmgnums){opacity:0!important;transition:opacity .4s}
+#letterbox{position:absolute;inset:0;pointer-events:none;z-index:8}
+#letterbox i{position:absolute;left:0;right:0;height:11vh;background:#000;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+#letterbox i:first-child{top:0;transform:translateY(-100%)}
+#letterbox i:last-child{bottom:0;transform:translateY(100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+#letterbox.on i{transform:none}
+#letterbox b{font-family:var(--f-display);font-weight:800;font-size:clamp(20px,3.2vw,34px);letter-spacing:.2em;text-transform:uppercase;color:#ffe3c4}
+#letterbox b.lose{color:var(--hostile)}
+#letterbox small{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+#letterbox em{position:absolute;right:16px;bottom:10px;font-style:normal;font-size:10px;letter-spacing:.24em;color:#ffffff55;text-transform:uppercase}
 
 /* ---------- Screens ---------- */
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:safe center;gap:22px;padding-block:calc(26px + env(safe-area-inset-top,0px)) calc(26px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px),5vw);padding-right:max(16px,env(safe-area-inset-right,0px));background:linear-gradient(90deg,rgba(4,6,11,.95) 0%,rgba(4,6,11,.75) 46%,rgba(4,6,11,0) 80%);overflow-y:auto}
@@ -241,6 +258,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <div id="stage">
   <canvas id="gl" aria-label="Broadside 3D battle view"></canvas>
   <div id="attract-fade" aria-hidden="true"></div>
+  <div id="letterbox" aria-live="polite"><i></i><i><b id="kc-word"></b><small id="kc-sub"></small><em id="kc-skip">Any key to skip</em></i></div>
 
   <div id="hud" hidden>
     <div id="bridge-orders" hidden aria-label="Bridge officer commands"></div>
@@ -249,6 +267,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div id="mk" hidden><span id="mk-l"></span></div>
     <div id="offarrow" hidden></div>
     <div id="tmarks"></div>
+    <div id="dmgnums"></div>
     <div id="rangeline"><b id="rl-range">—</b><small id="rl-sub"></small></div>
     <div id="msg"></div>
     <div id="warn" hidden></div>
@@ -360,6 +379,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
         <div class="chks">
           <label class="chk" for="opt-fps"><input type="checkbox" id="opt-fps"> Show frame rate</label>
           <label class="chk" for="opt-auto"><input type="checkbox" id="opt-auto" checked> Lower resolution if it struggles</label>
+          <label class="chk" for="opt-cine"><input type="checkbox" id="opt-cine" checked> Kill cam, hit pauses and slow motion</label>
+          <label class="chk" for="opt-nums"><input type="checkbox" id="opt-nums" checked> Damage numbers</label>
         </div>
         <p class="hint">Low turns off the glow and halves the sky detail. <kbd>G</kbd> cycles the quality during a battle.</p>
       </div>
@@ -538,8 +559,8 @@ const QUALITY = {
   medium: { pr: 1.25, bloom: 1, sky: 1024 },
   high: { pr: 1.75, bloom: 1, sky: 1024 }
 };
-const gfx = { q: 'medium', fps: false, auto: true };
-try { const g = JSON.parse(localStorage.getItem('broadside-gfx') || '{}'); if (QUALITY[g.q]) gfx.q = g.q; gfx.fps = !!g.fps; if (g.auto === false) gfx.auto = false; } catch (e) {}
+const gfx = { q: 'medium', fps: false, auto: true, cine: true, nums: true };
+try { const g = JSON.parse(localStorage.getItem('broadside-gfx') || '{}'); if (QUALITY[g.q]) gfx.q = g.q; gfx.fps = !!g.fps; for (const k of ['auto', 'cine', 'nums']) if (g[k] === false) gfx[k] = false; } catch (e) {}
 function saveGfx() { try { localStorage.setItem('broadside-gfx', JSON.stringify(gfx)); } catch (e) {} }
 let renderScale = 1;   // lowered automatically when frames run long
 let tacT = 0;
@@ -780,8 +801,9 @@ function explode(p, scale = 1, vel = null, snd = null) {
   for (let i = 0; i < n; i++) { _v2.randomDirection().multiplyScalar(rand(4, 30) * scale).add(base); fire.emit(p, _v2, 3.2, 1.6, 0.6, 1, rand(6, 14) * scale, 22 * scale, rand(0.5, 1.4), 1.8); }
   for (let i = 0; i < n; i++) { _v2.randomDirection().multiplyScalar(rand(60, 220) * Math.sqrt(scale)).add(base); fire.emit(p, _v2, 4, 2.6, 1.3, 1, rand(1.5, 3) * Math.sqrt(scale), 0, rand(0.4, 1.3), 1.1); }
   for (let i = 0; i < n * 0.6; i++) { _v2.randomDirection().multiplyScalar(rand(3, 18) * scale).add(base); smoke.emit(p, _v2, 0.09, 0.085, 0.08, 0.5, rand(8, 14) * scale, 40 * scale, rand(2, 4), 0.6); }
-  flash(p, 110 * scale, 3, 1.8, 0.9, 0.35 + 0.15 * scale);
-  flashLight.position.copy(p); flashLight.intensity = Math.max(flashLight.intensity, 4e5 * scale); flashLight.distance = 900 * scale + 600;
+  const glare = kc && camera.position.distanceToSquared(p) < 2.5e6 ? 0.4 : 1;   // the kill cam films from close: less glare, the fireball stays
+  flash(p, 110 * scale * glare, 3, 1.8, 0.9, 0.35 + 0.15 * scale);
+  flashLight.position.copy(p); flashLight.intensity = Math.max(flashLight.intensity, 4e5 * scale * glare); flashLight.distance = 900 * scale + 600;
   Sfx.boom(scale, volAt(p), snd);
 }
 
@@ -805,7 +827,9 @@ const Sfx = {
     try { this.ctx = new C(); } catch (e) { return; }
     const c = this.ctx;
     const comp = c.createDynamicsCompressor(); comp.threshold.value = -12; comp.ratio.value = 4; comp.attack.value = 0.004; comp.release.value = 0.25;
-    this.out = c.createGain(); this.out.gain.value = this.muted ? 0 : 0.75; this.out.connect(comp); comp.connect(c.destination);
+    this.out = c.createGain(); this.out.gain.value = this.muted ? 0 : 0.75;
+    this.lp = c.createBiquadFilter(); this.lp.type = 'lowpass'; this.lp.frequency.value = 20000;   // muffles the battle in slow motion
+    this.out.connect(this.lp); this.lp.connect(comp); comp.connect(c.destination);
     const buf = c.createBuffer(1, c.sampleRate * 2, c.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; this.noise = buf;
     this.loadSamples();
@@ -846,6 +870,12 @@ const Sfx = {
     src.connect(g); g.connect(this.out); src.start(); this.burnSrc = { src, g };
     src.onended = () => { if (this.burnSrc && this.burnSrc.src === src) this.burnSrc = null; };
     return true;
+  },
+  slow(k) {
+    if (!this.lp) return;
+    const f = k > 0.97 ? 20000 : 450 + 5200 * k;
+    if (f === this.lpF) return; this.lpF = f;
+    this.lp.frequency.setTargetAtTime(f, this.ctx.currentTime, f > this.lp.frequency.value ? 0.12 : 0.02);
   },
   toggle() { this.muted = !this.muted; if (this.out) this.out.gain.value = this.muted ? 0 : 0.75; showMsg(this.muted ? 'Sound off' : 'Sound on', 1.2); },
   env(node, t, peak, att, dec) { node.gain.setValueAtTime(0.0001, t); node.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), t + att); node.gain.exponentialRampToValueAtTime(0.0001, t + att + dec); },
@@ -1256,7 +1286,7 @@ function minesUpdate(dt) {
 
 // ---------------- game state ----------------
 let state = 'loading', game = null, menuT = 0;
-const cam = { yaw: 0.5, pitch: 0.28, dist: 760, mode: 'chase', curYaw: 0, curPitch: undefined, drag: false, lx: 0, ly: 0, shake: 0 };
+const cam = { yaw: 0.5, pitch: 0.28, dist: 760, mode: 'chase', curYaw: 0, curPitch: undefined, drag: false, lx: 0, ly: 0, shake: 0, fov: 55, punch: 0, kick: new V3() };
 let tacFull = false;
 let msgT = 0;
 function showMsg(text, dur = 2.4, bad = false) { const el = $('msg'); el.textContent = text; el.classList.add('on'); el.classList.toggle('bad', bad); msgT = dur; }
@@ -1268,7 +1298,7 @@ function clearWorld() {
   for (const b of shells) b.active = false;
   for (const t of torps) { t.active = false; t.obj.visible = false; }
   for (const m of mines) { m.active = false; m.obj.visible = false; }
-  fire.clear(); smoke.clear();
+  fire.clear(); smoke.clear(); resetImpact();
 }
 function startGame() {
   attractStop();
@@ -1367,6 +1397,7 @@ function endGame(outcome) {
 }
 function showOver() {
   state = 'over'; for (const s of ships) s.burn = false;
+  $('letterbox').classList.remove('on');   // the kill cam keeps filming the wreck behind the results
   const win = game.outcome === 'win';
   const w = $('over-word'), soft = { convoy_lost: 'Convoy lost', station_lost: 'Station lost', quarry_escaped: 'Quarry escaped' }[game.campaignOutcome];   // lost the objective, not the ship
   w.textContent = win ? enemy.name + ' destroyed' : soft && player.alive ? soft : player.name + ' lost'; w.className = 'bigword ' + (win ? 'win' : 'lose');
@@ -1443,6 +1474,163 @@ function pause(on) {
   else if (!on && state === 'paused') { state = 'playing'; $('pause').hidden = true; if (player) player.burn = false; }   // a burn still held relights, with its sound
 }
 
+// ---------------- impact: hit pauses, slow motion, damage numbers, kill cam ----------------
+// These run on real time and only change how much battle time each frame advances (frame() asks timeScale), so the
+// tests and the balance tool, which step updateGame directly, see exactly the same battle.
+const timeFx = { stop: 0, slowK: 1, hold: 0, ease: 0, easeT: 0, lastStop: -9 };
+const _ix = new V3(), _iy = new V3();   // own scratch vectors: these run inside damage(), whose callers hold hit points in _v1/_v2
+const cineOn = () => gfx.cine && game && !game.demo;
+function hitStop(sec, force = false) {
+  if (!cineOn()) return;
+  const now = performance.now() / 1000;
+  if (!force && now - timeFx.lastStop < 0.4) return;
+  timeFx.lastStop = now; timeFx.stop = Math.max(timeFx.stop, sec); cam.punch = Math.max(cam.punch, Math.min(1, sec * 12));
+}
+// Slow to k of normal speed for hold seconds, then ease back to full speed over ease seconds (all real time).
+function slowMo(k, hold, ease) {
+  if (!cineOn()) return;
+  if (timeFx.hold <= 0 && timeFx.easeT <= 0) timeFx.slowK = 1;
+  timeFx.slowK = Math.min(timeFx.slowK, k); timeFx.hold = Math.max(timeFx.hold, hold); timeFx.ease = timeFx.easeT = Math.max(timeFx.easeT, ease);
+}
+function timeScale(rdt) {
+  if (state !== 'playing' && state !== 'over') return 1;
+  if (timeFx.stop > 0) { timeFx.stop -= rdt; return 0.03; }
+  if (timeFx.hold > 0) { timeFx.hold -= rdt; return timeFx.slowK; }
+  if (timeFx.easeT > 0) { timeFx.easeT = Math.max(0, timeFx.easeT - rdt); const u = 1 - timeFx.easeT / timeFx.ease; return timeFx.slowK + (1 - timeFx.slowK) * u * u * (3 - 2 * u); }
+  return 1;
+}
+function resetImpact() {
+  Object.assign(timeFx, { stop: 0, slowK: 1, hold: 0, ease: 0, easeT: 0 }); Sfx.slow(1);
+  cam.punch = 0; cam.shake = 0; cam.kick.set(0, 0, 0); cam.fov = 55;
+  for (const n of dmgNums) { n.s = null; n.el.style.display = 'none'; }
+  for (const r of rings) { r.m.visible = false; r.t = 1; }
+  burst.v = 0; burst.hot = false;
+  endKillCam();
+}
+
+// Damage numbers: hits on the same ship in quick succession add into one number that grows, then it floats off.
+const dmgNums = [];
+const burst = { v: 0, hot: false, lanceT: -9 };
+function dmgNum(s, text) {
+  let n = dmgNums.find(d => !d.s);
+  if (!n) { if (dmgNums.length >= 24) return null; const el = document.createElement('div'); $('dmgnums').appendChild(el); n = { el }; dmgNums.push(n); }
+  Object.assign(n, { s, v: 0, hull: false, text, last: game.time, age: 0, bump: 1, ox: text ? 0 : rand(-40, 40), oy: rand(-14, 14) });
+  n.el.style.display = ''; return n;
+}
+// The flagship's hit on a hostile: number, hit pause on heavy blows and on the lance biting.
+function playerHit(s, dmg, hullD, kind) {
+  if (gfx.nums) {
+    let n = dmgNums.find(d => d.s === s && !d.text && game.time - d.last < 0.35);
+    if (!n) n = dmgNum(s, null);
+    if (n) { n.v += dmg; n.hull = n.hull || hullD > 0; n.last = game.time; n.bump = 1; }
+  }
+  if (kind === 'lance') { if (game.time - burst.lanceT > 0.8) hitStop(0.06); burst.lanceT = game.time; return; }
+  if (kind === 'beam') return;
+  if (dmg >= 140) { hitStop(hullD > 0 ? 0.08 : 0.05); return; }
+  burst.v += dmg;
+  if (!burst.hot && burst.v > 320) { burst.hot = true; hitStop(0.05); }
+}
+function dmgNumsUpdate(rdt) {
+  burst.v *= Math.exp(-rdt * 3); if (burst.v < 100) burst.hot = false;
+  if (!dmgNums.length) return;
+  const show = state === 'playing' && gfx.nums && !(kc && kc.t > KC_CLOSE);   // numbers clear after the kill cam's first cut
+  for (const n of dmgNums) {
+    if (!n.s) continue;
+    const open = !n.text && game.time - n.last < 0.35;
+    if (!open) n.age += rdt;
+    if (!show || n.age > 0.9) { n.s = null; n.el.style.display = 'none'; continue; }
+    const E = n.s.C.hullE;
+    project(_v1.set(0, E.r[1] * 1.6 + E.c[1], 0).add(n.s.pos), _tp);
+    if (!_tp.on) { n.el.style.opacity = 0; continue; }
+    n.bump = Math.max(0, n.bump - rdt * 6);
+    const txt = n.text || String(Math.round(n.v));
+    setT(n.el, txt); setC(n.el, 'dn ' + (n.text ? 'tag' : n.hull ? (n.v >= 300 ? 'hull big' : 'hull') : 'shd'));
+    const y = _tp.y + (n.text ? -44 : n.oy) - n.age * 60, sc = 1 + n.bump * 0.35;
+    n.el.style.transform = `translate(${(_tp.x + n.ox).toFixed(1)}px,${y.toFixed(1)}px) translate(-50%,-50%) scale(${sc.toFixed(3)})`;
+    n.el.style.opacity = clamp(1 - (n.age - 0.45) / 0.45, 0, 1).toFixed(3);
+  }
+}
+
+// A shield facing collapsing: a burst of blue sparks where it failed.
+function shieldBreak(s, f, src) {
+  const E = s.C.shieldE, d = [[0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]][f];
+  _ix.set(E.c[0] + d[0] * E.r[0], E.c[1], E.c[2] + d[2] * E.r[2]).applyMatrix4(s.obj.matrixWorld);
+  flash(_ix, 320, 1.2, 2.8, 5, 0.5);
+  for (let i = 0; i < 46; i++) { _iy.randomDirection().multiplyScalar(rand(40, 200)); fire.emit(_ix, _iy, 1, 2.4, 4.6, 1, rand(3, 7), 0, rand(0.4, 1.1), 1.6); }
+  if (src && src === player) { hitStop(0.08); cam.shake = Math.max(cam.shake, 0.5); }
+}
+
+// Shockwave rings and debris for a hull's final reactor blast.
+const RING_TEX = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+  const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+  gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.62, 'rgba(255,255,255,0)'); gr.addColorStop(0.86, 'rgba(255,255,255,0.35)');
+  gr.addColorStop(0.95, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c);
+})();
+const RING_GEO = new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2);
+const rings = Array.from({ length: 3 }, () => {
+  const m = new THREE.Mesh(RING_GEO, new THREE.MeshBasicMaterial({ map: RING_TEX, color: new THREE.Color(3, 1.7, 0.8), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+  m.visible = false; m.renderOrder = 4; scene.add(m); return { m, t: 1, dur: 1, R: 1 };
+});
+function reactorBlast(s) {
+  const L = hullLen(s), r = rings.find(x => !x.m.visible) || rings[0];
+  r.m.position.copy(s.pos); r.m.rotation.set(rand(-0.25, 0.25), rand(0, Math.PI), rand(-0.25, 0.25));
+  Object.assign(r, { t: 0, dur: 1.8, R: L * 4.5 }); r.m.visible = true; r.m.scale.setScalar(1);
+  for (let i = 0; i < 70; i++) {   // dark hull fragments that tumble away and hang in the field
+    _ix.randomDirection().multiplyScalar(rand(20, 130)).addScaledVector(s.vel, 0.6);
+    smoke.emit(s.pos, _ix, 0.06, 0.055, 0.05, 0.95, rand(3, 8), 0, rand(5, 9), 0.08);
+  }
+  for (let i = 0; i < 60; i++) { _ix.randomDirection().multiplyScalar(rand(60, 260)); fire.emit(s.pos, _ix, 4, 1.8, 0.6, 1, rand(2, 4.5), 0, rand(1.2, 3.2), 0.5); }
+  const near = clamp(1 - camera.position.distanceTo(s.pos) / 6000, 0, 1);
+  cam.shake = Math.max(cam.shake, 2.4 * near);
+  if (kc && kc.s === s) cam.punch = 1;
+}
+function ringsUpdate(dt) {
+  for (const r of rings) {
+    if (!r.m.visible) continue;
+    r.t += dt / r.dur; if (r.t >= 1) { r.m.visible = false; continue; }
+    const e = 1 - (1 - r.t) ** 3; r.m.scale.setScalar(Math.max(1, r.R * e)); r.m.material.opacity = (1 - r.t) ** 1.5;
+  }
+}
+
+// Kill cam: the kill that ends a battle is filmed in three cuts while the wreck burns: close on the hull, over the
+// victor's shoulder, then wide for the reactor blast. The camera stays on the wreck behind the results screen.
+let kc = null;
+function startKillCam(s, by) {
+  if (!cineOn()) return;
+  if (!by || by === s || !ships.includes(by)) by = s === player ? enemy : player;
+  _ix.subVectors(camera.position, s.pos);
+  kc = { s, by, t: 0, real: 0, a0: Math.atan2(_ix.x, _ix.z), side: Math.random() < 0.5 ? 1 : -1 };
+  const lost = s.team === 'p';
+  $('kc-word').textContent = s.name + (lost ? ' lost' : ' destroyed'); $('kc-word').className = lost ? 'lose' : '';
+  $('kc-sub').textContent = (s.name === s.C.name ? s.C.cls : s.C.name + ' ' + s.C.cls.toLowerCase()) + (!lost && by && by !== player && by.team === 'p' ? ' · finished by ' + by.name : '');
+  $('letterbox').classList.add('on'); $('hud').classList.add('cine');
+  hitStop(0.14, true); slowMo(0.22, 1.1, 0.9);
+}
+function endKillCam() { if (kc && kc.by && kc.by.alive && kc.by.shieldMesh) kc.by.shieldMesh.visible = true; kc = null; $('letterbox').classList.remove('on'); $('hud').classList.remove('cine'); }
+const KC_CLOSE = 2.4, KC_WITNESS = 4.7;
+function killCamera(dt, rdt) {
+  kc.t += dt; kc.real += rdt;
+  const S = kc.s, B = kc.by, L = Math.max(140, hullLen(S)), t = kc.t;
+  const witness = B && B.alive && B.pos.distanceTo(S.pos) < 3600, over = witness && t >= KC_CLOSE && t < KC_WITNESS;
+  if (B && B.alive && B.shieldMesh) B.shieldMesh.visible = !over;   // the shot looks out through the victor's own shield
+  if (t < KC_CLOSE) {   // close and low, drifting round the burning hull
+    const a = kc.a0 + 0.55 * kc.side + t * 0.14 * kc.side, R = L * 1.35;
+    camera.position.set(S.pos.x + Math.sin(a) * R, S.pos.y + L * (0.16 - t * 0.02), S.pos.z + Math.cos(a) * R);
+    camera.lookAt(S.pos); camera.fov = 42;
+  } else if (t < KC_WITNESS && witness) {   // over the victor's shoulder, on a long lens so the wreck fills the frame
+    const Lb = hullLen(B), dir = _v2.subVectors(S.pos, B.pos).normalize(), right = _v3.crossVectors(dir, UP).normalize();
+    camera.position.copy(B.pos).addScaledVector(dir, -Lb * 1.5).addScaledVector(right, kc.side * Lb * 0.7).add(_v4.set(0, Lb * 0.4, 0));
+    camera.lookAt(S.pos); camera.fov = clamp(r2d(2 * Math.atan(L * 2.2 / camera.position.distanceTo(S.pos))), 14, 36);
+  } else {   // wide, pulling slowly back for the reactor blast
+    const u = t - (witness ? KC_WITNESS : KC_CLOSE), a = kc.a0 + Math.PI * 0.7 * kc.side + u * 0.05 * kc.side, R = L * (7 + u * 0.35);
+    camera.position.set(S.pos.x + Math.sin(a) * R, S.pos.y + L * (1.2 + u * 0.08), S.pos.z + Math.cos(a) * R);
+    camera.lookAt(S.pos); camera.fov = 44;
+  }
+  camera.fov -= cam.punch * 4; camera.updateProjectionMatrix();
+}
+
 // ---------------- damage ----------------
 function localUnit(s, local, out) { const E = s.C.shieldE; return out.set((local.x - E.c[0]) / E.r[0], (local.y - E.c[1]) / E.r[1], (local.z - E.c[2]) / E.r[2]); }
 function facingOfUnit(u) { return facingOfBearing(r2d(Math.atan2(u.x, -u.z))); }
@@ -1466,7 +1654,7 @@ function damage(s, dmg, kind, local, src) {
   if (s.sh[f] > 0) {
     const need = dmg * mult;
     if (s.sh[f] >= need) { s.sh[f] -= need; hullD = 0; }
-    else { hullD = dmg * (1 - s.sh[f] / need); s.sh[f] = 0; facingDown(s, f); }
+    else { hullD = dmg * (1 - s.sh[f] / need); s.sh[f] = 0; facingDown(s, f, src); }
     const steady = kind === 'lance' || kind === 'beam';   // continuous hits flash now and then, not every frame
     if (!steady || Math.random() < 0.15) shieldFlash(s, u);
     if (!steady) Sfx.shield(volAt(s.pos));
@@ -1483,20 +1671,24 @@ function damage(s, dmg, kind, local, src) {
       const before = s.sub[k];
       s.sub[k] = Math.max(0, s.sub[k] - hullD * rand(0.25, 0.6));
       if (s === player && before >= 25 && s.sub[k] < 25) showMsg(subName(s, k) + ' critical', 2.2, true);
+      else if (src && src === player && gfx.nums && before >= 25 && s.sub[k] < 25) dmgNum(s, subName(s, k) + ' crippled');
     }
     if (s.fires.length < 14 && Math.random() < hullD / 120) s.fires.push(local.clone().multiplyScalar(0.92));
-    if (s === player) { vignetteA = Math.min(0.8, vignetteA + hullD / 120); cam.shake = Math.max(cam.shake, clamp(hullD / 60, 0.2, 2)); }
+    if (s === player) { vignetteA = Math.min(0.8, vignetteA + hullD / 120); cam.shake = Math.max(cam.shake, clamp(hullD / 60, 0.2, 2)); if (hullD >= 120) hitStop(0.06); }
   }
+  if (src && src === player && s.team === 'e') playerHit(s, dmg, hullD, kind);
   if (src) { src.stats.dealt += dmg; if (kind === 'lance') src.stats.lanceDmg += dmg; }
   s.stats.taken += dmg;
   if (game.tally && s === player) { const k = (src ? (src.C.boss ? 'boss' : src === enemy ? 'lead' : 'add') : 'env') + ':' + kind; game.tally[k] = (game.tally[k] || 0) + Math.round(dmg); }   // balance tool
-  if (s.hull <= 0) killShip(s);
+  if (s.hull <= 0) killShip(s, src);
 }
-function facingDown(s, f) {
+function facingDown(s, f, src) {
   if (s === player) { showMsg(FACINGS[f] + ' shield down', 2.2, true); Sfx.alarm(); Voice.say('shields-down', 8); }
   else { showMsg('Enemy ' + FACINGS[f].toLowerCase() + ' shield down', 2); Voice.say('enemy-shields-down', 8); }
+  if (s.team === 'e') shieldBreak(s, f, src);
 }
-function killShip(s) {
+function killShip(s, src) {
+  const wasEnding = !!(game && game.ending);
   s.alive = false; s.hull = 0; s.dying = 5; s.shieldMesh.visible = false; s.speed *= 0.5;
   s.tumble.set(rand(-0.02, 0.02), rand(-0.03, 0.03), rand(-0.04, 0.04));
   hideBeams(s);
@@ -1506,6 +1698,9 @@ function killShip(s) {
   else {endGame(s===player?'lose':'win'); if(s===player)enemy.isWinner=true;else player.isWinner=true;}
   if(s===player){for(const opponent of ships)if(opponent.team==='e')opponent.isWinner=true;}
   else if(game.ending&&game.outcome==='win'){player.isWinner=true;}
+  if (state !== 'playing') return;
+  if (!wasEnding && game.ending) startKillCam(s, src);   // the kill that ends the battle is filmed
+  else if (s.team === 'e') { hitStop(0.1, true); slowMo(0.35, 0.3, 0.7); }   // a kill mid-battle just lands hard
 }
 function subName(s, k) { return k === 'fore' ? s.C.fore : SUBNAME[k]; }
 
@@ -1701,6 +1896,10 @@ function weaponsUpdate(s, dt) {
       spawnShell(s, _v1, _pd, G.speed, G.dmg, false, G.style || null, G.kind || 'shell');
       s.stats.shots++;
     }
+    if (s === player) {   // the flagship's guns rock the camera: a rolling rumble down a broadside, a shove for the heavy guns
+      cam.shake = Math.min(0.7, Math.max(cam.shake, cam.shake + G.dmg / 420));
+      cam.kick.addScaledVector(_v3, -G.dmg * 0.045); if (cam.kick.length() > 9) cam.kick.setLength(9);
+    }
     const fc = MUZZLE[G.style] || (s.team === 'p' ? MUZZLE.p : MUZZLE.e);
     flash(_v1, G.style === 'plasma' ? 60 : G.style === 'tracer' ? 18 : G.style === 'rail' ? 70 : 34, fc[0], fc[1], fc[2], 0.15);
     if (G.style !== 'plasma' && G.style !== 'tracer') for (let k = 0; k < 4; k++) { _v2.copy(_v3).multiplyScalar(rand(10, 40)).add(_v4.randomDirection().multiplyScalar(6)); smoke.emit(_v1, _v2, 0.25, 0.25, 0.26, 0.35, 6, 22, 1.4, 1); }
@@ -1884,7 +2083,7 @@ function firesUpdate(s, dt) {
       explode(_v1, rand(1.5, 3.2), s.vel, Math.random() < 0.5 ? 'chain1' : 'chain2');
     }
     if (s.dying <= 0) {
-      explode(s.pos, 9, s.vel, 'death'); Sfx.play('death2', volAt(s.pos), 0.85); flash(s.pos, 2600, 3, 2, 1.2, 1.8);
+      explode(s.pos, 9, s.vel, 'death'); Sfx.play('death2', volAt(s.pos), 0.85); flash(s.pos, kc && kc.s === s ? 1600 : 2600, 3, 2, 1.2, 1.8); reactorBlast(s);   // the kill cam is close: a smaller glare
       s.model.traverse(o => { if (o.isMesh) o.material.color.copy(o.material.userData.base).multiplyScalar(0.18); });
       for (const g of s.glows) g.visible = false;
       for (let i = 0; i < 6; i++) s.fires.push(new V3(rand(-1, 1) * s.C.hullE.r[0], s.C.hullE.c[1], rand(-1, 1) * s.C.hullE.r[2]));
@@ -2070,6 +2269,7 @@ window.addEventListener('keydown', e => {
   if (game && game.bossIntro > 0) { endBossEntrance(); if (k !== 'KeyP' && k !== 'Escape') return; }
   if (k === 'KeyP' || k === 'Escape') { pause(state === 'playing'); return; }
   if (state !== 'playing') return;
+  if (kc && game.ending) { if (kc.real > 0.9) game.endT = Math.min(game.endT, 0); return; }   // skip the kill cam (not on a key still held from the fight)
   if (bridge && bridge.activateByKey(k)) return;
   if (k === 'KeyC') cam.mode = cam.mode === 'chase' ? 'target' : 'chase';
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
@@ -2155,8 +2355,10 @@ document.querySelectorAll('#menu .back').forEach(b => b.addEventListener('click'
 window.addEventListener('keydown', e => { if (state === 'menu' && e.code === 'Escape' && menuPage !== 'main') showPage('main'); });
 
 // ---------------- camera ----------------
-function updateCamera(dt) {
+function updateCamera(dt, gdt = dt) {
   if (state === 'menu' && attract.on) { attractCamera(); return; }
+  cam.punch = Math.max(0, cam.punch - dt * 2.5); cam.kick.multiplyScalar(Math.exp(-dt * 7));
+  if (kc && (state === 'playing' || state === 'over' || state === 'paused')) { killCamera(gdt, dt); shakeCamera(dt); return; }
   if (state === 'menu' || state === 'loading') {
     menuT += dt;
     const sel = displayShips[choice.ship];
@@ -2175,7 +2377,7 @@ function updateCamera(dt) {
     game.bossIntro = Math.max(0, game.bossIntro - dt); if (game.bossIntro === 0) $('bosscard').hidden = true;
     $('bosscard').style.opacity = clamp(Math.min(k / 0.12, (1 - k) / 0.18), 0, 1).toFixed(3);
     camera.position.set(b.pos.x + Math.sin(a) * R, b.pos.y + R * (0.12 + 0.1 * k), b.pos.z + Math.cos(a) * R);
-    camera.lookAt(b.pos.x, b.pos.y + 20, b.pos.z); camera.fov = 40; camera.updateProjectionMatrix();
+    camera.lookAt(b.pos.x, b.pos.y + 20, b.pos.z); camera.fov = cam.fov = 40; camera.updateProjectionMatrix();
     if (game.bossIntro === 0) { cam.curYaw = Math.atan2(camera.position.x - P.pos.x, camera.position.z - P.pos.z); }
     return;
   }
@@ -2192,8 +2394,12 @@ function updateCamera(dt) {
   camera.position.copy(P.pos).add(_v1);
   if (cam.mode === 'target' && enemy) camera.lookAt(_v2.copy(P.pos).lerp(enemy.pos, 0.35));
   else camera.lookAt(_v2.copy(P.pos).addScaledVector(P.fwd, dist * 0.15).add(_v3.set(0, dist * 0.06, 0)));
+  shakeCamera(dt);
+  cam.fov += ((P.burn ? 62 : 55) - cam.fov) * (1 - Math.exp(-3 * dt)); camera.fov = cam.fov - cam.punch * 3; camera.updateProjectionMatrix();
+}
+function shakeCamera(dt) {
+  camera.position.add(cam.kick);
   if (cam.shake > 0) { camera.position.x += rand(-1, 1) * cam.shake * 4; camera.position.y += rand(-1, 1) * cam.shake * 4; cam.shake = Math.max(0, cam.shake - dt * 1.5); }
-  camera.fov += ((P.burn ? 62 : 55) - camera.fov) * (1 - Math.exp(-3 * dt)); camera.updateProjectionMatrix();
 }
 
 // ---------------- title-screen fight ----------------
@@ -2620,7 +2826,9 @@ function setQuality(q, announce) {
   if (announce) showMsg('Graphics: ' + q, 1.4);
 }
 document.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => setQuality(b.dataset.q)));
-$('opt-fps').checked = gfx.fps; $('opt-auto').checked = gfx.auto;
+$('opt-fps').checked = gfx.fps; $('opt-auto').checked = gfx.auto; $('opt-cine').checked = gfx.cine; $('opt-nums').checked = gfx.nums;
+$('opt-cine').addEventListener('change', e => { gfx.cine = e.target.checked; saveGfx(); });
+$('opt-nums').addEventListener('change', e => { gfx.nums = e.target.checked; saveGfx(); });
 $('opt-fps').addEventListener('change', e => { gfx.fps = e.target.checked; saveGfx(); $('fps').hidden = !gfx.fps; });
 $('opt-auto').addEventListener('change', e => { gfx.auto = e.target.checked; saveGfx(); if (!gfx.auto && renderScale < 1) { renderScale = 1; resize(); } });
 function goFull() { const el = document.documentElement; try { if (!document.fullscreenElement) el.requestFullscreen?.().catch(() => {}); else document.exitFullscreen?.(); } catch (e) {} }
@@ -2676,26 +2884,28 @@ let last = performance.now();
 function frame(now) {
   requestAnimationFrame(frame);
   const ms = now - last; trackFrame(ms);
-  const dt = Math.min(ms / 1000, 0.05); last = now;
+  const rdt = Math.min(ms / 1000, 0.05); last = now;
+  const ts = timeScale(rdt), dt = rdt * ts;   // hit pauses and slow motion
+  Sfx.slow(state === 'paused' ? 1 : ts);
   if (state === 'playing') updateGame(dt);
   else if (state === 'menu') {
     if (menuPage === 'ship') { if (attract.on) attractStop(); }
     else { if (!attract.on) attractStart(); attractUpdate(dt); }
   }
   else if (state === 'over') { for (const s of ships) { helm(s, dt); firesUpdate(s, dt); } shellsUpdate(dt); torpsUpdate(dt); minesUpdate(dt); }
-  if (state !== 'paused') { fire.update(dt); smoke.update(dt); updateFlashes(dt); }
-  updateCamera(state === 'paused' ? 0 : dt);
+  if (state !== 'paused') { fire.update(dt); smoke.update(dt); updateFlashes(dt); ringsUpdate(dt); }
+  updateCamera(state === 'paused' ? 0 : rdt, state === 'paused' ? 0 : dt);
   skyGroup.position.copy(camera.position);
   dust.material.uniforms.uCam.value.copy(camera.position);
   if (player && state === 'playing') Sfx.engine(player.burn ? 1.8 : STEPS[player.step], player.alive);
   drawShells();
   if (!(state === 'loading' || (state === 'menu' && menuPage !== 'ship' && !attract.on))) composer.render();
-  updateHud(dt); hudFast(dt); Music.tick(Math.min(ms / 1000, 0.1));
+  updateHud(rdt); hudFast(rdt); if (game) dmgNumsUpdate(rdt); Music.tick(Math.min(ms / 1000, 0.1));
 }
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
   get state() { return state; }, get game() { return game; }, get bridge() { return bridge; }, get fleet() {return fleet;}, get cam() { return cam; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
-  start: startGame, setPips, fireGroup, inArc, Sfx, damage, armed, get tutorial() { return tutorial; },
+  start: startGame, setPips, fireGroup, inArc, Sfx, damage, armed, get tutorial() { return tutorial; }, get killCam() { return kc; }, timeFx, gfx,
   step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } },
   // Balance testing (tools/balance.mjs): stage an encounter from the current save, let the AI fly the player's ship
   // (Captain grade, picking targets and using officer commands), and run it to the end or to maxTime seconds without rendering.

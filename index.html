@@ -1477,8 +1477,11 @@ function showOver() {
       const rv = fleet && fleet.rival, rs = fleet && (fleet.escaped || ships.find(s => s.rival));
       if (rv && rs) {
         const i = rs.hitBy.indexOf(Math.max(...rs.hitBy)), all = rs.hitBy.reduce((a, b) => a + b, 0), kinds = Object.entries(rs.kindBy).sort((a, b) => b[1] - a[1]);
-        const fate = fleet.escaped ? 'escaped' : !rs.alive ? 'killed' : win ? 'escaped' : 'won';   // alive at a win: the convoy got out and the rival got away
-        saved.pendingResult.rival = { ...rv, ship: rs.captain ? rs.name : rv.ship || null, fate, memory: { facing: i, share: all ? Math.round(rs.hitBy[i] / all * 100) / 100 : 0, weapon: kinds.length ? kinds[0][0] : 'shell', ship: player.name } };
+        // How it ended for them: jumped out, got out of the wreck alive (a lifeboat, or gravely wounded), killed,
+        // or still flying (alive at a win: the convoy got out and the rival got away; at a loss, the rival won).
+        const pod = !rs.alive && ['escaped', 'wounded'].includes(rs.captainFate);
+        const fate = fleet.escaped || pod ? 'escaped' : !rs.alive ? 'killed' : win ? 'escaped' : 'won', how = fleet.escaped ? 'jump' : pod ? rs.captainFate : 'jump';
+        saved.pendingResult.rival = { ...rv, ship: rs.captain ? rs.name : rv.ship || null, fate, how, memory: { facing: i, share: all ? Math.round(rs.hitBy[i] / all * 100) / 100 : 0, weapon: kinds.length ? kinds[0][0] : 'shell', ship: player.name } };
       }
       if (!win) saved.credits = Math.max(0, (saved.credits || 0) - 100);
       if (tutorial) saved.tutorial = 'done';   // shown once (Intel can ask for it again)

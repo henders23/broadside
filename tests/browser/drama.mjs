@@ -4,7 +4,7 @@
 import { suite } from './harness.mjs';
 
 await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, write, patch, random }) => {
-  const S = f => page.evaluate(f);
+  const S = (f, a) => page.evaluate(f, a);
   const battle = async () => { await page.goto(base + '/index.html?encounter=1&sim'); await page.waitForFunction(() => window.__sim && window.__sim.state === 'playing', null, { timeout: 240000 }); await page.waitForTimeout(800); };
   const over = async () => { for (let i = 0; i < 80 && await S(() => window.__sim.state) !== 'over'; i++) { await S(() => window.__sim.step(30)); await page.waitForTimeout(100); } return (await S(() => window.__sim.state)) === 'over'; };
   const campaign = async () => { await page.goto(base + '/campaign.html'); await page.waitForTimeout(900); };
@@ -21,7 +21,7 @@ await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, w
   const b1 = await S(() => { const S = window.__sim, e = S.enemy; return { rival: !!e.rival, name: e.name, captain: e.captain, line: e.rivalLine, panel: document.getElementById('foe-name').textContent + ' / ' + document.getElementById('foe-cls').textContent }; });
   check(b1.rival && b1.name === job.ship && b1.captain === job.captain && b1.line, 'the bounty target is marked as a possible rival: ' + b1.captain + ' in the ' + b1.name);
   check(job.ship !== job.captain && b1.panel.startsWith(job.ship) && b1.panel.includes(job.captain), 'the target panel names the ship, with the captain under it: ' + b1.panel);
-  await S(() => { const S = window.__sim, e = S.enemy; e.sh = [0, 0, 0, 0]; S.damage(e, e.hull * 0.82, 'shell', e.pos.clone().set(-40, 0, 0), S.player); S.step(4); });
+  await S(() => { const S = window.__sim, e = S.enemy; e.sh = [0, 0, 0, 0]; S.damage(e, e.hull * 0.82, 'shell', e.pos.clone().set(-40, 0, 0), S.player); S.step(12); });   // past the next refresh of the objective line
   const esc = await S(() => ({ t: window.__sim.fleet.escaping, msg: document.getElementById('fleet-objective').textContent, hidden: document.getElementById('fleet-objective').hidden, flee: !!window.__sim.enemy.ai.flee }));
   check(esc.t > 0 && esc.flee && /JUMPS IN/.test(esc.msg) && !esc.hidden, 'below a quarter hull the jump drive spools, with a countdown: ' + esc.msg);
   await shot('r1-escaping');
@@ -112,7 +112,7 @@ await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, w
   check(hit.length === 1 && hit[0].id === 'varro' && hit[0].severity === 'killed', 'the hit reaches the bridge and kills Varro, already wounded: ' + JSON.stringify(hit));
   check(await S(() => document.querySelector('#bridge-orders .order').textContent.includes('KILLED')), 'the command goes dark');
   await shot('r10-bridge-hit');
-  await S(() => { const S = window.__sim, e = S.enemy; S.damage(e, 1e6, 'torp', e.pos.clone().set(0, 0, -40), S.player); });
+  await S(() => { const S = window.__sim; for (const e of S.ships.filter(x => x.team === 'e' && x.alive)) S.damage(e, 1e6, 'torp', e.pos.clone().set(0, 0, -40), S.player); });
   check(await over(), 'the battle ends');
   await campaign();
   const rep3 = await page.textContent('#modalbody');
@@ -133,7 +133,7 @@ await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, w
   await battle();
   const deck = await S(() => { const S = window.__sim, p = S.player, id = Object.keys(S.bridge.cooldown)[0]; p.sh = [10, 10, 10, 10]; const ok = S.bridge.activate(id); return { ok, id, sh: p.sh[0] }; });
   check(deck.id === replacement.id && deck.ok && deck.sh > 10, 'in battle the replacement’s Brace works: ' + JSON.stringify(deck));
-  await S(() => { const S = window.__sim, e = S.enemy; S.damage(e, 1e6, 'torp', e.pos.clone().set(0, 0, -40), S.player); }); await over();
+  await S(() => { const S = window.__sim; for (const e of S.ships.filter(x => x.team === 'e' && x.alive)) S.damage(e, 1e6, 'torp', e.pos.clone().set(0, 0, -40), S.player); }); await over();
 
   // --- Treating a wound at a starbase
   await campaign(); await page.locator('#modalactions .primary').click();
@@ -156,6 +156,28 @@ await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, w
   s = await read();
   check(s.rivals.some(r => r.name === 'Captain Kora Vex' && r.asset === 'vex.webp' && r.status === 'at large') && s.completed.includes(1), 'Vex is at large, and Operation 1 is complete');
   check((await S(() => Rivals.lines(state.rivals.find(r => r.name === 'Captain Kora Vex')).back)).startsWith('Kestrel was business'), 'Vex has lines of her own');
+
+  // --- A captain who escapes a sunk ship comes back as a rival, in a new ship
+  await S(() => { closeModal(); state.rivals = state.rivals.filter(r => r.status === 'dead');   // earlier battles may have filled the three places at large
+    const x = Campaign.interception('rednarrows', 1, 5); x.enemies = x.enemies.slice(0, 1); x.enemies[0].fate = 'wounded'; state.ambush = { x, dest: null }; state.system = 'rednarrows';
+    state.launch = Campaign.encounter(x, cctx()); state.launch.escape = null; persist(); });
+  const sunk = await S(() => ({ ship: state.launch.enemies[0].name, captain: state.launch.enemies[0].captain }));
+  await battle();
+  await S(() => { const S = window.__sim, e = S.enemy; S.damage(e, 1e6, 'torp', e.pos.clone().set(0, 0, -40), S.player); });
+  check(await over(), 'the ship is sunk');
+  const end2 = await S(() => document.getElementById('over-sub').textContent);
+  check(end2.includes(sunk.captain) && /grave|burned/.test(end2), 'the end screen says the captain got out, gravely wounded: ' + end2);
+  s = await read();
+  check(s.pendingResult.rival.fate === 'escaped' && s.pendingResult.rival.how === 'wounded', 'recorded as escaping the wreck');
+  await campaign();
+  const rep4 = await page.textContent('#modalbody');
+  check(rep4.includes('RIVAL · ESCAPED THE WRECK') && rep4.includes(sunk.ship) && rep4.includes('gravely wounded'), 'the report names the rival who escaped the wreck');
+  await shot('r13-escaped-wreck');
+  await page.locator('#modalactions .primary').click();
+  s = await read();
+  const back2 = s.rivals.find(r => r.name === sunk.captain);
+  check(back2 && back2.lostShip === sunk.ship && back2.ship !== sunk.ship && back2.how === 'wounded', 'back in a new ship: the ' + (back2 && back2.ship));
+  check((await S(n => Campaign.encounter(Rivals.encounterSrc(state.rivals.find(r => r.name === n), 'rednarrows', 1, 'intercept'), cctx()).hail.line, sunk.captain)).includes('burns ward'), 'and the hail remembers the burns ward');
 
   // --- Intel lists honours, rivals and the fallen
   await page.click('#tabIntel');

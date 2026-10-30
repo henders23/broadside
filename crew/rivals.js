@@ -12,7 +12,13 @@
     hunt: 0.35,      // chance a ready rival springs on a journey through their own space
     bounty: 1.6,     // a wanted poster pays this much over a bounty
     settle: 300,     // bonus requisition for killing a rival
-    maxUpgrades: 3
+    maxUpgrades: 3,
+    maxAtLarge: 3    // more than this many rivals at large, and a captain who gets away just disappears into the Reach
+  };
+  // The ships a captain who lost theirs comes back in.
+  const NEW_SHIPS = {
+    Corsair: ['Second Chance', 'Bad Penny', 'Spite', 'Last Laugh', 'Old Wound', 'Payback', 'Grave Robber', 'Comeback'],
+    'Ash Fleet': ['ASF Rekindled', 'ASF Undying', 'ASF Second Watch', 'ASF Phoenix', 'ASF Cinders', 'ASF Vengeance']
   };
   const FACING = ['bow', 'stern', 'port', 'starboard'];
   const WEAPON = { torp: 'torpedo', lance: 'lance', shell: 'broadside', beam: 'beam', ram: 'ram', mine: 'mine', missile: 'missile', plasma: 'plasma', rail: 'railgun' };
@@ -29,10 +35,14 @@
     Corsair: {
       facing: 'Remember {system}, {ship}? You opened up my {facing} side like a ration tin. I have had it plated twice over.',
       weapon: 'Thought I would forget {system}? I count your {weapon} hits every night. Tonight I give them back.',
+      wreck: 'You sank the {lost} under me at {system}, {ship}. I watched from a lifeboat. This one floats.',
+      wounded: 'A month in a burns ward because of you, {ship}. I spent it thinking about {system}. Look what I bought with the insurance.',
       hurt: 'You are good, Navy. Not good enough.', flee: 'Not today, Navy! Keep a berth warm for me.', death: 'Damn you, {ship}...' },
     'Ash Fleet': {
       facing: '{ship}. You burned my {facing} side to the frames at {system}. The Ash Fleet does not forget, and neither do I.',
       weapon: '{ship}. You left me burning at {system} with your {weapon}s. I have been waiting for this.',
+      wreck: 'I watched the {lost} burn from a lifeboat at {system}, {ship}. Now it is your turn to watch.',
+      wounded: 'They rebuilt my hands after {system}, {ship}. They are steady enough to aim.',
       hurt: 'Is that all the Navy taught you?', flee: 'This is not over, {ship}. Not by a long way.', death: 'So this is how the Ash Fleet ends.' },
     Directorate: {
       facing: 'Unit {name} recalls {system}. {Facing} emitter losses: catalogued. Countermeasures: installed.',
@@ -51,15 +61,18 @@
   const captainOf = e => e.captain || e.name;
   const voice = faction => VOICES[faction] || VOICES.Corsair;
   const fill = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => k === 'Facing' ? (v.facing || '').replace(/^./, c => c.toUpperCase()) : v[k] != null ? v[k] : '');
-  const words = r => ({ name: r.name, ship: (r.memory && r.memory.ship) || 'Navy', system: r.lastSystem || 'the last fight', facing: r.memory && Number.isInteger(r.memory.facing) ? FACING[r.memory.facing] : 'port', weapon: WEAPON[r.memory && r.memory.weapon] || 'broadside' });
+  const words = r => ({ lost: r.lostShip || 'my ship', name: r.name, ship: (r.memory && r.memory.ship) || 'Navy', system: r.lastSystem || 'the last fight', facing: r.memory && Number.isInteger(r.memory.facing) ? FACING[r.memory.facing] : 'port', weapon: WEAPON[r.memory && r.memory.weapon] || 'broadside' });
   function lines(r) {
     const v = voice(r.faction), p = PERSONAL[r.name] || {}, w = words(r), last = (r.upgrades || [])[r.upgrades.length - 1] || '';
-    return { back: fill(p.back || (last.startsWith('facing') ? v.facing : v.weapon), w), hurt: fill(p.hurt || v.hurt, w), flee: fill(p.flee || v.flee, w), death: fill(p.death || v.death, w) };
+    const pod = r.how === 'wounded' ? v.wounded : r.how === 'escaped' ? v.wreck : null;   // came back from a sunk ship
+    return { back: fill(p.back || pod || (last.startsWith('facing') ? v.facing : v.weapon), w), hurt: fill(p.hurt || v.hurt, w), flee: fill(p.flee || v.flee, w), death: fill(p.death || v.death, w) };
   }
   // A fight can make a rival if its lead is a named captain: bounties, ambushes and Kora Vex at Kestrel.
   function eligible(src) {
-    if (!src || !src.enemies || !src.enemies[0] || src.goal.type !== 'destroy' && src.id !== 1) return false;
-    if (src.id === 1 && C && C.storyById[1] === src) return true;
+    if (!src || !src.enemies || !src.enemies[0]) return false;
+    // A story lead with a captain who can live through it: Vex at Kestrel, Sable in the Cinder Wake.
+    if (C && C.storyById[src.id] === src) return !!src.enemies[0].captain && src.enemies[0].fate !== 'killed' && (src.goal.type === 'destroy' || src.id === 1);
+    if (src.goal.type !== 'destroy') return false;
     return (src.kind === 'intercept' || src.kind === 'contract' && src.type === 'bounty') && !!src.captain && captainOf(src.enemies[0]) === src.captain;
   }
   const hashOf = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
@@ -81,7 +94,7 @@
       return spec;
     }
     if (!eligible(src) || list.some(x => x.name === captainOf(src.enemies[0]))) return spec;
-    const faction = src.id === 1 ? 'Corsair' : spec.hail && spec.hail.faction || 'Corsair', name = captainOf(src.enemies[0]), ship = src.enemies[0].captain ? src.enemies[0].name : null, p = PERSONAL[name];
+    const faction = C.storyById[src.id] === src ? C.foeGroup(C.byId[src.system], src.act) : spec.hail && spec.hail.faction || 'Corsair', name = captainOf(src.enemies[0]), ship = src.enemies[0].captain ? src.enemies[0].name : null, p = PERSONAL[name];
     spec.enemies[0].rival = true;
     spec.rival = { name, ship, cls: src.enemies[0].cls, faction, asset: p ? p.asset : null, returning: false, meetings: 0, lines: lines({ name, faction, memory: {}, upgrades: [] }) };
     if (!spec.story) spec.escape = escapeFor(spec.id, 0);
@@ -107,18 +120,21 @@
       if (res.fate === 'killed') { Object.assign(r, { status: 'dead', killed: { system: ctx.system, mission: ctx.mission, ship: res.memory && res.memory.ship } }); return { rivals: out, event: { type: 'slain', rival: r } }; }
       if (res.fate === 'escaped') {
         r.escapes++; const u = r.upgrades.length < RULES.maxUpgrades ? nextUpgrade(r, res.memory) : null; if (u) r.upgrades = [...r.upgrades, u];
-        Object.assign(r, { memory: res.memory || r.memory, lastSystem: sys, last: ctx.system, readyAt: (ctx.clock || 0) + RULES.readyAfter });
+        Object.assign(r, { how: res.how || 'jump', memory: res.memory || r.memory, lastSystem: sys, last: ctx.system, readyAt: (ctx.clock || 0) + RULES.readyAfter });
         return { rivals: out, event: { type: 'again', rival: r, upgrade: u } };
       }
       Object.assign(r, { last: ctx.system, lastSystem: sys, readyAt: (ctx.clock || 0) + RULES.readyAfter });   // the rival beat you, and comes looking again
       return { rivals: out, event: { type: 'gloat', rival: r } };
     }
-    if (res.fate !== 'escaped') return { rivals: out, event: null };
-    r = { id: 'rv' + (out.length + 1), name: res.name, ship: res.ship || null, cls: res.cls, faction: res.faction, asset: res.asset || null, status: 'at large', meetings: 1, escapes: 1, upgrades: [],
+    if (res.fate !== 'escaped' || atLarge(out).length >= RULES.maxAtLarge) return { rivals: out, event: null };
+    // How they got away: jumped out (`jump`), or out of the wreck in a lifeboat (`escaped`, `wounded`), so back in a new ship.
+    const how = res.how || 'jump', pod = how === 'escaped' || how === 'wounded', pool = NEW_SHIPS[res.faction] || [];
+    const used = new Set(out.map(x => x.ship)), fresh = pool.length ? pool[[...Array(pool.length).keys()].map(i => (hashOf(res.name) + i) % pool.length).find(i => !used.has(pool[i])) ?? 0] : null;
+    r = { id: 'rv' + (out.length + 1), name: res.name, ship: pod && fresh ? fresh : res.ship || null, lostShip: pod ? res.ship || null : null, how, cls: res.cls, faction: res.faction, asset: res.asset || null, status: 'at large', meetings: 1, escapes: 1, upgrades: [],
       first: { system: ctx.system, mission: ctx.mission }, memory: res.memory || {}, last: ctx.system, lastSystem: sys, readyAt: (ctx.clock || 0) + RULES.readyAfter };
     const u = nextUpgrade(r, res.memory); if (u) r.upgrades = [u];
     out.push(r);
-    return { rivals: out, event: { type: 'new', rival: r, upgrade: u } };
+    return { rivals: out, event: { type: 'new', rival: r, upgrade: u, how } };
   }
   const atLarge = list => (list || []).filter(r => r.status !== 'dead');
   // A rival's space: the hostile systems this act whose raiders fly the rival's colours.
@@ -148,5 +164,5 @@
   function wanted(list, station, act) {
     return atLarge(list).filter(r => C.nearestStation(r.last) === station && C.byId[r.last] && C.byId[r.last].faction !== 'Navy').map(r => encounterSrc(r, r.last, act, 'contract'));
   }
-  root.BroadsideRivals = Object.freeze({ RULES, FACING, UPGRADES, VOICES, lines, eligible, escapeFor, shape, nextUpgrade, record, atLarge, inHerSpace, ambush, encounterSrc, wanted });
+  root.BroadsideRivals = Object.freeze({ RULES, NEW_SHIPS, FACING, UPGRADES, VOICES, lines, eligible, escapeFor, shape, nextUpgrade, record, atLarge, inHerSpace, ambush, encounterSrc, wanted });
 })(typeof window !== 'undefined' ? window : globalThis);

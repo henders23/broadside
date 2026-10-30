@@ -173,3 +173,25 @@ assert.deepEqual([0.1, 0.4, 0.6, 0.95].map(v => C.rollFate(() => v)), ['escaped'
 for (const f of Object.keys(F)) { const t = C.fateLine(f, 'Captain X', 'Saltjack', 1); assert.ok(t.includes('Captain X') && !/\{/.test(t), f + ': ' + t); }
 assert.equal(C.encounter(k0, {}).hail.name, k0.captain, 'the captain hails you');
 console.log('ship and captain tests passed');
+
+// ---------------- captains who escape the wreck come back as rivals ----------------
+assert.ok(R.eligible(C.storyById[2]) && C.encounter(C.storyById[2], {}).rival.faction === 'Ash Fleet', 'Sable can live to come back, for the Ash Fleet');
+assert.ok(!R.eligible(C.storyById[8]), 'Halloran does not');
+const crane = { name: 'Captain Jessup Crane', ship: 'Rusty Halo', cls: 'scrapjaw', faction: 'Corsair', memory: { facing: 1, share: 0.3, weapon: 'torp', ship: 'MNS Resolute' } };
+let pod = R.record([], { ...crane, fate: 'escaped', how: 'escaped' }, { system: 'scour', mission: 'Bounty', clock: 4 });
+let cr = pod.rivals[0];
+assert.equal(pod.event.how, 'escaped'); assert.equal(cr.lostShip, 'Rusty Halo');
+assert.ok(R.NEW_SHIPS.Corsair.includes(cr.ship), 'back in a new ship: ' + cr.ship);
+assert.match(R.lines(cr).back, /Rusty Halo/); assert.match(R.lines(cr).back, /lifeboat/);
+const src2 = R.encounterSrc(cr, 'blackrift', 1, 'intercept');
+assert.equal(src2.enemies[0].name, cr.ship); assert.equal(src2.enemies[0].captain, crane.name);
+pod = R.record([], { ...crane, fate: 'escaped', how: 'wounded' }, { system: 'scour', clock: 4 });
+assert.match(R.lines(pod.rivals[0]).back, /burns ward/);
+// A jump-out keeps the ship.
+assert.equal(R.record([], { ...crane, fate: 'escaped', how: 'jump' }, { system: 'scour', clock: 4 }).rivals[0].ship, 'Rusty Halo');
+// Two rivals do not get the same new ship, and no more than three are at large.
+let many = [];
+for (const n of ['A', 'B', 'C', 'D']) many = R.record(many, { ...crane, name: 'Captain ' + n, fate: 'escaped', how: 'escaped' }, { system: 'scour', clock: 1 }).rivals;
+assert.equal(many.length, R.RULES.maxAtLarge, 'three rivals at large at most');
+assert.equal(new Set(many.map(r => r.ship)).size, many.length, 'each in a different new ship');
+console.log('wreck survivor tests passed');

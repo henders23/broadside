@@ -40,6 +40,8 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   if(e.speed&&e.speed!==1)ship.C={...ship.C,vmax:ship.C.vmax*e.speed,accel:ship.C.accel*e.speed};
   if(e.shieldK||Array.isArray(e.facing)){ship.facingK=[1,1,1,1].map(()=>e.shieldK||1);if(Array.isArray(e.facing))ship.facingK[e.facing[0]]*=e.facing[1];ship.sh=ship.sh.map((v,i)=>Math.round(v*ship.facingK[i]));ship.cap=ship.cap.map((v,i)=>Math.round(v*ship.facingK[i]));}
   if(e.rival){ship.rival=true;ship.rivalLine=rival?rival.lines.death:'';}
+  // A human captain aboard (crew/campaign-data.js): what becomes of them is decided when the ship is destroyed.
+  if(e.captain){ship.captain=e.captain;ship.fate=e.fate||(e.rival&&rival&&rival.returning?'killed':null);}
   ship.maxHull=ship.hull;
  }
  function stopHostiles(){

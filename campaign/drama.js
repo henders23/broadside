@@ -13,7 +13,7 @@ function postHolders(post){const d=onDuty();return post==='duty'?d:post==='rando
 // result, like the experience award, so a reload shows the same report and cannot repeat it).
 function dramaFor(r,ctx){
  if(r.drama)return r.drama;
- const out={casualties:[],recovered:[],rival:null,medals:[],kills:[],bounty:0};
+ const out={casualties:[],recovered:[],rival:null,medals:[],kills:[],bounty:0,fates:(r.fates||[]).slice()};
  // Wounds heal with each engagement; then this battle's casualties.
  const h=Casualties.heal(state.wounds);state.wounds=h.wounds;out.recovered=h.recovered.filter(id=>!isFallen(id));
  if((r.casualties||[]).length){
@@ -33,6 +33,8 @@ function dramaFor(r,ctx){
 function rivalCard(rv,kicker,text){return `<div class="commander-brief rivalcard">${Personnel.portrait({name:rv.name,faction:rv.faction,asset:rv.asset||undefined})}<div><small>${kicker}</small><b>${esc(rv.name)}</b><p>${text}</p></div></div>`;}
 function upgradeText(rv,u){if(!u)return '';const [k,f]=u.split(':');return Rivals.UPGRADES[k]?' '+Rivals.UPGRADES[k].note({...rv},Number(f)):'';}
 function dramaHtml(d){if(!d)return '';let h='';
+ // What became of the named captains of the ships destroyed (crew/campaign-data.js).
+ if((d.fates||[]).length)h+=`<div class="notes fates"><small>THE CAPTAINS</small>${d.fates.map(f=>`<div><b>${esc(f.captain)}</b> · ${Campaign.FATE_TITLES[f.fate]||f.fate}. ${esc(Campaign.fateLine(f.fate,f.captain,f.ship,Campaign.hash(f.captain)))}</div>`).join('')}</div>`;
  if(d.casualties.length||d.recovered.length){h+=`<div class="notes casualties"><small>BRIDGE CASUALTIES</small>${d.casualties.map(k=>{const o=crewById(k.id),rep=k.replacement&&crewById(k.replacement);
    return k.severity==='killed'?`<div class="kia">${Personnel.portrait(o,'fallen')}<span><b>${esc(k.name)}</b> was killed when the bridge was hit. ${rep?`Navy Command has posted <b>${esc(officerName(rep))}</b> to the ${esc(k.post.toLowerCase())}’s station.`:`The ${esc(k.post.toLowerCase())}’s station passes back to its regular officer.`}</span></div>`
     :`<div>${Personnel.portrait(o)}<span><b>${esc(k.name)}</b> was wounded on the bridge. Serving wounded: the command works at ${Math.round(Casualties.RULES.wounded.strength*100)}% until healed, in ${Casualties.RULES.heal} engagements or at a starbase sickbay. Hit again while wounded, ${esc(o.short||o.name)} will not survive.</span></div>`;}).join('')}${d.recovered.map(id=>`<div><span><b>${esc(officerName(crewById(id)))}</b> has recovered and is back to full strength.</span></div>`).join('')}</div>`;}

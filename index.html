@@ -1400,6 +1400,7 @@ function jumpOut(s) {
   s.alive = false; s.jumped = true; s.burn = false; removeShip(s);
   if (enemy === s) { const n = ships.find(x => x.team === 'e' && x.alive); if (n) { enemy = n; player.target = n; } }
 }
+function captainFate(s) { return window.BroadsideCampaign.fateLine(s.captainFate, s.captain, s.name, window.BroadsideCampaign.hash(s.captain)); }
 function endGame(outcome) {
   if (game.ending) return;
   game.ending = true; game.outcome = outcome; game.endT = 7; bridge?.onEnd();
@@ -1415,7 +1416,7 @@ function showOver() {
   const win = game.outcome === 'win';
   const w = $('over-word'), soft = { convoy_lost: 'Convoy lost', station_lost: 'Station lost', quarry_escaped: 'Quarry escaped' }[game.campaignOutcome];   // lost the objective, not the ship
   w.textContent = win ? enemy.name + ' destroyed' : soft && player.alive ? soft : player.name + ' lost'; w.className = 'bigword ' + (win ? 'win' : 'lose');
-  $('over-sub').textContent = win ? 'The enemy ' + enemy.C.cls.toLowerCase() + ' is a drifting wreck.' :
+  $('over-sub').textContent = win ? (enemy.captainFate ? captainFate(enemy) : 'The enemy ' + enemy.C.cls.toLowerCase() + ' is a drifting wreck.') :
     'Keep your strongest facing toward the enemy, and move power to shields when a facing drops below a quarter.';
   const st = player.stats, acc = st.shots ? Math.round(st.hits / st.shots * 100) : 0;
   const t = game.time, mm = Math.floor(t / 60), ss = Math.floor(t % 60);
@@ -1469,6 +1470,7 @@ function showOver() {
         hostiles: foes.length + (fleet && fleet.escaped ? 1 : 0), escorts: flown.length - 1, escortsLost: lost.length, boss: dead.some(s => s.isBoss),
         rivalKilled: dead.some(s => s.rival && campaignMission.rival && campaignMission.rival.returning), convoyHull: fleet?.convoy ? saved.pendingResult.convoyHull : null,
         rams: dead.filter(s => s.killKind === 'ram' && s.killedBy && s.killedBy.team === 'p').length };
+      saved.pendingResult.fates = dead.filter(s => s.captainFate).map(s => ({ ship: s.name, captain: s.captain, fate: s.captainFate }));   // named captains of the ships destroyed
       saved.pendingResult.ships = flown.map(s => ({ id: s.recId, dealt: Math.round(s.stats.dealt), disabled: !s.alive,
         kills: dead.filter(d => d.killedBy === s).map(d => ({ cls: d.key, name: d.name, boss: !!d.isBoss, rival: !!d.rival })) }));
       // A rival in the fight (crew/rivals.js): how it ended for them, and what they remember of it.
@@ -1476,7 +1478,7 @@ function showOver() {
       if (rv && rs) {
         const i = rs.hitBy.indexOf(Math.max(...rs.hitBy)), all = rs.hitBy.reduce((a, b) => a + b, 0), kinds = Object.entries(rs.kindBy).sort((a, b) => b[1] - a[1]);
         const fate = fleet.escaped ? 'escaped' : !rs.alive ? 'killed' : win ? 'escaped' : 'won';   // alive at a win: the convoy got out and the rival got away
-        saved.pendingResult.rival = { ...rv, fate, memory: { facing: i, share: all ? Math.round(rs.hitBy[i] / all * 100) / 100 : 0, weapon: kinds.length ? kinds[0][0] : 'shell', ship: player.name } };
+        saved.pendingResult.rival = { ...rv, ship: rs.captain ? rs.name : rv.ship || null, fate, memory: { facing: i, share: all ? Math.round(rs.hitBy[i] / all * 100) / 100 : 0, weapon: kinds.length ? kinds[0][0] : 'shell', ship: player.name } };
       }
       if (!win) saved.credits = Math.max(0, (saved.credits || 0) - 100);
       if (tutorial) saved.tutorial = 'done';   // shown once (Intel can ask for it again)
@@ -1484,13 +1486,13 @@ function showOver() {
     }
     $('again').hidden = true;
     $('tomenu').textContent = 'Return to campaign';
-    const convoyName = (fleet?.convoy?.name || 'The convoy').split(' · ')[0];
+    const convoyName = (fleet?.convoy?.name || 'The convoy').split(' · ')[0], fates = ships.filter(s => s.team === 'e' && s.captainFate).map(captainFate).join(' ');   // every named captain's fate
     if(!win&&game.campaignOutcome==='convoy_lost')$('over-sub').textContent=convoyName+' has been lost. Refit at a starbase and attempt the escort again.';
     else if(!win&&game.campaignOutcome==='station_lost')$('over-sub').textContent=(fleet?.station?.name||'The station').split(' · ')[0]+' has been destroyed. Refit at a starbase and try again.';
     else if(!win&&game.campaignOutcome==='quarry_escaped')$('over-sub').textContent=enemy.name+' has jumped out of the system. Refit at a starbase and pick up the trail again.';
     else if(!win)$('over-sub').textContent='Rescue teams are towing the ship to the nearest starbase. Return to the campaign map to regroup.';
-    else if(game.campaignOutcome==='escort_saved')$('over-sub').textContent=convoyName+' survived. All hostile vessels have been disabled.';
-    else if(game.campaignOutcome==='fleet_destroyed')$('over-sub').textContent='Every hostile ship is disabled. Ship damage, subsystem condition and remaining torpedoes have been recorded.';
+    else if(game.campaignOutcome==='escort_saved')$('over-sub').textContent=convoyName+' survived. All hostile vessels have been disabled.'+(fates?' '+fates:'');
+    else if(game.campaignOutcome==='fleet_destroyed')$('over-sub').textContent=fates||'Every hostile ship is disabled. Ship damage, subsystem condition and remaining torpedoes have been recorded.';
     else if (!game.campaignOutcome) $('over-sub').textContent = 'Operation secured. Ship damage, subsystem condition and remaining torpedoes have been recorded.';
   }
 }
@@ -1637,7 +1639,7 @@ function startKillCam(s, by) {
   kc = { s, by, t: 0, real: 0, a0: Math.atan2(_ix.x, _ix.z), side: Math.random() < 0.5 ? 1 : -1 };
   const lost = s.team === 'p';
   $('kc-word').textContent = s.name + (lost ? ' lost' : ' destroyed'); $('kc-word').className = lost ? 'lose' : '';
-  $('kc-sub').textContent = s.rival && s.rivalLine ? '“' + s.rivalLine + '”' : (s.name === s.C.name ? s.C.cls : s.C.name + ' ' + s.C.cls.toLowerCase()) + (!lost && by && by !== player && by.team === 'p' ? ' · finished by ' + by.name : '');
+  $('kc-sub').textContent = s.rival && s.rivalLine && s.captainFate === 'killed' ? '“' + s.rivalLine + '”' : s.captainFate ? captainFate(s) : (s.name === s.C.name ? s.C.cls : s.C.name + ' ' + s.C.cls.toLowerCase()) + (!lost && by && by !== player && by.team === 'p' ? ' · finished by ' + by.name : '');
   $('letterbox').classList.add('on'); $('hud').classList.add('cine');
   hitStop(0.14, true); slowMo(0.22, 1.1, 0.9);
 }
@@ -1729,6 +1731,8 @@ function facingDown(s, f, src) {
 function killShip(s, src) {
   const wasEnding = !!(game && game.ending);
   s.killedBy = src || null;
+  // A named captain gets away, gets away gravely hurt, dies or goes missing (crew/campaign-data.js).
+  if (s.captain && !s.captainFate && window.BroadsideCampaign) s.captainFate = s.fate || window.BroadsideCampaign.rollFate(Math.random);
   s.alive = false; s.hull = 0; s.dying = 5; s.shieldMesh.visible = false; s.speed *= 0.5;
   s.tumble.set(rand(-0.02, 0.02), rand(-0.03, 0.03), rand(-0.04, 0.04));
   hideBeams(s);
@@ -2293,7 +2297,7 @@ function bossEntrance() {
   const B = fleet && fleet.boss; game.bossIntro = 0; game.bossWarn = null; $('bosscard').hidden = true;
   if (!B) return;
   game.bossIntro = BOSS_INTRO;
-  $('bosscard-cls').textContent = B.ship.C.cls; $('bosscard-title').textContent = B.title; $('bosscard-who').textContent = B.ship.name.split(' · ').pop();
+  $('bosscard-cls').textContent = B.ship.C.cls; $('bosscard-title').textContent = B.title; $('bosscard-who').textContent = B.ship.captain || B.ship.name.split(' · ').pop();
   const card = $('bosscard'); card.hidden = false; card.style.opacity = 0;   // faded in and out on the battle clock (updateCamera)
 }
 function endBossEntrance() { if (game && game.bossIntro > 0) { game.bossIntro = 0; $('bosscard').hidden = true; } }
@@ -2721,7 +2725,7 @@ function updateHud(dt) {
   if (fleet && fleet.allies.length) { escortHudT -= dt; if (escortHudT <= 0) { escortHudT = 0.25; drawEscorts(); } }
   if (fleet && fleet.boss) drawBossBar();
   const P = player, E = enemy;
-  setT($c('foe-name'),E.name);setT($c('foe-cls'),E.C.cls);
+  setT($c('foe-name'),E.name);setT($c('foe-cls'),E.captain?E.C.cls+' · '+E.captain:E.C.cls);
   camera.updateMatrixWorld();
   project(E.pos, _sc);
   const mk = $c('mk'), oa = $c('offarrow');

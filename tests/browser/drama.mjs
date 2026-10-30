@@ -16,10 +16,11 @@ await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, w
 
   // --- A bounty target gets away
   const job = await S(() => { const k = Campaign.contracts('peregrine', 0, 1).find(c => c.type === 'bounty'); state.contracts = [k]; state.system = k.system; persist();
-    const spec = Campaign.encounter(k, cctx()); spec.escape = { at: 0.25, window: 2 }; state.launch = spec; persist(); return { id: k.id, captain: k.captain, system: k.system, reward: pay(k) }; });
+    const spec = Campaign.encounter(k, cctx()); spec.escape = { at: 0.25, window: 2 }; state.launch = spec; persist(); return { id: k.id, captain: k.captain, ship: k.enemies[0].name, system: k.system, reward: pay(k) }; });
   await battle();
-  const b1 = await S(() => { const S = window.__sim, e = S.enemy; return { rival: !!e.rival, name: e.name, line: e.rivalLine }; });
-  check(b1.rival && b1.name === job.captain && b1.line, 'the bounty target is marked as a possible rival: ' + b1.name);
+  const b1 = await S(() => { const S = window.__sim, e = S.enemy; return { rival: !!e.rival, name: e.name, captain: e.captain, line: e.rivalLine, panel: document.getElementById('foe-name').textContent + ' / ' + document.getElementById('foe-cls').textContent }; });
+  check(b1.rival && b1.name === job.ship && b1.captain === job.captain && b1.line, 'the bounty target is marked as a possible rival: ' + b1.captain + ' in the ' + b1.name);
+  check(job.ship !== job.captain && b1.panel.startsWith(job.ship) && b1.panel.includes(job.captain), 'the target panel names the ship, with the captain under it: ' + b1.panel);
   await S(() => { const S = window.__sim, e = S.enemy; e.sh = [0, 0, 0, 0]; S.damage(e, e.hull * 0.82, 'shell', e.pos.clone().set(-40, 0, 0), S.player); S.step(4); });
   const esc = await S(() => ({ t: window.__sim.fleet.escaping, msg: document.getElementById('fleet-objective').textContent, hidden: document.getElementById('fleet-objective').hidden, flee: !!window.__sim.enemy.ai.flee }));
   check(esc.t > 0 && esc.flee && /JUMPS IN/.test(esc.msg) && !esc.hidden, 'below a quarter hull the jump drive spools, with a countdown: ' + esc.msg);
@@ -52,18 +53,22 @@ await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, w
   await shot('r4-rival-returns');
   await page.locator('#modalactions button', { hasText: 'Battle stations' }).click();
   await page.waitForURL(/index\.html\?encounter=1/); await battle();
-  const b2 = await S(() => { const e = window.__sim.enemy; return { name: e.name, port: e.cap[2], fore: e.cap[0], escape: window.__sim.fleet.spec.escape }; });
-  check(b2.name === job.captain && b2.port > b2.fore * 1.5, 'back with the port shield doubled: ' + JSON.stringify(b2));
+  const b2 = await S(() => { const e = window.__sim.enemy; return { name: e.name, captain: e.captain, port: e.cap[2], fore: e.cap[0], escape: window.__sim.fleet.spec.escape }; });
+  check(b2.name === job.ship && b2.captain === job.captain && b2.port > b2.fore * 1.5, 'back with the port shield doubled: ' + JSON.stringify(b2));
   await S(() => { const S = window.__sim, e = S.enemy; e.sh = [0, 0, 0, 0]; S.fleet.spec.escape = null; S.damage(e, 1e6, 'torp', e.pos.clone().set(0, 0, -40), S.player); });
   check(await S(() => window.__sim.killCam && /“/.test(document.getElementById('kc-sub').textContent)), 'the kill cam carries the rival’s last words');
   await shot('r5-rival-killcam');
   check(await over(), 'the rival is destroyed');
+  const end = await S(() => ({ word: document.getElementById('over-word').textContent, sub: document.getElementById('over-sub').textContent }));
+  check(end.word === job.ship + ' destroyed' && end.sub.includes(job.captain) && /went down|killed/.test(end.sub), 'the end screen names the ship, and under it the captain’s fate: ' + JSON.stringify(end));
+  await shot('r5b-end-screen');
   s = await read();
   check(s.pendingResult.honours.rivalKilled && s.pendingResult.ships[0].kills[0].rival, 'the kill is credited to the flagship as a rival');
   const credits0 = s.credits;
   await campaign();
   const rep2 = await page.textContent('#modalbody');
   check(rep2.includes('SCORE SETTLED') && rep2.includes('Old Score Settled') && rep2.includes('BATTLE HONOURS'), 'the report settles the score and awards the medal');
+  check(rep2.includes('THE CAPTAINS') && rep2.includes(job.captain + ' · Killed'), 'the report says what became of the captain');
   await shot('r6-score-settled');
   await page.locator('#modalactions .primary').click();
   s = await read();
@@ -74,7 +79,7 @@ await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, w
   await page.click('#tabShip'); await page.waitForTimeout(400);
   await page.locator('#shipacts button', { hasText: 'Service record' }).click();
   const rec = await page.textContent('#modalbody');
-  check(rec.includes('KILL MARKS') && rec.includes(job.captain) && await page.locator('#modalbody .tally').count() === 1, 'the service record shows the kill mark and the named kill');
+  check(rec.includes('KILL MARKS') && rec.includes(job.ship) && await page.locator('#modalbody .tally').count() === 1, 'the service record shows the kill mark and the named kill');
   await shot('r7-service-record'); await page.keyboard.press('Escape');
   await page.locator('#shipacts button', { hasText: 'Paint' }).click();
   check(await page.locator('[data-paint="gold"]').isEnabled() && await page.locator('[data-paint="crimson"]').isDisabled(), 'Gilded is unlocked by Old Score Settled; Crimson is not yet');

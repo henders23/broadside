@@ -47,6 +47,8 @@
   const PERSONAL = {
     'Captain Kora Vex': { asset: 'vex.webp', back: 'Kestrel was business, {ship}. This is personal.', hurt: 'Every plate you crack, I bill to Meridian.', flee: 'I got away from you once. Watch me do it twice.', death: 'Should have stuck to freighters...' }
   };
+  // A rival is the captain: a human captain flies a named ship (`captain` on the spec entry); a machine or a Wraith is its ship.
+  const captainOf = e => e.captain || e.name;
   const voice = faction => VOICES[faction] || VOICES.Corsair;
   const fill = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => k === 'Facing' ? (v.facing || '').replace(/^./, c => c.toUpperCase()) : v[k] != null ? v[k] : '');
   const words = r => ({ name: r.name, ship: (r.memory && r.memory.ship) || 'Navy', system: r.lastSystem || 'the last fight', facing: r.memory && Number.isInteger(r.memory.facing) ? FACING[r.memory.facing] : 'port', weapon: WEAPON[r.memory && r.memory.weapon] || 'broadside' });
@@ -58,7 +60,7 @@
   function eligible(src) {
     if (!src || !src.enemies || !src.enemies[0] || src.goal.type !== 'destroy' && src.id !== 1) return false;
     if (src.id === 1 && C && C.storyById[1] === src) return true;
-    return (src.kind === 'intercept' || src.kind === 'contract' && src.type === 'bounty') && !!src.captain && src.enemies[0].name === src.captain;
+    return (src.kind === 'intercept' || src.kind === 'contract' && src.type === 'bounty') && !!src.captain && captainOf(src.enemies[0]) === src.captain;
   }
   const hashOf = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
   // Whether (and when) the rival runs, fixed by the encounter so a reload cannot reroll it. Story operations never run.
@@ -66,22 +68,22 @@
   // Called by Campaign.encounter() with the save's rivals: marks the rival in the spec, refits a returning one and gives them lines.
   function shape(spec, src, ctx) {
     // A returning rival: named by the encounter, or a bounty or ambush that happens to be led by a rival still at large.
-    const list = (ctx && ctx.rivals) || [], r = src.rivalId ? list.find(x => x.id === src.rivalId && x.status !== 'dead') : eligible(src) ? list.find(x => x.status !== 'dead' && x.name === src.enemies[0].name) : null;
+    const list = (ctx && ctx.rivals) || [], r = src.rivalId ? list.find(x => x.id === src.rivalId && x.status !== 'dead') : eligible(src) ? list.find(x => x.status !== 'dead' && x.name === captainOf(src.enemies[0])) : null;
     if (r) {
       const e = spec.enemies[0];
       e.rival = true;
       for (const u of r.upgrades || []) { const [k, f] = u.split(':'); if (UPGRADES[k]) { UPGRADES[k].apply(e, Number(f)); spec.notes.push(UPGRADES[k].note(r, Number(f))); } }
       const L = lines(r);
-      spec.rival = { id: r.id, name: r.name, cls: r.cls, faction: r.faction, asset: r.asset || null, returning: true, meetings: r.meetings, lines: L };
+      spec.rival = { id: r.id, name: r.name, ship: r.ship || null, cls: r.cls, faction: r.faction, asset: r.asset || null, returning: true, meetings: r.meetings, lines: L };
       spec.hail = { name: r.name, faction: r.faction, line: L.back, asset: r.asset || undefined };
       spec.escape = escapeFor(spec.id, r.escapes);
       spec.notes.unshift(`${r.name} has met you ${r.meetings === 1 ? 'once' : r.meetings + ' times'} and got away ${r.escapes === 1 ? 'once' : r.escapes + ' times'}. ${r.name.split(' ').pop()} remembers.`);
       return spec;
     }
-    if (!eligible(src) || list.some(x => x.name === src.enemies[0].name)) return spec;
-    const faction = src.id === 1 ? 'Corsair' : spec.hail && spec.hail.faction || 'Corsair', name = src.enemies[0].name, p = PERSONAL[name];
+    if (!eligible(src) || list.some(x => x.name === captainOf(src.enemies[0]))) return spec;
+    const faction = src.id === 1 ? 'Corsair' : spec.hail && spec.hail.faction || 'Corsair', name = captainOf(src.enemies[0]), ship = src.enemies[0].captain ? src.enemies[0].name : null, p = PERSONAL[name];
     spec.enemies[0].rival = true;
-    spec.rival = { name, cls: src.enemies[0].cls, faction, asset: p ? p.asset : null, returning: false, meetings: 0, lines: lines({ name, faction, memory: {}, upgrades: [] }) };
+    spec.rival = { name, ship, cls: src.enemies[0].cls, faction, asset: p ? p.asset : null, returning: false, meetings: 0, lines: lines({ name, faction, memory: {}, upgrades: [] }) };
     if (!spec.story) spec.escape = escapeFor(spec.id, 0);
     return spec;
   }
@@ -112,7 +114,7 @@
       return { rivals: out, event: { type: 'gloat', rival: r } };
     }
     if (res.fate !== 'escaped') return { rivals: out, event: null };
-    r = { id: 'rv' + (out.length + 1), name: res.name, cls: res.cls, faction: res.faction, asset: res.asset || null, status: 'at large', meetings: 1, escapes: 1, upgrades: [],
+    r = { id: 'rv' + (out.length + 1), name: res.name, ship: res.ship || null, cls: res.cls, faction: res.faction, asset: res.asset || null, status: 'at large', meetings: 1, escapes: 1, upgrades: [],
       first: { system: ctx.system, mission: ctx.mission }, memory: res.memory || {}, last: ctx.system, lastSystem: sys, readyAt: (ctx.clock || 0) + RULES.readyAfter };
     const u = nextUpgrade(r, res.memory); if (u) r.upgrades = [u];
     out.push(r);
@@ -133,7 +135,7 @@
   // The fight when a rival comes for you: their own ship, stronger every time, with a wingman from the third meeting.
   function encounterSrc(r, sysId, act, kind) {
     const sys = C.byId[sysId], s = C.strength(sys, act), lvl = C.threatLevel(sys), vet = Math.min(0.3, 0.1 * r.meetings);
-    const enemies = [{ cls: r.cls, name: r.name, hull: Math.round(Math.min(1, s * 0.9 + vet) * 100) / 100, shield: Math.round(Math.min(1, s * 0.95 + vet) * 100) / 100 }];
+    const enemies = [{ cls: r.cls, name: r.ship || r.name, ...(r.ship ? { captain: r.name } : {}), hull: Math.round(Math.min(1, s * 0.9 + vet) * 100) / 100, shield: Math.round(Math.min(1, s * 0.95 + vet) * 100) / 100 }];
     if (r.meetings >= 2) enemies.push({ cls: r.cls, name: `${r.name.split(' ').pop()}’s wingman`, hull: 0.4, shield: 0.55, diff: 'commander' });
     const base = { system: sysId, act: Math.min(act, 3), captain: r.name, enemy: r.cls, enemies, goal: { type: 'destroy' }, rivalId: r.id, support: kind === 'intercept' ? 0 : 1 };
     if (kind === 'intercept') return { ...base, id: `n:${r.id}:${r.meetings}`, kind: 'intercept', name: `${r.name} returns`, reward: 160 + 45 * lvl,

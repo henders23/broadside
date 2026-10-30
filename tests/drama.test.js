@@ -157,3 +157,19 @@ assert.ok(H.paints({ iron: { n: 1 } }).some(p => p.id === 'ivory'));
 assert.equal(H.tint('navy'), null); assert.equal(H.tint(undefined), null); assert.equal(H.tint('ash').length, 3);
 
 console.log('drama tests passed');
+
+// ---------------- ships and their captains ----------------
+const k0 = C.contracts('peregrine', 0, 1).find(k => k.type === 'bounty');
+assert.ok(k0.enemies[0].captain === k0.captain && k0.enemies[0].name !== k0.captain, 'a bounty target flies a named ship: ' + k0.enemies[0].name);
+const names = new Set(), F = C.FATES;
+for (const n of ['Captain Mara Quill', 'Captain Jessup Crane', 'Captain Hollis Teague', 'Captain Dace Varga', 'Captain Tamsin Roe', 'Captain Ivo Strake', 'Captain Bryn Kessler', 'Old Saul Mott']) {
+  for (let seed = 0; seed < 40; seed++) { const x = C.interception('scour', 1, seed); if (x.captain === n) { names.add(x.enemies[0].name); break; } }
+}
+assert.equal(names.size, [...names].length); assert.ok(names.size >= 4 && new Set(names).size === names.size, 'different captains, different ships');
+assert.equal(C.storyById[1].enemies[0].captain, 'Captain Kora Vex'); assert.equal(C.storyById[8].enemies[0].fate, 'killed', 'Halloran dies at Grimhold');
+assert.ok(!C.interception('halcyon', 2, 1).enemies[0].captain, 'a machine is its own ship');
+assert.ok(Math.abs(Object.values(F).reduce((a, b) => a + b, 0) - 1) < 1e-9);
+assert.deepEqual([0.1, 0.4, 0.6, 0.95].map(v => C.rollFate(() => v)), ['escaped', 'wounded', 'killed', 'missing']);
+for (const f of Object.keys(F)) { const t = C.fateLine(f, 'Captain X', 'Saltjack', 1); assert.ok(t.includes('Captain X') && !/\{/.test(t), f + ': ' + t); }
+assert.equal(C.encounter(k0, {}).hail.name, k0.captain, 'the captain hails you');
+console.log('ship and captain tests passed');

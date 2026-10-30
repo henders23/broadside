@@ -2,7 +2,7 @@
 // Run: node tests/browser/fleet.mjs (or tests/browser/run.mjs for every suite).
 import { suite } from './harness.mjs';
 
-await suite('fleet', {}, async ({ page, ctx, base, out, KEY, check, shot, read, write, patch, random, jump, playing }) => {
+await suite('fleet', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, shot, read, write, patch, random, jump, playing }) => {
   const waitShip = () => page.waitForFunction(() => document.getElementById('shipwait').hidden, null, { timeout: 90000 }).catch(() => {});
 
   await page.goto(base + '/campaign.html');

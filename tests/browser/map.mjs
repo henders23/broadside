@@ -2,7 +2,7 @@
 // Run: node tests/browser/map.mjs (or tests/browser/run.mjs for every suite).
 import { suite } from './harness.mjs';
 
-await suite('map', {}, async ({ page, ctx, base, out, KEY, check, shot, read, write, patch, random, jump, playing }) => {
+await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, shot, read, write, patch, random, jump, playing }) => {
   await page.goto(base + '/campaign.html');
   await page.evaluate(k => localStorage.removeItem(k), KEY); await page.reload();
   // opening briefing

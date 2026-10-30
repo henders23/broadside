@@ -2,7 +2,7 @@
 // Run: node tests/browser/officers.mjs (or tests/browser/run.mjs for every suite).
 import { suite } from './harness.mjs';
 
-await suite('officers', {}, async ({ page, ctx, base, out, KEY, check, shot, read, write, patch, random, jump, playing }) => {
+await suite('officers', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, shot, read, write, patch, random, jump, playing }) => {
   const p = page, save = write;
   await p.goto(base + '/campaign.html');
   // returning from operation 2 with Varro used twice and Okoye three times

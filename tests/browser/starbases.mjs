@@ -2,7 +2,7 @@
 // Run: node tests/browser/starbases.mjs (or tests/browser/run.mjs for every suite).
 import { suite } from './harness.mjs';
 
-await suite('starbases', {}, async ({ page, ctx, base, out, KEY, check, shot, read, write, patch, random, jump, playing }) => {
+await suite('starbases', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, shot, read, write, patch, random, jump, playing }) => {
   const battle = async () => {
     await page.waitForFunction(() => document.getElementById('own-hull') && +document.getElementById('own-hull').textContent > 0, null, { timeout: 240000 });
     await page.waitForTimeout(1200);

@@ -145,12 +145,19 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #hud.cine>*:not(#dmgnums){opacity:0!important;transition:opacity .4s}
 #letterbox{position:absolute;inset:0;pointer-events:none;z-index:8}
 #letterbox i{position:absolute;left:0;right:0;height:11vh;background:#000;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
-#letterbox i:first-child{top:0;transform:translateY(-100%)}
+#letterbox i:first-child{top:0;transform:translateY(-100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 #letterbox i:last-child{bottom:0;transform:translateY(100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 #letterbox.on i{transform:none}
 #letterbox b{font-family:var(--f-display);font-weight:800;font-size:clamp(20px,3.2vw,34px);letter-spacing:.2em;text-transform:uppercase;color:#ffe3c4}
 #letterbox b.lose{color:var(--hostile)}
 #letterbox small{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+/* battle openings: who is in shot at the top, who is speaking at the bottom */
+#letterbox b:empty,#letterbox small:empty,#in-line:empty{display:none}
+#in-line{display:flex;gap:14px;align-items:center;max-width:min(900px,calc(100% - 32px));animation:inline .5s ease-out}
+#in-line .crew-portrait{width:52px;height:56px}
+#in-line p{margin:0;font-size:15px;line-height:1.45;color:#e7ecf3}#in-line p.quiet{font-style:italic;color:#b9c4d2}
+#in-line p small{display:block;margin-top:3px;font-size:10px;letter-spacing:.24em;color:var(--hud)}
+@keyframes inline{from{opacity:0;transform:translateY(6px)}}
 #letterbox em{position:absolute;right:16px;bottom:10px;font-style:normal;font-size:10px;letter-spacing:.24em;color:#ffffff55;text-transform:uppercase}
 
 /* ---------- Screens ---------- */
@@ -258,7 +265,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <div id="stage">
   <canvas id="gl" aria-label="Broadside 3D battle view"></canvas>
   <div id="attract-fade" aria-hidden="true"></div>
-  <div id="letterbox" aria-live="polite"><i></i><i><b id="kc-word"></b><small id="kc-sub"></small><em id="kc-skip">Any key to skip</em></i></div>
+  <div id="letterbox" aria-live="polite"><i><b id="in-word"></b><small id="in-sub"></small></i><i><b id="kc-word"></b><small id="kc-sub"></small><div id="in-line"></div><em id="kc-skip">Any key to skip</em></i></div>
 
   <div id="hud" hidden>
     <div id="bridge-orders" hidden aria-label="Bridge officer commands"></div>
@@ -379,7 +386,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
         <div class="chks">
           <label class="chk" for="opt-fps"><input type="checkbox" id="opt-fps"> Show frame rate</label>
           <label class="chk" for="opt-auto"><input type="checkbox" id="opt-auto" checked> Lower resolution if it struggles</label>
-          <label class="chk" for="opt-cine"><input type="checkbox" id="opt-cine" checked> Kill cam, hit pauses and slow motion</label>
+          <label class="chk" for="opt-cine"><input type="checkbox" id="opt-cine" checked> Battle openings, kill cam, hit pauses and slow motion</label>
           <label class="chk" for="opt-nums"><input type="checkbox" id="opt-nums" checked> Damage numbers</label>
         </div>
         <p class="hint">Low turns off the glow and halves the sky detail. <kbd>G</kbd> cycles the quality during a battle.</p>
@@ -1388,7 +1395,9 @@ function startGame() {
   $('escort-hold').hidden = !fleet?.convoy;
   $('escort-hold').textContent='HOLD CONVOY [H]';
   if (campaignMission) $('campaign-objective').textContent = campaignMission.label + ' // ' + campaignMission.objective;
-  bridge?.incomingHail(campaignMission ? campaignMission.hail : 0);
+  game.levels = window.BroadsideExperience && campaignSave ? window.BroadsideExperience.levels(campaignSave.officers) : {};
+  startIntro(window.BroadsidePersonnel ? window.BroadsidePersonnel.activeCrew(campaignSave && campaignSave.crew, { replacements: campaignSave && campaignSave.replacements }) : []);
+  if (!intro) bridge?.incomingHail(campaignMission ? campaignMission.hail : 0);   // the opening has already shown it
   if(fleet)$('fleet-objective').textContent=fleet.status();
   showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[aiKey].label, 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
@@ -1543,6 +1552,7 @@ function resetImpact() {
   for (const n of dmgNums) { n.s = null; n.el.style.display = 'none'; }
   for (const r of rings) { r.m.visible = false; r.t = 1; }
   burst.v = 0; burst.hot = false;
+  if (intro) { intro = null; for (const id of ['in-word', 'in-sub', 'in-line']) $(id).textContent = ''; for (const x of ships) x.shieldMesh.visible = x.alive; }
   endKillCam();
 }
 
@@ -1637,6 +1647,7 @@ function ringsUpdate(dt) {
 let kc = null;
 function startKillCam(s, by) {
   if (!cineOn()) return;
+  if (intro) endIntro();
   if (!by || by === s || !ships.includes(by)) by = s === player ? enemy : player;
   _ix.subVectors(camera.position, s.pos);
   kc = { s, by, t: 0, real: 0, a0: Math.atan2(_ix.x, _ix.z), side: Math.random() < 0.5 ? 1 : -1 };
@@ -1667,6 +1678,93 @@ function killCamera(dt, rdt) {
     camera.lookAt(S.pos); camera.fov = 44;
   }
   camera.fov -= cam.punch * 4; camera.updateProjectionMatrix();
+}
+
+// ---------------- battle openings ----------------
+// A campaign battle opens on a few shots before anyone fires: your flagship with a word from the bridge, the enemy lead
+// with its name and its captain's hail (or a silence), and whoever is on your side. Ships hold their course and their
+// fire meanwhile. Any key or click skips it. Act finales have the boss entrance instead.
+let intro = null;
+const SHOT_T = { own: 3.6, foe: 4.6, friend: 3.4 };
+const WRAITH_SILENCE = 'No transmission. Only a low harmonic through the hull, slowly rising.';
+const SILENCE = 'They are not answering. Their guns are tracking us.';
+// An opening line from the bridge, by what the battle is for. {foe} is the enemy ship, {n} how many contacts.
+const OPENERS = {
+  destroy: '{n} on the plot, captain. {foe} leading, closing on our bow.', intercept: 'They dropped out of the lane right on top of us. Battle stations.',
+  escort: 'The {convoy} is spooling for the beacon. Keep them off her and she makes it.', defend: '{station} is calling for help, captain. Here they come.',
+  pursuit: '{foe}’s jump drive is already warming. We have {secs} seconds to stop it.', survive: 'We hold here, captain. Whatever comes, we hold.',
+  surrender: '{foe}. If we hurt her badly enough, the crew may strike their colours.', rival: 'That transponder again, captain. It is {captain}, in the {foe}.'
+};
+const FRIEND_LINES = {
+  convoy: 'The {name}. Slow, unarmed and full of people. Nothing gets near her.', station: 'The {name}. It has guns of its own, and not nearly enough of them.',
+  escort: 'The {name} on our flank, captain. Ready when you are.', friend: 'The {name}, flying Navy colours today. Strange times.'
+};
+const fillIn = (t, v) => t.replace(/\{(\w+)\}/g, (_, k) => v[k] != null ? v[k] : '');
+function openingShots(crew) {
+  const M = campaignMission, P = window.BroadsidePersonnel, X = window.BroadsideExperience, lv = game.levels || {};
+  const slot = id => (crew || []).find(c => c.slot === id) || (crew || [])[0];
+  const said = o => o ? (X ? X.displayName(o, lv[o.id] || 1) : o.name) : '';
+  const foes = ships.filter(x => x.team === 'e'), n = foes.length;
+  const words = { foe: enemy.name, captain: enemy.captain || '', n: n === 1 ? 'One contact' : (['', '', 'Two', 'Three', 'Four', 'Five'][n] || n) + ' contacts',
+    convoy: fleet?.convoy ? fleet.convoy.name.split(' · ')[0] : '', station: fleet?.station ? fleet.station.name.split(' · ')[0] : '', secs: M.goal && M.goal.seconds || 100 };
+  // Your flagship, and the officer who would speak first.
+  const key = M.rival && M.rival.returning ? 'rival' : M.kind === 'intercept' ? 'intercept' : (M.goal && M.goal.type) || 'destroy';
+  const lead = M.story && P.leads[M.story] ? slot(P.leads[M.story]) : slot(['destroy', 'intercept', 'rival', 'pursuit'].includes(key) ? 'renn' : 'varro');
+  const line = M.story && P.briefLines[M.story] ? P.briefLines[M.story] : fillIn(OPENERS[key] || OPENERS.destroy, words);
+  const shots = [{ kind: 'own', ship: player, word: player.name, sub: player.C.cls + ' · ' + (M.label || ''), who: lead, by: said(lead), line }];
+  // The enemy lead: the captain's hail, a commander's, or nothing at all.
+  const hail = typeof M.hail === 'number' ? P.commanders[M.hail] : M.hail, faction = hail && hail.faction || '';
+  const silent = !M.story && !(M.rival && M.rival.returning) && (/Wraith/.test(faction) || enemy.captain && (window.BroadsideCampaign ? window.BroadsideCampaign.hash(String(M.id)) : 0) % 10 < 3);
+  shots.push({ kind: 'foe', ship: enemy, word: enemy.name, sub: [enemy.C.cls, enemy.captain || (hail && hail.name !== enemy.name ? hail.name : ''), faction].filter(Boolean).join(' · '),
+    who: silent ? null : hail, by: silent ? '' : hail && (hail.name || ''), line: silent ? (/Wraith/.test(faction) ? WRAITH_SILENCE : SILENCE) : hail ? hail.line : SILENCE, quiet: silent });
+  // Whoever is on your side: the convoy, the station, an escort or an ally.
+  const mate = fleet?.convoy || fleet?.station || (fleet?.allies || []).find(a => a.alive);
+  if (mate) {
+    const kind = mate === fleet.convoy ? 'convoy' : mate === fleet.station ? 'station' : mate.friend ? 'friend' : 'escort', [name, what] = mate.name.split(' · '), first = slot('varro');
+    shots.push({ kind: 'friend', ship: mate, word: name, sub: what || mate.C.cls, who: first, by: said(first), line: fillIn(FRIEND_LINES[kind], { name }) });
+  }
+  return shots;
+}
+function startIntro(crew) {
+  if (!campaignMission || !gfx.cine || fleet?.boss || (location.search.includes('sim') && !campaignParams.has('intro'))) return;
+  intro = { shots: openingShots(crew), i: -1, t: 0, side: Math.random() < 0.5 ? 1 : -1 };
+  for (const x of ships) x.shieldMesh.visible = false;   // shields go up at battle stations, when the opening ends
+  $('hud').classList.add('cine'); $('letterbox').classList.add('on'); nextShot();
+}
+function nextShot() {
+  intro.i++; intro.t = 0; const s = intro.shots[intro.i];
+  if (!s) { endIntro(); return; }
+  $('in-word').textContent = s.word; $('in-sub').textContent = s.sub;
+  const P = window.BroadsidePersonnel, el = $('in-line');
+  el.innerHTML = (s.who && P ? P.portrait(s.who) : '') + `<p class="${s.quiet ? 'quiet' : ''}"></p>`; el.querySelector('p').textContent = s.quiet ? s.line : '“' + s.line + '”';
+  if (s.by) { const b = document.createElement('small'); b.textContent = s.by; el.querySelector('p').append(b); }
+  el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+}
+function endIntro() {
+  if (!intro) return; intro = null;
+  for (const x of ships) x.shieldMesh.visible = x.alive;
+  for (const id of ['in-word', 'in-sub', 'in-line']) $(id).textContent = '';
+  if (!kc) { $('letterbox').classList.remove('on'); $('hud').classList.remove('cine'); }
+  cam.curYaw = Math.atan2(camera.position.x - player.pos.x, camera.position.z - player.pos.z); cam.curPitch = undefined;
+}
+// While the opening runs the ships hold their course and their fire, and no mission clock runs.
+function introUpdate(dt, rdt) {
+  intro.t += rdt; if (intro.t > SHOT_T[intro.shots[intro.i].kind]) nextShot();
+  for (const a of asteroids) { a.mesh.rotation.x += a.spin.x * dt; a.mesh.rotation.y += a.spin.y * dt; }
+  for (const s of ships) { afterburnerUpdate(s, dt); helm(s, dt); shieldsUpdate(s, dt); firesUpdate(s, dt); }
+}
+function introCamera() {
+  const s = intro.shots[intro.i], S = s.ship, L = hullLen(S), k = intro.t / SHOT_T[s.kind], side = intro.side * (s.kind === 'foe' ? -1 : 1);
+  const right = _v3.set(1, 0, 0).applyQuaternion(S.q);
+  if (s.kind === 'own') {   // over the stern quarter, pushing slowly in
+    camera.position.copy(S.pos).addScaledVector(S.fwd, -L * (1.5 - 0.3 * k)).addScaledVector(right, side * L * 0.55).add(_v4.set(0, L * (0.28 - 0.06 * k), 0));
+    camera.lookAt(_v5.copy(S.pos).addScaledVector(S.fwd, L * 0.7)); camera.fov = 40;
+  } else {   // off the bow quarter, drifting round
+    const th = 0.75 + 0.35 * k, R = L * 1.7;
+    camera.position.copy(S.pos).addScaledVector(S.fwd, Math.cos(th) * R).addScaledVector(right, side * Math.sin(th) * R).add(_v4.set(0, L * 0.18, 0));
+    camera.lookAt(S.pos); camera.fov = 38;
+  }
+  camera.updateProjectionMatrix();
 }
 
 // ---------------- damage ----------------
@@ -2314,6 +2412,7 @@ window.addEventListener('keydown', e => {
   keys.add(k);
   if (e.repeat) return;
   if (game && game.bossIntro > 0) { endBossEntrance(); if (k !== 'KeyP' && k !== 'Escape') return; }
+  if (intro) { endIntro(); if (k !== 'KeyP' && k !== 'Escape') return; }
   if (k === 'KeyP' || k === 'Escape') { pause(state === 'playing'); return; }
   if (state !== 'playing') return;
   if (kc && game.ending) { if (kc.real > 0.9) game.endT = Math.min(game.endT, 0); return; }   // skip the kill cam (not on a key still held from the fight)
@@ -2344,7 +2443,7 @@ $('escort-hold').addEventListener('click',()=>{
 window.addEventListener('keyup', e => keys.delete(e.code));
 window.addEventListener('blur', () => { keys.clear(); pause(true); });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-canvas.addEventListener('pointerdown', e => { cam.drag = true; cam.lx = e.clientX; cam.ly = e.clientY; canvas.classList.add('drag'); try { canvas.setPointerCapture(e.pointerId); } catch (err) {} });
+canvas.addEventListener('pointerdown', e => { if (intro) endIntro(); cam.drag = true; cam.lx = e.clientX; cam.ly = e.clientY; canvas.classList.add('drag'); try { canvas.setPointerCapture(e.pointerId); } catch (err) {} });
 canvas.addEventListener('pointermove', e => {
   if (!cam.drag) return;
   const dx = e.clientX - cam.lx, dy = e.clientY - cam.ly; cam.lx = e.clientX; cam.ly = e.clientY;
@@ -2406,6 +2505,7 @@ function updateCamera(dt, gdt = dt) {
   if (state === 'menu' && attract.on) { attractCamera(); return; }
   cam.punch = Math.max(0, cam.punch - dt * 2.5); cam.kick.multiplyScalar(Math.exp(-dt * 7));
   if (kc && (state === 'playing' || state === 'over' || state === 'paused')) { killCamera(gdt, dt); shakeCamera(dt); return; }
+  if (intro && player && (state === 'playing' || state === 'paused')) { introCamera(); return; }
   if (state === 'menu' || state === 'loading') {
     menuT += dt;
     const sel = displayShips[choice.ship];
@@ -2934,7 +3034,7 @@ function frame(now) {
   const rdt = Math.min(ms / 1000, 0.05); last = now;
   const ts = timeScale(rdt), dt = rdt * ts;   // hit pauses and slow motion
   Sfx.slow(state === 'paused' ? 1 : ts);
-  if (state === 'playing') updateGame(dt);
+  if (state === 'playing') { if (intro) introUpdate(dt, rdt); else updateGame(dt); }
   else if (state === 'menu') {
     if (menuPage === 'ship') { if (attract.on) attractStop(); }
     else { if (!attract.on) attractStart(); attractUpdate(dt); }
@@ -2952,7 +3052,7 @@ function frame(now) {
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
   get state() { return state; }, get game() { return game; }, get bridge() { return bridge; }, get fleet() {return fleet;}, get cam() { return cam; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
-  start: startGame, setPips, fireGroup, inArc, Sfx, damage, armed, get tutorial() { return tutorial; }, get killCam() { return kc; }, timeFx, gfx,
+  start: startGame, setPips, fireGroup, inArc, Sfx, damage, armed, get tutorial() { return tutorial; }, get killCam() { return kc; }, get intro() { return intro; }, endIntro, timeFx, gfx,
   step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } },
   // Balance testing (tools/balance.mjs): stage an encounter from the current save, let the AI fly the player's ship
   // (Captain grade, picking targets and using officer commands), and run it to the end or to maxTime seconds without rendering.

@@ -179,6 +179,27 @@ await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, w
   check(back2 && back2.lostShip === sunk.ship && back2.ship !== sunk.ship && back2.how === 'wounded', 'back in a new ship: the ' + (back2 && back2.ship));
   check((await S(n => Campaign.encounter(Rivals.encounterSrc(state.rivals.find(r => r.name === n), 'rednarrows', 1, 'intercept'), cctx()).hail.line, sunk.captain)).includes('burns ward'), 'and the hail remembers the burns ward');
 
+  // --- A battle opens on a few shots: your ship and a word from the bridge, the enemy and its hail, then the convoy
+  await S(() => { closeModal(); const k = Campaign.contracts('peregrine', 3, 1).find(c => c.type === 'escort'); state.contracts = [k]; state.system = k.system; state.launch = Campaign.encounter(k, cctx()); persist(); });
+  await page.goto(base + '/index.html?encounter=1&sim&intro'); await page.waitForFunction(() => window.__sim && window.__sim.state === 'playing', null, { timeout: 240000 }); await page.waitForTimeout(600);
+  const shot1 = await S(() => ({ on: !!window.__sim.intro, kinds: window.__sim.intro && window.__sim.intro.shots.map(s => s.kind), word: document.getElementById('in-word').textContent, line: document.getElementById('in-line').textContent, lb: document.getElementById('letterbox').classList.contains('on'), ship: window.__sim.player.name }));
+  check(shot1.on && shot1.lb && shot1.word === shot1.ship && /beacon/.test(shot1.line), 'the battle opens on your ship and a word from the bridge: ' + shot1.line);
+  check(JSON.stringify(shot1.kinds) === '["own","foe","friend"]', 'then the enemy, then the convoy: ' + JSON.stringify(shot1.kinds));
+  await shot('r14-opening-own');
+  await S(() => { window.__sim.intro.t = 99; }); await page.waitForTimeout(500);
+  const shot2 = await S(() => ({ word: document.getElementById('in-word').textContent, sub: document.getElementById('in-sub').textContent, line: document.getElementById('in-line').textContent, foe: window.__sim.enemy.name }));
+  check(shot2.word === shot2.foe && shot2.line.length > 10, 'the enemy ship, by name, with its hail or its silence: ' + shot2.sub + ' / ' + shot2.line);
+  await shot('r15-opening-foe');
+  const held = await S(() => { const S = window.__sim; return S.ships.reduce((n, s) => n + s.stats.shots, 0); });
+  check(held === 0, 'nobody fires while the opening runs');
+  await S(() => { window.__sim.intro.t = 99; }); await page.waitForTimeout(500);
+  check((await S(() => document.getElementById('in-word').textContent)).startsWith('MV '), 'the convoy gets its shot');
+  await shot('r16-opening-friend');
+  await page.keyboard.press('KeyX'); await page.waitForTimeout(300);
+  check(await S(() => !window.__sim.intro && !document.getElementById('letterbox').classList.contains('on') && !document.getElementById('hud').classList.contains('cine')), 'any key skips to the battle');
+  check(await S(() => { const S = window.__sim, t = S.game.time; return new Promise(r => setTimeout(() => r(S.game.time > t), 800)); }), 'and the battle runs');
+  await campaign(); await S(() => { state.launch = null; state.contracts = []; persist(); });
+
   // --- Intel lists honours, rivals and the fallen
   await page.click('#tabIntel');
   const intel = await page.textContent('#modalbody');

@@ -101,10 +101,11 @@ python3 -m http.server 8000
 
 ### Hit feel and the kill cam
 
+- **Battle openings**: a campaign battle opens on a few letterboxed shots before anyone fires. The camera starts on your flagship while an officer says a line for the job in hand (a story operation's lead officer gives their briefing line). It then cuts to the enemy lead, with its name, class and captain and the captain's hail, or a silence: the Wraith never answer, and some Corsair and Ash Fleet captains don't either. Last comes whoever is on your side (the convoy, the station, an escort or an ally) with a word from your first officer. Ships hold their course and fire, shields go up as it ends, and any key or click skips it. Act finales keep their boss entrance.
 - **Damage numbers** rise off the ship you hit: blue while the hit lands on shields, amber once it reaches the hull. Hits in quick succession add into one number that grows, so a full broadside reads as one total. Crippling one of the enemy's systems shows as a red tag (*Engines crippled*).
 - **Hit pauses**: heavy blows (torpedoes, siege cannons, a whole broadside landing, the lance first biting, an enemy shield facing collapsing) freeze the battle for a few hundredths of a second, with a small zoom punch. A collapsing enemy shield also bursts in blue sparks where it failed. Your own guns rock the camera as they fire.
 - **Kills**: a kill mid-battle drops briefly into slow motion. The kill that ends a battle starts the **kill cam**. Letterbox bars close in, the instruments fade and the battle slows. The camera films the wreck in three cuts: close on the burning hull, over the victor's shoulder, then wide for the reactor blast, which throws out a shockwave ring and debris. Any key skips to the results. Sound is muffled while the battle is slowed.
-- Both can be turned off on the title screen's **Graphics** page (*Kill cam, hit pauses and slow motion*; *Damage numbers*). They only change how fast battle time runs on screen, so the tests and the balance tool, which step the battle directly, are unaffected.
+- Both can be turned off on the title screen's **Graphics** page (*Battle openings, kill cam, hit pauses and slow motion*; *Damage numbers*). They only change how fast battle time runs on screen, so the tests and the balance tool, which step the battle directly, are unaffected.
 
 ## Tests
 

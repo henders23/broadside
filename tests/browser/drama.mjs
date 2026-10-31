@@ -185,6 +185,8 @@ await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, w
   const shot1 = await S(() => ({ on: !!window.__sim.intro, kinds: window.__sim.intro && window.__sim.intro.shots.map(s => s.kind), word: document.getElementById('in-word').textContent, line: document.getElementById('in-line').textContent, lb: document.getElementById('letterbox').classList.contains('on'), ship: window.__sim.player.name }));
   check(shot1.on && shot1.lb && shot1.word === shot1.ship && /beacon/.test(shot1.line), 'the battle opens on your ship and a word from the bridge: ' + shot1.line);
   check(JSON.stringify(shot1.kinds) === '["own","foe","friend"]', 'then the enemy, then the convoy: ' + JSON.stringify(shot1.kinds));
+  // Varro fell earlier in this suite: her replacement has no recorded lines, so the first officer's lines are subtitles only.
+  check(await S(() => { const sh = window.__sim.intro.shots; return sh[0].who.id.startsWith('rep-') && sh[0].clip === null && sh[2].clip === null; }), 'a replacement officer speaks in subtitles only');
   await shot('r14-opening-own');
   await S(() => { window.__sim.intro.t = 99; }); await page.waitForTimeout(500);
   const shot2 = await S(() => ({ word: document.getElementById('in-word').textContent, sub: document.getElementById('in-sub').textContent, line: document.getElementById('in-line').textContent, foe: window.__sim.enemy.name }));
@@ -199,6 +201,13 @@ await suite('drama', { random: 0.99 }, async ({ page, base, check, shot, read, w
   check(await S(() => !window.__sim.intro && !document.getElementById('letterbox').classList.contains('on') && !document.getElementById('hud').classList.contains('cine')), 'any key skips to the battle');
   check(await S(() => { const S = window.__sim, t = S.game.time; return new Promise(r => setTimeout(() => r(S.game.time > t), 800)); }), 'and the battle runs');
   await campaign(); await S(() => { state.launch = null; state.contracts = []; persist(); });
+  // Renn's recorded briefing line plays at the opening of Operation 4, and the shot holds until it has been said.
+  await S(() => { state.completed = [...new Set([...state.completed, 1, 2, 3, 8])]; state.actBriefed = 3; state.system = 'halcyon'; state.launch = Campaign.storyEncounter(4, cctx()); persist(); });
+  await page.goto(base + '/index.html?encounter=1&sim&intro'); await page.waitForFunction(() => window.__sim && window.__sim.state === 'playing', null, { timeout: 240000 });
+  await page.waitForFunction(() => window.__sim.intro && window.__sim.intro.shots[0].dur > 6, null, { timeout: 20000 }).catch(() => {});
+  const v = await S(() => { const s = window.__sim.intro && window.__sim.intro.shots[0]; return s && { clip: s.clip, dur: s.dur, line: document.getElementById('in-line').textContent }; });
+  check(v && v.clip === 'voice/officers/renn-op4.mp3' && v.dur > 6 && /predicting our intentions/.test(v.line), 'Renn’s recorded line plays and the shot waits for it: ' + JSON.stringify(v));
+  await page.keyboard.press('KeyX'); await campaign();
 
   // --- Intel lists honours, rivals and the fallen
   await page.click('#tabIntel');

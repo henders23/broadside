@@ -7,7 +7,7 @@
 <title>Broadside</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;800&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;800&family=Share+Tech+Mono&family=Inter+Tight:wght@200;300;400&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="crew/personnel.css">
 <style>
 [hidden]{display:none!important}
@@ -144,21 +144,22 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 /* kill cam: the instruments fade and letterbox bars close in while the camera films the wreck */
 #hud.cine>*:not(#dmgnums){opacity:0!important;transition:opacity .4s}
 #letterbox{position:absolute;inset:0;pointer-events:none;z-index:8}
-#letterbox i{position:absolute;left:0;right:0;height:11vh;background:#000;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+#letterbox i{position:absolute;left:0;right:0;height:11vh;background:#000;font-style:normal;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 #letterbox i:first-child{top:0;transform:translateY(-100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 #letterbox i:last-child{bottom:0;transform:translateY(100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 #letterbox.on i{transform:none}
-#letterbox b{font-family:var(--f-display);font-weight:800;font-size:clamp(20px,3.2vw,34px);letter-spacing:.2em;text-transform:uppercase;color:#ffe3c4}
+/* the campaign screens' faces: thin Inter Tight for names, JetBrains Mono for labels */
+#letterbox b{font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-weight:200;font-size:clamp(24px,3.4vw,40px);letter-spacing:.06em;line-height:1.1;color:#f4f7fb}
 #letterbox b.lose{color:var(--hostile)}
-#letterbox small{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+#letterbox small{font:400 11px 'JetBrains Mono',ui-monospace,monospace;letter-spacing:.22em;text-transform:uppercase;color:#f0c27c}
 /* battle openings: who is in shot at the top, who is speaking at the bottom */
 #letterbox b:empty,#letterbox small:empty,#in-line:empty{display:none}
 #in-line{display:flex;gap:14px;align-items:center;max-width:min(900px,calc(100% - 32px));animation:inline .5s ease-out}
 #in-line .crew-portrait{width:52px;height:56px}
-#in-line p{margin:0;font-size:15px;line-height:1.45;color:#e7ecf3}#in-line p.quiet{font-style:italic;color:#b9c4d2}
-#in-line p small{display:block;margin-top:3px;font-size:10px;letter-spacing:.24em;color:var(--hud)}
+#in-line p{margin:0;font:300 17px/1.45 'Inter Tight','Segoe UI',Arial,sans-serif;letter-spacing:.01em;color:#eef2f7}#in-line p.quiet{font-style:italic;color:#b9c4d2}
+#in-line p small{display:block;margin-top:4px;font:400 10px 'JetBrains Mono',ui-monospace,monospace;letter-spacing:.2em;color:#9fd8ff}
 @keyframes inline{from{opacity:0;transform:translateY(6px)}}
-#letterbox em{position:absolute;right:16px;bottom:10px;font-style:normal;font-size:10px;letter-spacing:.24em;color:#ffffff55;text-transform:uppercase}
+#letterbox em{position:absolute;right:16px;bottom:10px;font:400 10px 'JetBrains Mono',ui-monospace,monospace;letter-spacing:.22em;color:#ffffff55;text-transform:uppercase}
 
 /* ---------- Screens ---------- */
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:safe center;gap:22px;padding-block:calc(26px + env(safe-area-inset-top,0px)) calc(26px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px),5vw);padding-right:max(16px,env(safe-area-inset-right,0px));background:linear-gradient(90deg,rgba(4,6,11,.95) 0%,rgba(4,6,11,.75) 46%,rgba(4,6,11,0) 80%);overflow-y:auto}
@@ -1401,7 +1402,7 @@ function startGame() {
   if(fleet)$('fleet-objective').textContent=fleet.status();
   showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[aiKey].label, 3.4);
   setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
-  setTimeout(() => Voice.say('battle-stations', 0), 2000);
+  setTimeout(() => { if (!intro) Voice.say('battle-stations', 0); }, 2000);   // after an opening, endIntro calls it
 }
 // A rival's jump drive fires: a blue flash, and the ship is gone from the battle (crew/fleet-controller.js).
 function jumpOut(s) {
@@ -1552,7 +1553,7 @@ function resetImpact() {
   for (const n of dmgNums) { n.s = null; n.el.style.display = 'none'; }
   for (const r of rings) { r.m.visible = false; r.t = 1; }
   burst.v = 0; burst.hot = false;
-  if (intro) { intro = null; for (const id of ['in-word', 'in-sub', 'in-line']) $(id).textContent = ''; for (const x of ships) x.shieldMesh.visible = x.alive; }
+  if (intro) { intro = null; stopIntroVoice(); for (const id of ['in-word', 'in-sub', 'in-line']) $(id).textContent = ''; for (const x of ships) x.shieldMesh.visible = x.alive; }
   endKillCam();
 }
 
@@ -1689,29 +1690,29 @@ const SHOT_T = { own: 3.6, foe: 4.6, friend: 3.4 };
 const WRAITH_SILENCE = 'No transmission. Only a low harmonic through the hull, slowly rising.';
 const SILENCE = 'They are not answering. Their guns are tracking us.';
 // An opening line from the bridge, by what the battle is for. {foe} is the enemy ship, {n} how many contacts.
+// The lines are written without names so each officer can have them recorded: voice/officers/<officer>-<key>.mp3 plays with
+// the line when it exists (docs/ART-BRIEF.md lists them). The ship names are in the caption above.
 const OPENERS = {
-  destroy: '{n} on the plot, captain. {foe} leading, closing on our bow.', intercept: 'They dropped out of the lane right on top of us. Battle stations.',
-  escort: 'The {convoy} is spooling for the beacon. Keep them off her and she makes it.', defend: '{station} is calling for help, captain. Here they come.',
-  pursuit: '{foe}’s jump drive is already warming. We have {secs} seconds to stop it.', survive: 'We hold here, captain. Whatever comes, we hold.',
-  surrender: '{foe}. If we hurt her badly enough, the crew may strike their colours.', rival: 'That transponder again, captain. It is {captain}, in the {foe}.'
+  destroy: 'Contacts on the plot, captain. Closing on our bow.', intercept: 'They dropped out of the lane right on top of us. Battle stations.',
+  escort: 'The convoy is spooling for the beacon. Keep them off her and she makes it.', defend: 'The station is calling for help, captain. Here they come.',
+  pursuit: 'Their jump drive is already warming. We do not have long.', survive: 'We hold here, captain. Whatever comes, we hold.',
+  surrender: 'If we hurt them badly enough, the crew may strike their colours.', rival: 'I know that transponder, captain. They have come back for us.'
 };
 const FRIEND_LINES = {
-  convoy: 'The {name}. Slow, unarmed and full of people. Nothing gets near her.', station: 'The {name}. It has guns of its own, and not nearly enough of them.',
-  escort: 'The {name} on our flank, captain. Ready when you are.', friend: 'The {name}, flying Navy colours today. Strange times.'
+  convoy: 'Slow, unarmed and full of people. Nothing gets near her.', station: 'It has guns of its own, captain, and not nearly enough of them.',
+  escort: 'On our flank, captain. Ready when you are.', friend: 'Flying Navy colours today. Strange times.'
 };
-const fillIn = (t, v) => t.replace(/\{(\w+)\}/g, (_, k) => v[k] != null ? v[k] : '');
+const REGULARS = ['varro', 'okoye', 'vale', 'sato', 'renn'];   // the officers with recorded lines; anyone else is subtitles only
 function openingShots(crew) {
   const M = campaignMission, P = window.BroadsidePersonnel, X = window.BroadsideExperience, lv = game.levels || {};
   const slot = id => (crew || []).find(c => c.slot === id) || (crew || [])[0];
   const said = o => o ? (X ? X.displayName(o, lv[o.id] || 1) : o.name) : '';
-  const foes = ships.filter(x => x.team === 'e'), n = foes.length;
-  const words = { foe: enemy.name, captain: enemy.captain || '', n: n === 1 ? 'One contact' : (['', '', 'Two', 'Three', 'Four', 'Five'][n] || n) + ' contacts',
-    convoy: fleet?.convoy ? fleet.convoy.name.split(' · ')[0] : '', station: fleet?.station ? fleet.station.name.split(' · ')[0] : '', secs: M.goal && M.goal.seconds || 100 };
   // Your flagship, and the officer who would speak first.
   const key = M.rival && M.rival.returning ? 'rival' : M.kind === 'intercept' ? 'intercept' : (M.goal && M.goal.type) || 'destroy';
   const lead = M.story && P.leads[M.story] ? slot(P.leads[M.story]) : slot(['destroy', 'intercept', 'rival', 'pursuit'].includes(key) ? 'renn' : 'varro');
-  const line = M.story && P.briefLines[M.story] ? P.briefLines[M.story] : fillIn(OPENERS[key] || OPENERS.destroy, words);
-  const shots = [{ kind: 'own', ship: player, word: player.name, sub: player.C.cls + ' · ' + (M.label || ''), who: lead, by: said(lead), line }];
+  const story = M.story && P.briefLines[M.story], line = story ? P.briefLines[M.story] : OPENERS[key] || OPENERS.destroy;
+  const clip = (o, k) => o && REGULARS.includes(o.id) ? `voice/officers/${o.id}-${k}.mp3` : null;
+  const shots = [{ kind: 'own', ship: player, word: player.name, sub: player.C.cls + ' · ' + (M.label || ''), who: lead, by: said(lead), line, clip: clip(lead, story ? 'op' + M.story : OPENERS[key] ? key : 'destroy') }];
   // The enemy lead: the captain's hail, a commander's, or nothing at all.
   const hail = typeof M.hail === 'number' ? P.commanders[M.hail] : M.hail, faction = hail && hail.faction || '';
   const silent = !M.story && !(M.rival && M.rival.returning) && (/Wraith/.test(faction) || enemy.captain && (window.BroadsideCampaign ? window.BroadsideCampaign.hash(String(M.id)) : 0) % 10 < 3);
@@ -1721,7 +1722,7 @@ function openingShots(crew) {
   const mate = fleet?.convoy || fleet?.station || (fleet?.allies || []).find(a => a.alive);
   if (mate) {
     const kind = mate === fleet.convoy ? 'convoy' : mate === fleet.station ? 'station' : mate.friend ? 'friend' : 'escort', [name, what] = mate.name.split(' · '), first = slot('varro');
-    shots.push({ kind: 'friend', ship: mate, word: name, sub: what || mate.C.cls, who: first, by: said(first), line: fillIn(FRIEND_LINES[kind], { name }) });
+    shots.push({ kind: 'friend', ship: mate, word: name, sub: what || mate.C.cls, who: first, by: said(first), line: FRIEND_LINES[kind], clip: clip(first, 'friend-' + kind) });
   }
   return shots;
 }
@@ -1731,9 +1732,20 @@ function startIntro(crew) {
   for (const x of ships) x.shieldMesh.visible = false;   // shields go up at battle stations, when the opening ends
   $('hud').classList.add('cine'); $('letterbox').classList.add('on'); nextShot();
 }
+// An officer's recorded line, if there is one; the shot holds until it has been said. A missing file is silence.
+let introVoice = null;
+function stopIntroVoice() { if (introVoice) { introVoice.pause(); introVoice = null; } }
+function playIntroVoice(s) {
+  stopIntroVoice(); if (!s.clip || Sfx.muted || window.__noVoice) return;
+  const a = introVoice = new Audio(s.clip); a.volume = 0.95;
+  a.addEventListener('loadedmetadata', () => { if (introVoice === a && intro && intro.shots[intro.i] === s && isFinite(a.duration)) s.dur = Math.max(SHOT_T[s.kind], a.duration + 0.6); });
+  a.addEventListener('error', () => { if (introVoice === a) introVoice = null; });
+  a.play().catch(() => {});
+}
 function nextShot() {
   intro.i++; intro.t = 0; const s = intro.shots[intro.i];
   if (!s) { endIntro(); return; }
+  playIntroVoice(s);
   $('in-word').textContent = s.word; $('in-sub').textContent = s.sub;
   const P = window.BroadsidePersonnel, el = $('in-line');
   el.innerHTML = (s.who && P ? P.portrait(s.who) : '') + `<p class="${s.quiet ? 'quiet' : ''}"></p>`; el.querySelector('p').textContent = s.quiet ? s.line : '“' + s.line + '”';
@@ -1741,20 +1753,21 @@ function nextShot() {
   el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
 }
 function endIntro() {
-  if (!intro) return; intro = null;
+  if (!intro) return; intro = null; stopIntroVoice();
   for (const x of ships) x.shieldMesh.visible = x.alive;
   for (const id of ['in-word', 'in-sub', 'in-line']) $(id).textContent = '';
   if (!kc) { $('letterbox').classList.remove('on'); $('hud').classList.remove('cine'); }
   cam.curYaw = Math.atan2(camera.position.x - player.pos.x, camera.position.z - player.pos.z); cam.curPitch = undefined;
+  Voice.say('battle-stations', 0);
 }
 // While the opening runs the ships hold their course and their fire, and no mission clock runs.
 function introUpdate(dt, rdt) {
-  intro.t += rdt; if (intro.t > SHOT_T[intro.shots[intro.i].kind]) nextShot();
+  const s = intro.shots[intro.i]; intro.t += rdt; if (intro.t > (s.dur || SHOT_T[s.kind])) nextShot();
   for (const a of asteroids) { a.mesh.rotation.x += a.spin.x * dt; a.mesh.rotation.y += a.spin.y * dt; }
   for (const s of ships) { afterburnerUpdate(s, dt); helm(s, dt); shieldsUpdate(s, dt); firesUpdate(s, dt); }
 }
 function introCamera() {
-  const s = intro.shots[intro.i], S = s.ship, L = hullLen(S), k = intro.t / SHOT_T[s.kind], side = intro.side * (s.kind === 'foe' ? -1 : 1);
+  const s = intro.shots[intro.i], S = s.ship, L = hullLen(S), k = Math.min(1, intro.t / (s.dur || SHOT_T[s.kind])), side = intro.side * (s.kind === 'foe' ? -1 : 1);
   const right = _v3.set(1, 0, 0).applyQuaternion(S.q);
   if (s.kind === 'own') {   // over the stern quarter, pushing slowly in
     camera.position.copy(S.pos).addScaledVector(S.fwd, -L * (1.5 - 0.3 * k)).addScaledVector(right, side * L * 0.55).add(_v4.set(0, L * (0.28 - 0.06 * k), 0));

@@ -1,6 +1,6 @@
 # Art, voice and models still to make
 
-Still needed: thirteen voice clips for Fleet Admiral Harlan, and one ship model (the Bloom-Mother). The portraits and the other seven models below are in the game; their prompts are kept for reference.
+Still needed: nineteen of the bridge officers' battle-opening lines (see *Officers' voices* below), and one ship model (the Bloom-Mother). The portraits and the other seven models below are in the game; their prompts are kept for reference.
 
 **25 October 2026 status:** all eight named characters now display distinct **photorealistic generated portraits**, cropped from `img/commanders/photoreal-atlas.webp` (4 × 2; 96 × 120 pixels per tile), through `crew/personnel.js` and `crew/personnel.css`. Earlier 768 × 960-viewBox SVG concept portraits remain as fallbacks in `img/commanders/<id>.svg`. High-resolution per-character WebP masters were generated but are not in GitHub; the current atlas is optimised for the small in-game UI. Harlan's 13 transmissions are now recorded (see below).
 
@@ -45,6 +45,45 @@ One MP3 per transmission in `voice/`, with the file names below. The voice shoul
 | `harlan-end.mp3` | The ending, first paragraph | Captain, eleven years ago a machine at Halcyon told Ingrid Halloran what was coming to the Reach, and nobody listened. You listened. The Bloom-Mother is dead in the sky over Verdant and the brood is dying with her. |
 
 The ending's later paragraphs change with the player's decisions and the state of the war, so only its opening paragraph is recorded.
+
+## Officers' voices
+
+Each campaign battle opens with a line from a bridge officer (`OPENERS`, `FRIEND_LINES` in `index.html`, and `briefLines` in `crew/personnel.js` for story operations). A line plays its clip from `voice/officers/<officer>-<key>.mp3` when the file exists, and the shot holds until it has been said. Without the file, the line is a subtitle only. Only the five regulars are voiced. A recruit or a replacement in the post speaks in subtitles.
+
+**Status.** Two of the 21 are recorded: Renn's Operation 1 and Operation 4 briefings (`renn-op1.mp3`, `renn-op4.mp3`). The rest were cast and queued, but ElevenLabs disabled free-tier generation on the account partway through ("unusual activity", most likely the session's proxy). They need a paid plan, or recording elsewhere.
+
+**Casting** (ElevenLabs library voices, model eleven_v4, a one-word direction tag before each line):
+- Varro, first officer: *Evelyn, resourceful and ironic* (`XEoBW4iDmiawQP72xnAF`). Composed, dry, British.
+- Okoye, tactical: *Nadine* (`U7oTY6CYdy8HFU0yn9om`). Smooth and precise.
+- Vale, chief engineer: *Rob, tough, calloused, British* (`2ajXGJNYBR0iNHpS4VZb`).
+- Sato, helm: *Ruby B* (`jUPSOpRcPt8GMPsWx5fy`). Young, confident, a little cocky.
+- Renn, intelligence: *Cavendish* (`Cx1u6YPIa1SPiAbYj3gJ`). Dry, quiet, not sure of himself.
+
+**Treatment** for each take: trim the leading silence, high-pass at 170 Hz, low-pass at 7.2 kHz, a 2 dB dip at 2.6 kHz, gentle compression, loudness-normalised to −17 LUFS (−1.5 dBTP), then a 0.25 s tail. Encode mono at 44.1 kHz and 128 kbps.
+
+| File | Officer | Line |
+| --- | --- | --- |
+| `renn-destroy` | Renn | Contacts on the plot, captain. Closing on our bow. |
+| `renn-intercept` | Renn | They dropped out of the lane right on top of us. Battle stations. |
+| `renn-rival` | Renn | I know that transponder, captain. They have come back for us. |
+| `renn-pursuit` | Renn | Their jump drive is already warming. We do not have long. |
+| `renn-op1` ✓ | Renn | Civilian beacons are cutting out. One raider is trying to drive the convoy into the rocks. |
+| `renn-op4` ✓ | Renn | That frequency is correcting for us before we change course. Something is predicting our intentions. |
+| `renn-op9` | Renn | Its shields lean on those node ships. Kill the nodes and the numbers stop working for it. |
+| `varro-escort` | Varro | The convoy is spooling for the beacon. Keep them off her and she makes it. |
+| `varro-defend` | Varro | The station is calling for help, captain. Here they come. |
+| `varro-survive` | Varro | We hold here, captain. Whatever comes, we hold. |
+| `varro-friend-convoy` | Varro | Slow, unarmed and full of people. Nothing gets near her. |
+| `varro-friend-station` | Varro | It has guns of its own, captain, and not nearly enough of them. |
+| `varro-friend-escort` | Varro | On our flank, captain. Ready when you are. |
+| `varro-friend-friend` | Varro | Flying Navy colours today. Strange times. |
+| `varro-op3` | Varro | Thorne values his ship more than his cause. If we can break his nerve, we can take prisoners. |
+| `varro-op7` | Varro | Eleven thousand people on one ship. Whatever happens to us, the Lantern reaches that beacon. |
+| `okoye-op2` | Okoye | The mine pattern matches a navy doctrine manual, but these signal codes were deleted years ago. |
+| `okoye-op6` | Okoye | Two ships, one set of decisions. Break the link between them and they are just two thin hulls. |
+| `vale-op8` | Vale | The Pyre is twice our tonnage and she knows every trick we do. Keep the damage-control teams close, captain. |
+| `sato-op5` | Sato | Its hull is alive. We are here to record what we can, not prove we can kill it. |
+| `sato-op10` | Sato | The longer this takes, the more of it grows back. We go in, we keep firing, and we do not stop. |
 
 ## Ship and station models
 

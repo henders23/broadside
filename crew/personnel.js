@@ -94,13 +94,34 @@
   };
   // Fleet Admiral Harlan, who briefs each act and sends a transmission after every story operation.
   const harlan = {id:'harlan',name:'Fleet Admiral Gideon Harlan',title:'Commander, Frontier Fleet',image:'img/admiral-harlan.webp'};
-  // One compressed WebP contains eight separate photographic portraits. The badges
-  // remain as fallbacks if the sprite is unavailable; CSS selects a single frame.
-  const ART = ['adeyemi','fenn','osei','marlow','achterberg','halloran','vigil','choir'];
-  function portrait(person, extra=''){
-    const html = badge(person, extra);
-    if(!person || !ART.includes(person.id)) return html;
-    return html.replace(/<\/span>$/, `<span class="art-photo art-${person.id}" aria-hidden="true"></span></span>`);
+  // Twenty unique named characters and five additional faces for procedurally named people.
+  // Five columns x five rows; all tiles use 180 x 225 source pixels (4:5).
+  // The old sprite, SVG and classification badges remain behind the photograph as load fallbacks.
+  const ART = ["varro","okoye","vale","sato","renn","adeyemi","fenn","osei","marlow","achterberg","vex","sable","thorne","oracle","cantor","vigil","choir","halloran","arbiter","mother","pirate-1","pirate-2","pirate-3","ensign-1","ensign-2"];
+  const canonical = [...crew,...recruits,...Object.values(commanders)];
+  const byName = Object.fromEntries(canonical.map(p => [p.name.toLowerCase(),p.id]));
+  function photoId(person){
+    if(!person) return null;
+    if(ART.includes(person.id)) return person.id;
+    const name=String(person.name||'').toLowerCase().trim();
+    if(byName[name]) return byName[name];
+    const familiar=canonical.find(p=>name && (name.endsWith(' '+p.name.toLowerCase().split(' ').pop())));
+    if(familiar) return familiar.id;
+    // Legacy saves can contain hired ensigns and rivals without a canonical ID.
+    // Stable selection by name keeps the same portrait across the roster, reports and hails.
+    let h=0;for(const c of name) h=(Math.imul(h,33)+c.charCodeAt(0))>>>0;
+    const faction=String(person.faction||'').toLowerCase();
+    if(/corsair|pirate/.test(faction)) return 'pirate-'+(1+h%3);
+    if(/ash fleet/.test(faction)) return ['sable','pirate-2','pirate-3'][h%3];
+    if(/directorate|machine/.test(faction)) return ['oracle','vigil','arbiter'][h%3];
+    if(/wraith|alien/.test(faction)) return ['cantor','choir','mother'][h%3];
+    return 'ensign-'+(1+h%2);
+  }
+  function portrait(person,extra=''){
+    const html=badge(person,extra);
+    if(!person||person.image) return html;
+    const id=photoId(person);
+    return id?html.replace(/<\/span>$/, `<span class="art-photo art-${id}" aria-hidden="true"></span></span>`):html;
   }
   function badge(person, extra){
     if(person && person.image){
@@ -123,5 +144,5 @@
     const code=(person?.faction||'UNKNOWN').slice(0,2).toUpperCase();
     return `<span class="crew-portrait classified ${extra}" role="img" aria-label="Commander identity classified"><span>${code}</span></span>`;
   }
-  root.BroadsidePersonnel = Object.freeze({crew,recruits,POSTS,activeCrew,commanders,leads,briefLines,portrait,harlan,ART});
+  root.BroadsidePersonnel = Object.freeze({crew,recruits,POSTS,activeCrew,commanders,leads,briefLines,portrait,photoId,harlan,ART});
 })(window);

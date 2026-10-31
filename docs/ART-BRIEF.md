@@ -1,6 +1,6 @@
 # Art, voice and models still to make
 
-Still needed: thirteen voice clips for Fleet Admiral Harlan, and one ship model (the Bloom-Mother). The portraits and the other seven models below are in the game; their prompts are kept for reference.
+The named portrait roster is complete; one 3D ship model (the Bloom-Mother) remains outside the portrait work. The prompts below are kept for reference.
 
 **25 October 2026 status:** all eight named characters now display distinct **photorealistic generated portraits**, cropped from `img/commanders/photoreal-atlas.webp` (4 × 2; 96 × 120 pixels per tile), through `crew/personnel.js` and `crew/personnel.css`. Earlier 768 × 960-viewBox SVG concept portraits remain as fallbacks in `img/commanders/<id>.svg`. High-resolution per-character WebP masters were generated but are not in GitHub; the current atlas is optimised for the small in-game UI. Harlan's 13 transmissions are now recorded (see below).
 
@@ -8,6 +8,9 @@ Still needed: thirteen voice clips for Fleet Admiral Harlan, and one ship model 
 - **Ship models** need a small code change each when they arrive (file, length and proportions in `crew/ships.js`; `refit()` fits the hit and shield ellipsoids and the gun and engine mounts).
 
 ## Portraits
+
+**31 October 2026 portrait pass:** `img/commanders/portrait-atlas-v2.webp` contains a 5 × 5 grid of 25 generated photorealistic faces (20 named characters and five stable fallback identities) with 180 × 225-pixel tiles. The shared `BroadsidePersonnel.portrait()` resolver covers all static officers and commanders as well as previously initial-only replacements and saved rivals; CSS increases portraits in roster cards, encounters, mission briefings and hails. Harlan's existing dedicated portrait stays unchanged. Individual high-resolution-upscaled WebP masters were prepared separately, but the repository uses the lightweight atlas for loading efficiency.
+
 
 For a future high-resolution per-character replacement pass, save each image as WebP, 768 × 960 (4:5), in `img/commanders/` with the file name given. Replace the atlas mapping in `crew/personnel.js` and `crew/personnel.css` with individual WebP sources when approved. They should match the existing painted portraits (`vex.webp`, `thorne.webp`, `img/admiral-harlan.webp`): photorealistic, cinematic, chest-up, on a dark starship set, with black Navy uniforms and gold shoulder boards for Navy officers.
 

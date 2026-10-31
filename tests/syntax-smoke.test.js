@@ -26,8 +26,8 @@ for(const name of ['vex','thorne']){
 }
 const personnel=fs.readFileSync('crew/personnel.js','utf8'),css=fs.readFileSync('crew/personnel.css','utf8');
 assert.match(personnel,/art-photo art-/);
-assert.match(css,/photoreal-atlas\.webp/);
-const photo=fs.readFileSync('img/commanders/photoreal-atlas.webp');
+assert.match(css,/portrait-atlas-v2\.webp/);
+const photo=fs.readFileSync('img/commanders/portrait-atlas-v2.webp');
 assert.equal(photo.toString('latin1',0,4),'RIFF');
 assert.equal(photo.toString('latin1',8,12),'WEBP');
 const html=fs.readFileSync('index.html','utf8');

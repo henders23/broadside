@@ -22,6 +22,9 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
  let escapeT=0,escaped=null,hurtSaid=false;
  const rivalSays=line=>hail?.({name:rival.name,faction:rival.faction,line,asset:rival.asset||undefined});
  const hostile=()=>ships.filter(s=>s.team==='e'&&s.alive);
+ // Hostiles still to jump in, or hiding in the rocks (crew/openings.js), count towards the fight but cannot be targeted yet.
+ const unseen=s=>!!(s&&(s.away||s.hidden));
+ const engaged=()=>hostile().filter(s=>!unseen(s));
  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
  const convoyName=()=>(goal.convoy||'Convoy').split(' · ')[0];
@@ -145,7 +148,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   return true;
  }
  function cycle(){
-  const choices=hostile();
+  const choices=engaged();
   if(!choices.length||game.ending)return;
   const index=choices.indexOf(getSelected()),next=choices[(index+1)%choices.length];
   setSelected(next);player.target=next;
@@ -159,11 +162,11 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
  }
  // Escorts pick their targets once a second according to the standing order.
  function steerEscorts(){
-  const foes=hostile();if(!foes.length)return;
+  const foes=engaged();if(!foes.length)return;
   const near=(from,list)=>list.reduce((b,s)=>!b||distance(s.pos,from)<distance(b.pos,from)?s:b,null);
   for(const a of escorts()){
    let t=null,reason='Engaging nearest contact';
-   if(order==='focus'){t=getSelected()?.alive&&getSelected().team==='e'?getSelected():null;if(t)reason='Focusing your target';}
+   if(order==='focus'){t=getSelected()?.alive&&getSelected().team==='e'&&!unseen(getSelected())?getSelected():null;if(t)reason='Focusing your target';}
    else if(order==='defend'){
      const onUs=foes.filter(f=>f.target===player);
      t=near(player.pos,onUs.length?onUs:foes);
@@ -189,12 +192,13 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   if(ship.post){finish('lose','station_lost');return;}
   if(ship.team==='p'){showMsg(ship.name+' disabled · escort out of the fight',3);return;}
   if(boss&&ship===boss.ship){finish('win','boss_destroyed');return;}
-  const alive=hostile();
+  const alive=hostile(),seen=engaged();
   if(!alive.length&&station&&wave+1<waves().length){waveT=6;showMsg('Wave '+(wave+1)+' beaten · more contacts inbound',3);return;}
   if(!alive.length){finish('win',station?'station_held':convoy?.alive?'escort_saved':hostileCount>1?'fleet_destroyed':'enemy_destroyed');return;}
   if(getSelected()===ship||!getSelected()?.alive){
-   setSelected(alive[0]);player.target=alive[0];
-   showMsg('Hostile destroyed · new target '+alive[0].name,3);
+   const next=seen[0]||alive[0];
+   setSelected(next);player.target=next;
+   showMsg('Hostile destroyed · '+(unseen(next)?'no other contact on the plot':'new target '+next.name),3);
   }
   // The last ship of a pincer stops flanking and comes straight in.
   if(alive.length===1&&alive[0].ai)alive[0].ai.flankOffset=0;
@@ -256,7 +260,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
    }
   }
   if(player.alive&&(!getSelected()||!getSelected().alive)){
-   const next=hostile()[0];if(next){setSelected(next);player.target=next;}
+   const next=engaged()[0]||hostile()[0];if(next){setSelected(next);player.target=next;}
   }
   if(allies.length){
    escortT-=dt;if(escortT<=0){escortT=1;steerEscorts();}
@@ -310,12 +314,25 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   return 'CONTACTS · '+contacts+(n>1?' · J CYCLE TARGET':'');
  }
 
+ // Mid-battle twists (crew/twists.js): a hostile that jumps in, a Navy ship that joins the escorts, a captain's surrender.
+ // The battle page places the ships and plays the arrival; these keep the fight's bookkeeping straight.
+ function reinforce(e){
+  if(game.ending)return null;
+  const ship=addHostile(e,hostileCount%2?1:-1,new V3(0,0,0));hostileCount++;
+  ship.target=player.alive?player:escorts()[0]||null;
+  return ship;
+ }
+ function addAlly(ship){if(!game.ending&&!allies.includes(ship))allies.push(ship);return ship;}
+ function acceptSurrender(){
+  if(game.ending||!primaryEnemy.alive)return false;
+  finish('win','surrender');game.endT=.35;return true;
+ }
  // Show measurable ally contributions rather than treating escorts as invisible damage bonuses.
  function escortReport(){return allies.map(a=>({
    name:a.name,alive:!!a.alive,damage:Math.round(a.stats?.dealt||0),taken:Math.round(a.stats?.taken||0),
    shots:a.stats?.shots||0,hits:a.stats?.hits||0,orderIntent:a.orderIntent||'Awaiting orders'
  }));}
- return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,escortReport,get order(){return order},get boss(){return boss?{title:boss.title,phase:bossPhase,phases:boss.phases.map(p=>({name:p.name,at:p.at||1})),ship:boss.ship,lattice:boss.ship.dmgTaken<1}:null},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get station(){return station},get quarry(){return quarry},get wave(){return wave},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed},get escaping(){return escapeT>0?escapeT:0},get escaped(){return escaped},get rival(){return rival}};
+ return {setup,tick,onDestroyed,cycle,toggleHold,setOrder,status,escortReport,reinforce,addAlly,acceptSurrender,get primary(){return primaryEnemy},get hostiles(){return hostile()},get order(){return order},get boss(){return boss?{title:boss.title,phase:bossPhase,phases:boss.phases.map(p=>({name:p.name,at:p.at||1})),ship:boss.ship,lattice:boss.ship.dmgTaken<1}:null},get allies(){return allies},get spec(){return spec},get convoy(){return convoy},get station(){return station},get quarry(){return quarry},get wave(){return wave},get extras(){return extras},get held(){return held},get phase(){return phase},get gate(){return GATE},get elapsed(){return elapsed},get escaping(){return escapeT>0?escapeT:0},get escaped(){return escaped},get rival(){return rival}};
 }
 root.BroadsideFleet=Object.freeze({create,GATE,ORDERS});
 

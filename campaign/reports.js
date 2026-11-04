@@ -20,6 +20,7 @@ function orderOutcome(o,code){const convoy=((o.goal||{}).convoy||'The convoy').s
  if(code==='extracted')return '<b>You held the area long enough.</b> The job is done.';
  if(code==='station_held')return `<b>${((o.goal||{}).station||'The station').split(' · ')[0]} is still standing.</b> Every wave was broken.`;
  if(code==='quarry_disabled')return `<b>${lead} is dead in space</b> and the boarding parties have what they came for.`;
+ if(code==='surrender')return `<b>${lead} has struck her colours.</b> The crew are in custody and the ship is yours to claim.`;
  if(code==='driven_off')return `<b>${lead} jumped out</b> before you could finish the job. The lane is clear, and the reward is halved for a job half done.`;
  return `<b>${lead}</b> has been destroyed.`;}
 // Claiming a wreck after a victory: one per battle, if a berth is free and the refit can be paid. Prizes join in reserve.

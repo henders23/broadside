@@ -106,7 +106,7 @@
       hud: 'Defeat Captain Kora Vex and secure the trade lane',
       enemies: [{ cls: 'scrapjaw', name: 'Blackwake', captain: 'Captain Kora Vex', fate: 'escaped' }], goal: { type: 'escort', convoy: 'MV Peregrine · Civilian transport', hunter: true },
       choice: ['Recover civilian survivors', 'Pursue the escaping pirate network'], flags: ['kestrel_rescue', 'kestrel_pursuit'] },
-    { id: 2, act: 1, system: 'cinder', name: 'The Cinder Wake', enemy: 'revenant', captain: 'Commander Orren Sable', kind: 'Renegade minelayer', reward: 540, support: 1,
+    { id: 2, act: 1, system: 'cinder', name: 'The Cinder Wake', opening: 'crossing', enemy: 'revenant', captain: 'Commander Orren Sable', kind: 'Renegade minelayer', reward: 540, support: 1,
       objective: 'Destroy the Ash Fleet Revenant and its raider escort to recover a navy transponder.',
       brief: 'A military transponder lies among the burning wreckage. Sable’s Revenant minelayer and a fast Scrapjaw pursuer attack from opposite sides. Defeat both to secure the transponder, using J to switch targets. Beware of chasing directly into the mine trail.',
       intel: 'Long-range missile salvos and proximity mines deployed astern. Avoid chasing directly behind the ship.',
@@ -122,14 +122,14 @@
       ends: { surrender: ['Pirate commander surrendered', 'Captain Thorne has powered down his weapons and surrendered the Red Narrows toll lane.'] },
       choice: ['Offer amnesty for intelligence', 'Impound all captured pirate matériel'], flags: ['thorne_amnesty', 'thorne_impounded'],
       impound: { choice: 1, cls: 'scrapjaw', name: 'The Widow', hull: 0.5, needs: 'surrender' } },
-    { id: 4, act: 2, system: 'halcyon', name: 'Ghost Frequency', enemy: 'seraph', captain: 'ORACLE-9', kind: 'Autonomous warship', reward: 700, support: 2,
+    { id: 4, act: 2, system: 'halcyon', name: 'Ghost Frequency', opening: 'jumpin', enemy: 'seraph', captain: 'ORACLE-9', kind: 'Autonomous warship', reward: 700, support: 2,
       objective: 'Disable ORACLE-9 and recover the anomalous signal archive.',
       brief: 'A deserted relay broadcasts coordinates with impossible precision. A machine warship called ORACLE-9 guards the transmission. Disable it and download the surviving data core.',
       intel: 'The Seraph fights at long range with tracking beams and a devastating railgun. Close distance while controlling your shield facings.',
       hud: 'Disable ORACLE-9 and recover its transmission archive',
       enemies: [{ cls: 'seraph', name: 'ORACLE-9' }], goal: { type: 'destroy' },
       choice: ['Transmit the archive to Fleet Command', 'Seal the archive pending investigation'], flags: ['oracle_transmitted', 'oracle_sealed'] },
-    { id: 6, act: 2, system: 'midway', name: 'The Quiet Relay', enemy: 'seraph', captain: 'VIGIL Array', kind: 'Machine picket pair', reward: 760, support: 1,
+    { id: 6, act: 2, system: 'midway', name: 'The Quiet Relay', opening: 'rocks', enemy: 'seraph', captain: 'VIGIL Array', kind: 'Machine picket pair', reward: 760, support: 1,
       objective: 'Destroy both VIGIL pickets and take the Midway relay off the air.',
       brief: 'ORACLE-9’s archive names a second transmitter: the Midway trade relay, silent to human traffic for three weeks. Two Directorate pickets share a single mind there and fight as one. Break them apart and the signal goes dark.',
       intel: 'Twin Seraph pickets on thinner hulls. They hold range and alternate railgun shots; when one falls, the other closes to finish the fight.',
@@ -144,7 +144,7 @@
       enemies: [{ cls: 'wraith', name: 'The Cantor' }], goal: { type: 'survive', seconds: 100, label: 'FIRST CONTACT // TRANSMITTING' },
       ends: { extracted: ['First contact survived', 'The Cantor remains at large. Your ship has transmitted alien biosignatures and escaped the engagement.'] },
       choice: ['Warn every frontier colony immediately', 'Classify the encounter while the navy prepares'], flags: ['harrow_warning', 'harrow_classified'] },
-    { id: 7, act: 3, system: 'nex', name: 'Exodus at Nex', enemy: 'wraith', captain: 'The Choir', kind: 'Wraith brood', reward: 980, support: 1,
+    { id: 7, act: 3, system: 'nex', name: 'Exodus at Nex', opening: 'ambush', enemy: 'wraith', captain: 'The Choir', kind: 'Wraith brood', reward: 980, support: 1,
       objective: 'Escort the colony ship Long Lantern to the jump beacon, OR destroy the brood hunting it.',
       brief: 'Nex is the last colony between the Wraith and Juniper. Eleven thousand people are packed into the Long Lantern, and a Wraith brood is already in the system. Get the ship to the beacon. Press H to hold or resume it if the path ahead is not clear.',
       intel: 'A Wraith bioship escorted by a younger brood vessel. They hunt the slowest target first and their spores follow it through the debris.',
@@ -627,6 +627,7 @@
       env: story && src.id <= 5 ? src.id : ENV_BY_REGION[sys.region] || 0, gate: src.goal.type === 'escort',
       hail: story ? src.id : { name: lead.captain || lead.name, faction: foe.group, line: src.taunt || HAILS[lead.cls] },
       enemies: src.enemies.map(e => Object.assign({}, e)), goal: Object.assign({}, src.goal), ends: src.ends || null,
+      opening: src.opening || null,   // how the battle opens, if the operation calls for one (crew/openings.js)
       support: Number.isInteger(src.support) ? src.support : null, boss: src.boss && typeof src.boss === 'object' ? JSON.parse(JSON.stringify(src.boss)) : null
     };
     shape(spec, story ? src.id : null, ctx);

@@ -282,6 +282,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div id="tip"></div>
     <button type="button" id="escort-hold" hidden style="position:absolute;top:176px;left:50%;transform:translateX(-50%);z-index:7;background:#071825;color:#b4e9ff;border:1px solid #6ab6d7;padding:7px 16px;letter-spacing:.13em;font-size:11px;cursor:pointer;pointer-events:auto">HOLD CONVOY [H]</button>
     <div id="fleet-objective" hidden aria-live="polite" style="position:absolute;top:143px;left:50%;transform:translateX(-50%);z-index:5;background:#041320dc;border:1px solid #5b8ba3;padding:6px 13px;text-align:center;font-size:10px;letter-spacing:.12em;color:#b1e8ee;max-width:55%;pointer-events:none"></div>
+    <div id="twist-line" hidden aria-live="polite" style="position:absolute;top:178px;left:50%;transform:translateX(-50%);z-index:5;background:#1a0b08dc;border:1px solid #d9774f;padding:5px 13px;text-align:center;font-size:10px;letter-spacing:.14em;color:#ffc7a8;max-width:55%;pointer-events:none"></div>
     <div id="campaign-objective" hidden style="position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:5;background:#061523e8;border:1px solid #d4a269;padding:8px 15px;text-align:center;font-size:11px;letter-spacing:.1em;color:#ffda9e;max-width:55%;pointer-events:none"></div>
 
     <div class="panel" id="own">
@@ -466,6 +467,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <script src="crew/bridge-controller.js"></script>
 <script src="crew/campaign-data.js"></script>
 <script src="crew/fleet-controller.js"></script>
+<script src="crew/openings.js"></script>
+<script src="crew/twists.js"></script>
 <script src="crew/battle-environments.js"></script>
 <script src="crew/upgrades.js"></script>
 <script src="crew/ships.js"></script>
@@ -700,23 +703,31 @@ for (let k = 0; k < 5; k++) {
   g.computeVertexNormals(); rockGeos.push(g);
 }
 const rockMat = new THREE.MeshStandardMaterial({ color: 0x6d655d, roughness: 0.95, metalness: 0.05, flatShading: true });
-const asteroids = [];
+const asteroids = [], rockPool = [];
 const ARENA = 7500;
-(function placeRocks() {
-  const r = mulberry(777); let tries = 0;
-  while (asteroids.length < 46 && tries++ < 6000) {
+// The asteroid field: up to 46 rocks laid out from a seed. Seed 777 with no `clear` list is the original field, with the
+// head-on start lanes kept open; battles that open another way lay a fresh field and keep rocks off the start points.
+function placeRocks(seed = 777, clear = null) {
+  const r = mulberry(seed); let tries = 0, n = 0;
+  asteroids.length = 0;
+  while (n < 46 && tries++ < 6000) {
     const p = new V3((r() * 2 - 1) * 7000, (r() * 2 - 1) * 900, (r() * 2 - 1) * 7000);
     if (p.length() > 7200) continue;
     const s = 30 + Math.pow(r(), 2.4) * 230;
     if (Math.hypot(p.x, p.z) < 1100 + s) continue;
-    if (Math.abs(p.x) < 1100 + s && Math.abs(p.z) > 1600 && Math.abs(p.z) < 3600) continue;   // keep the start lanes clear
+    if (!clear && Math.abs(p.x) < 1100 + s && Math.abs(p.z) > 1600 && Math.abs(p.z) < 3600) continue;   // keep the start lanes clear
+    if (clear && clear.some(c => Math.hypot(p.x - c.x, p.z - c.z) < c.r + s)) continue;
     if (asteroids.some(a => a.pos.distanceTo(p) < a.r + s + 200)) continue;
-    const m = new THREE.Mesh(rockGeos[Math.floor(r() * rockGeos.length)], rockMat);
-    m.position.copy(p); m.scale.set(s, s * (0.75 + r() * 0.4), s * (0.8 + r() * 0.3)); m.rotation.set(r() * 6, r() * 6, r() * 6);
-    scene.add(m);
+    const geo = rockGeos[Math.floor(r() * rockGeos.length)];
+    let m = rockPool[n];
+    if (!m) { m = new THREE.Mesh(geo, rockMat); scene.add(m); rockPool.push(m); } else m.geometry = geo;
+    m.visible = true; m.position.copy(p); m.scale.set(s, s * (0.75 + r() * 0.4), s * (0.8 + r() * 0.3)); m.rotation.set(r() * 6, r() * 6, r() * 6);
     asteroids.push({ mesh: m, pos: m.position, r: s * 1.02, spin: new V3(r() - .5, r() - .5, r() - .5).multiplyScalar(0.05) });
+    n++;
   }
-})();
+  for (let i = n; i < rockPool.length; i++) rockPool[i].visible = false;
+}
+placeRocks();
 const battleEnvironment=window.BroadsideEnvironments.create({
   THREE,scene,sky,planet,rockMat,
   rebakeSky:()=>{skySize=0;bakeSky(QUALITY[gfx.q].sky);}
@@ -1290,7 +1301,7 @@ function minesUpdate(dt) {
     m.glow.scale.setScalar(18 * blink);
     let boom = m.life <= 0 ? 'fizzle' : null;
     if (!boom && m.armT <= 0) for (const s of ships) {
-      if (s.team === m.team || !s.alive) continue;
+      if (s.team === m.team || !s.alive || s.away) continue;
       _ml.copy(m.pos).applyMatrix4(s.inv); const E = s.C.hullE;
       const r = ((_ml.x - E.c[0]) / (E.r[0] + m.trig)) ** 2 + ((_ml.y - E.c[1]) / (E.r[1] + m.trig)) ** 2 + ((_ml.z - E.c[2]) / (E.r[2] + m.trig)) ** 2;
       if (r < 1) { damage(s, m.dmg, 'mine', _ml.multiplyScalar(0.7), m.owner); if (s === player) showMsg('Mine hit', 1.6, true); boom = 'hit'; break; }
@@ -1332,15 +1343,17 @@ function startGame() {
     enemy.name = campaignMission.enemies[0].name;
     if (flagRec) applyRecord(player, flagRec);
   }
-  const off = rand(-900, 900);
-  placeShip(player, new V3(off * 0.3, 0, 2700), 0);
-  placeShip(enemy, new V3(-off, rand(-120, 120), -2700), Math.PI);
+  // How the battle opens (crew/openings.js): where everyone starts, which way they are heading, and whether the enemy
+  // is hiding in the rocks or has yet to jump in. ?sim runs keep the old head-on start unless ?opening= asks for one.
+  const tutorialWanted = !!(window.BroadsideTutorial && campaignMission && !campaignMission.boss && (campaignParams.has('tutorial') || window.BroadsideTutorial.wanted(campaignSave)));
+  const opening = stageOpening(tutorialWanted);
+  placeAt(player, opening.player); placeAt(enemy, opening.enemy);
   // Escorts form up either side of the flagship and fly under the AI, following the standing order.
   const allies = fleetRecs.slice(1).map((rec, i) => {
     const e = makeShip(rec.ship, 'p', fitted(rec)), side = i ? 1 : -1;
     e.name = rec.shipName || 'Escort'; e.recId = rec.id; e.escort = true; applyRecord(e, rec); paintShip(e, rec.paint);
     e.ai = { diff: DIFF.captain, side, flankOffset: side * 18, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
-    e.target = enemy; placeShip(e, new V3(off * 0.3 + side * 560, 0, 2950), 0);
+    e.target = enemy; placeAt(e, { ...window.BroadsideOpenings.beside(opening.player, side * 560, 250), speed: opening.player.speed });
     return e;
   });
   // Ships that fight alongside the fleet without being part of it (the pardoned ASF Penitence).
@@ -1350,19 +1363,21 @@ function startGame() {
     if (f.hull) e.hull = Math.round(e.C.hull * f.hull); e.maxHull = e.hull;
     if (f.shield) { e.sh = e.sh.map(v => Math.round(v * f.shield)); e.cap = e.cap.map(v => Math.round(v * f.shield)); }
     e.ai = { diff: DIFF.captain, side, flankOffset: side * 18, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
-    e.target = enemy; placeShip(e, new V3(off * 0.3 + side * 900, 0, 3150), 0);
+    e.target = enemy; placeAt(e, { ...window.BroadsideOpenings.beside(opening.player, side * 900, 450), speed: opening.player.speed });
     allies.push(e);
   }
   campaignDiff = campaignMission && window.BroadsideCampaign ? window.BroadsideCampaign.difficulty(campaignSave && campaignSave.difficulty) : null;
   const aiKey = campaignDiff ? campaignDiff.ai : choice.diff;
   enemy.ai = { diff: DIFF[aiKey], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
-  game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [], bridgeHits: { time: 0, last: -99, count: 0 } };
+  game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [], bridgeHits: { time: 0, last: -99, count: 0 }, opening, storm: 0, twist: null };
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
     encounter:campaignMission,allies,makeShip,placeShip,ships,player,primaryEnemy:enemy,
     getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
     DIFF,endGame,showMsg,hail:h=>bridge?.incomingHail({ ...(typeof campaignMission.hail === 'number' ? window.BroadsidePersonnel.commanders[campaignMission.hail] : campaignMission.hail), line: h.line }),game,V3,buildFreighter:ship=>ship.key==='transport'&&templates.transport?null:battleEnvironment.buildFreighter(ship),jumpOut
   }):null;
   fleet?.setup();
+  formWingmen(opening);
+  layField(opening);
   // Campaign difficulty and the state of the region's front scale enemy hulls; on Admiral the lesser captains fight a
   // grade better. Earlier decisions can silence a weapon or start enemy shields low.
   const frontHull = campaignMission && campaignMission.front ? campaignMission.front.hull : 1;
@@ -1389,7 +1404,7 @@ function startGame() {
   $('bossbar').hidden = !fleet?.boss; if (fleet?.boss) buildBossBar();
   bossEntrance();
   // First battle of a new campaign (or a replay asked for from Intel): the coached tutorial. ?tutorial forces it.
-  tutorial = window.BroadsideTutorial && campaignMission && !campaignMission.boss && (campaignParams.has('tutorial') || window.BroadsideTutorial.wanted(readCampaignSave()))
+  tutorial = tutorialWanted
     ? window.BroadsideTutorial.create({ ship: player.name, enemy: enemy.name, convoy: fleet?.convoy ? fleet.convoy.name.split(' · ')[0] : '' }) : null;
   tutorialPips = player.pips ? { ...player.pips } : null; drawCoach();
   $('escorts').hidden = !allies.length; escortHudT = 0;
@@ -1398,10 +1413,13 @@ function startGame() {
   if (campaignMission) $('campaign-objective').textContent = campaignMission.label + ' // ' + campaignMission.objective;
   game.levels = window.BroadsideExperience && campaignSave ? window.BroadsideExperience.levels(campaignSave.officers) : {};
   startIntro(window.BroadsidePersonnel ? window.BroadsidePersonnel.activeCrew(campaignSave && campaignSave.crew, { replacements: campaignSave && campaignSave.replacements }) : []);
-  if (!intro) bridge?.incomingHail(campaignMission ? campaignMission.hail : 0);   // the opening has already shown it
+  if (unseen(enemy)) opening.hailPending = true;   // the captain hails when they show themselves
+  else if (!intro) bridge?.incomingHail(campaignMission ? campaignMission.hail : 0);   // the opening has already shown it
   if(fleet)$('fleet-objective').textContent=fleet.status();
-  showMsg(enemy.name + ' sighted · ' + enemy.C.cls + ' · ' + DIFF[aiKey].label, 3.4);
-  setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
+  showMsg(openingMsg(opening, aiKey), 3.4, unseen(enemy) || opening.id === 'ambush');
+  if (!enemy.away) setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
+  // One battle in three takes a turn partway through (crew/twists.js).
+  game.twist = pickTwist(tutorialWanted); twistLine(null);
   setTimeout(() => { if (!intro) Voice.say('battle-stations', 0); }, 2000);   // after an opening, endIntro calls it
 }
 // A rival's jump drive fires: a blue flash, and the ship is gone from the battle (crew/fleet-controller.js).
@@ -1410,11 +1428,220 @@ function jumpOut(s) {
   s.alive = false; s.jumped = true; s.burn = false; removeShip(s);
   if (enemy === s) { const n = ships.find(x => x.team === 'e' && x.alive); if (n) { enemy = n; player.target = n; } }
 }
+// ---------------- battle openings (crew/openings.js) ----------------
+// A ship still to jump in (`away`) is parked out of the world and skipped by the physics, the AI and the plot until it
+// arrives; one hiding in the rocks (`hidden`) is in the world but off the plot and the target marker until found.
+const SIM = location.search.includes('sim');
+const unseen = s => !!(s && (s.away || s.hidden));
+const PARKED_AT = new V3(0, -40000, 0);
+function stageOpening(tutorialWanted) {
+  const O = window.BroadsideOpenings, force = campaignParams.get('opening');
+  const id = SIM && !force ? 'headon' : O.choose(campaignMission, Math.random, { force, tutorial: tutorialWanted });
+  const keep = (SIM && !force) || O.fixed(campaignMission);   // ?sim balance runs and fixed-geometry goals keep the old field
+  const L = O.layout(id, Math.random, keep ? { turn: 0 } : {});
+  L.keepField = keep; L.t = 0; L.hailPending = false; L.warned = false;
+  return L;
+}
+function placeAt(s, p) {
+  placeShip(s, new V3(p.x, p.y || 0, p.z), p.yaw || 0);
+  s.speed = s.C.vmax * (p.speed ?? 0.5); s.vel.copy(s.fwd).multiplyScalar(s.speed);
+  if (p.away) { s.away = p.away; s.obj.visible = false; s.pos.copy(PARKED_AT); s.vel.set(0, 0, 0); s.speed = 0; s.obj.updateMatrixWorld(true); s.inv.copy(s.obj.matrixWorld).invert(); }
+  if (p.hidden) { s.hidden = true; s.lurk = true; s.step = 1; }   // drifting: it holds that through the opening shots
+}
+// The lead's wingmen (crew/fleet-controller.js puts them on the head-on flanks) fly beside the lead in any other opening.
+function formWingmen(L) {
+  const O = window.BroadsideOpenings, wing = ships.filter(s => s.team === 'e' && s !== enemy);
+  wing.forEach((s, i) => {
+    if (L.id === 'headon') { if (L.theta) placeAt(s, { ...O.turn({ x: s.pos.x, y: s.pos.y, z: s.pos.z, yaw: s.yaw }, L.theta), speed: 0.5 }); return; }
+    if (L.enemy.away) { placeAt(s, { x: 0, z: 0, away: L.enemy.away }); return; }
+    const side = i % 2 ? 1 : -1;
+    placeAt(s, { ...O.beside(L.enemy, side * (800 + i * 250), 350 + i * 300), y: (L.enemy.y || 0) + 60, speed: L.enemy.speed, hidden: L.enemy.hidden });
+  });
+}
+// A fresh asteroid field for every battle that is not a fixed-geometry one, kept off the start points; a hidden enemy
+// gets a cluster of big rocks round it.
+function layField(L) {
+  if (L.keepField) { placeRocks(); return; }
+  placeRocks(1 + Math.floor(Math.random() * 1e9), ships.filter(s => !s.away).map(s => ({ x: s.pos.x, z: s.pos.z, r: s.team === 'p' ? 750 : 450 })));
+  if (!L.rocks) return;
+  const O = window.BroadsideOpenings, E = enemy, toward = O.yawTo(E.pos, player.pos);
+  const far = asteroids.slice().sort((a, b) => b.pos.length() - a.pos.length()).slice(0, 6);
+  [-0.55, -0.2, 0.18, 0.5, 2.4, 3.6].forEach((off, i) => {
+    const a = far[i]; if (!a) return;
+    const size = rand(130, 230), k = size * 1.02 / a.r; a.mesh.scale.multiplyScalar(k); a.r = size * 1.02;
+    const q = O.at({ x: E.pos.x, z: E.pos.z, yaw: toward }, off, 360 + a.r + rand(0, 200));
+    a.pos.set(q.x, E.pos.y + rand(-170, 170), q.z);
+  });
+}
+// The first words of the fight on the HUD, by how it opened.
+function openingMsg(L, aiKey) {
+  const E = enemy, cls = E.C.cls + ' · ' + DIFF[aiKey].label;
+  if (E.away) return 'Jump signature detected · bearing unknown';
+  if (E.hidden) return 'Contact lost in the asteroid field';
+  return E.name + ({ crossing: ' crossing our bow · ', running: ' pacing us off the beam · ', ambush: ' astern · ' }[L.id] || ' sighted · ') + cls;
+}
+// Called every frame of the fight: brings late ships in, and flushes hidden ones out.
+function openingTick(dt) {
+  const L = game.opening; if (!L || game.ending) return;
+  L.t += dt;
+  const late = ships.filter(s => s.away && s.alive);
+  if (late.length) {
+    const left = L.enemy.away - L.t;
+    if (!L.warned && left <= 3) { L.warned = true; showMsg('Jump signature resolving · contact in three seconds', 2.6, true); Sfx.beep(520, 0.12, 0.06); }
+    if (left <= 0) arriveAll(late);
+  }
+  const lurkers = ships.filter(s => s.hidden && s.alive);
+  if (lurkers.length && (L.t > 28 || lurkers.some(s => s.stats.taken > 0 || ships.some(a => a.team === 'p' && a.alive && a.pos.distanceTo(s.pos) < (a === player ? 1900 : 1500))))) reveal(lurkers);
+}
+const placeOf = s => ({ x: s.pos.x, z: s.pos.z, yaw: s.yaw });
+// A jump-in point clear of the rocks.
+function clearArrival(make) {
+  let a = make();
+  for (let k = 0; k < 8 && asteroids.some(r => Math.hypot(r.pos.x - a.x, r.pos.z - a.z) < r.r + 450); k++) a = make();
+  return a;
+}
+function jumpIn(s, p) {
+  s.away = 0; placeAt(s, { ...p, speed: p.speed ?? 0.7 }); s.obj.visible = true; s.shieldMesh.visible = !intro;
+  flash(s.pos, 1100, 1.4, 2.6, 4.8, 0.9); sparks(s.pos, 70, 1.2, 2.6, 4.6, 280, 6); Sfx.play('afterburner', volAt(s.pos) * 0.8, 1.4, { max: 1 });
+  if (s.ai) s.ai.shT = 1;
+}
+function arriveAll(late) {
+  const O = window.BroadsideOpenings, lead = late.includes(enemy) ? enemy : late[0];
+  const a = clearArrival(() => O.arrival(placeOf(player), Math.random, { arena: ARENA }));
+  jumpIn(lead, a);
+  late.filter(s => s !== lead).forEach((s, i) => jumpIn(s, { ...O.beside(a, (i % 2 ? 1 : -1) * (800 + i * 250), 350 + i * 300), y: a.y + 60 }));
+  showMsg(lead.name + ' out of the jump · ' + O.bearingWords(deg(bearingTo(player, lead.pos, _brE).b)) + (late.length > 1 ? ' · ' + late.length + ' contacts' : ''), 3.4, true);
+  Sfx.play('sighted', 0.9, 1, { max: 1 }); openingHail();
+}
+function reveal(list) {
+  const O = window.BroadsideOpenings, lead = list.includes(enemy) ? enemy : list[0];
+  for (const s of list) { s.hidden = false; s.lurk = false; }
+  showMsg('Contact! ' + lead.name + ' breaking cover ' + O.bearingWords(deg(bearingTo(player, lead.pos, _brE).b)), 3.4, true);
+  Sfx.play('sighted', 0.9, 1, { max: 1 }); openingHail();
+}
+// The enemy captain's hail waits until there is someone to see.
+function openingHail() { const L = game.opening; if (L && L.hailPending) { L.hailPending = false; bridge?.incomingHail(campaignMission ? campaignMission.hail : 0); } }
+
+// ---------------- mid-battle twists (crew/twists.js) ----------------
+function pickTwist(tutorialWanted) {
+  const X = window.BroadsideTwists; if (!X) return null;
+  const force = campaignParams.get('twist');
+  const t = X.choose(campaignMission, Math.random, { fleet: !!fleet, tutorial: tutorialWanted, force, none: SIM && !force });
+  return t ? { ...t, stage: 0, zap: 0, vent: 0 } : null;
+}
+function twistLine(text) {
+  const el = $('twist-line'); if (!el) return;
+  if (!text) { if (!el.hidden) el.hidden = true; return; }
+  setT(el, text); if (el.hidden) el.hidden = false;
+}
+const leadHail = () => { const h = campaignMission && campaignMission.hail; return typeof h === 'number' ? window.BroadsidePersonnel.commanders[h] : h || {}; };
+function twistTick(dt) {
+  const T = game.twist; if (!T || T.stage < 0 || game.ending) return;
+  const W = window.BroadsideTwists.TIMING, now = game.time;
+  if (T.id === 'surrender') { surrenderTick(T, dt); return; }
+  // Help comes sooner to a ship in trouble.
+  if (T.id === 'navy' && T.stage === 0 && now > 20 && player.hull < player.C.hull * 0.5 && T.at > now + W.warn) T.at = now + W.warn;
+  if (T.stage === 0 && now >= T.at - W.warn) { T.stage = 1; twistWarn(T); }
+  if (T.stage === 1 && now >= T.at) { T.stage = 2; twistStart(T); }
+  else if (T.stage === 2) twistRun(T, dt);
+}
+function twistWarn(T) {
+  if (T.id === 'reinforcements') { showMsg('Jump signatures on the lane · more hostiles inbound', 3, true); Sfx.beep(520, 0.12, 0.06); }
+  else if (T.id === 'navy') showMsg('Navy transponder on the lane · friendly ship inbound', 3);
+  else if (T.id === 'ionstorm') showMsg('Ion storm front on the sensors · shields will not recharge inside it', 3.4, true);
+}
+function twistStart(T) {
+  const O = window.BroadsideOpenings, X = window.BroadsideTwists, W = X.TIMING, P0 = placeOf(player);
+  const inside = q => Math.hypot(q.x, q.z) < ARENA - 1500;
+  if (T.id === 'reinforcements') {
+    // They come in on the far side from the lead, so the fight turns into a pincer.
+    const lead = fleet.primary.alive ? fleet.primary : enemy, n = fleet.allies.filter(a => a.alive).length >= 2 ? 2 : 1;
+    const away = deg(bearingTo(player, lead.pos, _brE).b) + Math.PI, front = campaignMission && campaignMission.front ? campaignMission.front.hull : 1;
+    let first = null;
+    for (let i = 0; i < n; i++) {
+      let q = O.at(P0, away + (i ? 0.45 : -0.2), 2100 + i * 300); if (!inside(q)) q = O.arrival(P0, Math.random, { arena: ARENA });
+      const s = fleet.reinforce(X.support(lead.key)); if (!s) return;
+      if (campaignDiff) { const k = campaignDiff.enemyHull * front; s.hull = Math.round(s.hull * k); s.maxHull = Math.round(s.maxHull * k); }
+      jumpIn(s, { x: q.x, y: player.pos.y + rand(-80, 80), z: q.z, yaw: O.yawTo(q, P0) });
+      first = first || q;
+    }
+    showMsg((n > 1 ? n + ' hostiles' : 'Hostile') + ' out of the jump · ' + O.bearingWords(deg(bearingTo(player, _v5.set(first.x, player.pos.y, first.z), _brE).b)), 3.4, true);
+    Sfx.play('sighted', 0.9, 1, { max: 1 });
+    const h = leadHail(), line = X.reinforceLine(h.faction);
+    if (/Wraith/.test(h.faction || '')) bridge?.report('okoye', line); else bridge?.incomingHail({ name: lead.captain || lead.name, faction: h.faction || '', line });
+    $('fleet-objective').hidden = false; $('fleet-objective').textContent = fleet.status();
+    T.stage = -1;
+  } else if (T.id === 'navy') {
+    const hulls = ['sabre', 'halberd', 'bastion'].filter(k => CLASSES[k]), cls = hulls[Math.floor(Math.random() * hulls.length)], call = X.navyCall(), side = Math.random() < 0.5 ? 1 : -1;
+    const e = makeShip(cls, 'p'); e.name = call.name; e.escort = true; e.friend = true;
+    e.hull = e.maxHull = Math.round(e.C.hull * 0.6); e.dmgOut = 0.45;
+    e.ai = { diff: DIFF.captain, side, flankOffset: side * 18, shT: 2, pwT: 0, mode: 'close', sideT: 0 }; e.target = unseen(enemy) ? null : enemy;
+    let q = O.at(P0, side * deg(rand(110, 150)), 1300); if (!inside(q)) q = O.at(P0, side * deg(rand(30, 60)), 1300);
+    jumpIn(e, { x: q.x, y: player.pos.y, z: q.z, yaw: player.yaw, speed: 0.6 });
+    fleet.addAlly(e); $('escorts').hidden = false; escortHudT = 0;
+    bridge?.incomingHail({ name: call.name, faction: 'Meridian Navy', line: call.line });
+    showMsg(call.name + ' joins the fight · U I O give her orders', 3.6);
+    T.stage = -1;
+  } else if (T.id === 'ionstorm') {
+    game.storm = W.storm; showMsg('Ion storm · shields cannot recharge', 3, true); Sfx.play('shieldhit', 0.8, 0.5, { max: 1 });
+  } else if (T.id === 'breach') {
+    const foes = ships.filter(s => s.team === 'e' && s.alive && !unseen(s)), t = foes.includes(enemy) ? enemy : foes[0];
+    if (!t) { T.stage = 1; T.at = game.time + 5; return; }   // nobody on the plot yet: try again shortly
+    T.ship = t; t.breachT = W.breach; t.sh.fill(0);
+    showMsg(t.name + ': reactor breach · shields down for ' + W.breach + ' s', 3.4); Voice.say('enemy-shields-down', 0);
+    bridge?.report('okoye', 'Their reactor is venting, captain! Every shield on that ship is down. Make it count.');
+  }
+}
+function twistRun(T, dt) {
+  if (T.id === 'ionstorm') {
+    game.storm = Math.max(0, game.storm - dt);
+    twistLine('ION STORM · NO SHIELD RECHARGE · ' + Math.ceil(game.storm) + ' S');
+    if ((T.zap -= dt) <= 0) {   // lightning in the cloud, now and then on a hull
+      T.zap = rand(0.2, 0.7);
+      const live = ships.filter(x => x.alive && !x.away), s = Math.random() < 0.25 ? live[Math.floor(Math.random() * live.length)] : null;
+      if (s) { sparks(s.pos, 26, 1.2, 2.2, 4.2, 220, 5); flash(s.pos, 260, 0.5, 1, 2.4, 0.18); }
+      else { _v5.set(rand(-1, 1), rand(-0.4, 0.4), rand(-1, 1)).normalize().multiplyScalar(rand(500, 2600)).add(player.pos); flash(_v5, rand(280, 620), 0.35, 0.8, 2, 0.2); }
+    }
+    if (game.storm <= 0) { twistLine(null); showMsg('The storm has passed · shields recharging', 2.4); T.stage = -1; }
+  } else if (T.id === 'breach') {
+    const s = T.ship; s.breachT = Math.max(0, s.breachT - dt);
+    if (s.alive && s.breachT > 0) {
+      twistLine('REACTOR BREACH · ' + s.name.toUpperCase() + ' SHIELDS DOWN · ' + Math.ceil(s.breachT) + ' S');
+      if ((T.vent -= dt) <= 0) { T.vent = 0.18; sparks(s.pos, 14, 1.4, 2.2, 3.4, 150, 5); }
+    } else { s.breachT = 0; twistLine(null); if (s.alive) showMsg(s.name + ' has the breach contained · shields coming back', 2.4); T.stage = -1; }
+  }
+}
+// A beaten captain, alone on the field, offers to strike their colours: Y accepts; firing on them, or waiting, refuses.
+function surrenderTick(T, dt) {
+  const W = window.BroadsideTwists.TIMING, lead = fleet && fleet.primary; if (!lead) { T.stage = -1; return; }
+  if (T.stage === 0) {
+    const foes = fleet.hostiles;
+    if (lead.alive && !fleet.escaping && foes.length === 1 && foes[0] === lead && !unseen(lead) && lead.hull <= (lead.maxHull || lead.C.hull) * W.surrenderAt) {
+      T.stage = 1; T.left = W.offer; T.taken = lead.stats.taken; lead.ceasefire = true;
+      showMsg(lead.name + ' is striking its colours · press Y to accept the surrender', 4);
+      bridge?.incomingHail({ name: lead.captain || lead.name, faction: leadHail().faction || '', line: window.BroadsideTwists.surrenderLine() });
+      Sfx.beep(660, 0.1, 0.05);
+    }
+    return;
+  }
+  T.left -= dt;
+  const fired = lead.stats.taken > T.taken + 1;
+  twistLine('SURRENDER OFFERED · Y TO ACCEPT · ' + Math.max(0, Math.ceil(T.left)) + ' S');
+  if (fired || T.left <= 0 || !lead.alive) {
+    T.stage = -1; lead.ceasefire = false; twistLine(null);
+    if (lead.alive) showMsg(fired ? lead.name + ' takes that as your answer · weapons hot' : 'No answer · ' + lead.name + ' is powering weapons again', 3, true);
+  }
+}
+function acceptSurrender() {
+  const T = game && game.twist; if (!T || T.id !== 'surrender' || T.stage !== 1 || !fleet) return false;
+  T.stage = -1; twistLine(null);
+  return fleet.acceptSurrender();
+}
 function captainFate(s) { return window.BroadsideCampaign.fateLine(s.captainFate, s.captain, s.name, window.BroadsideCampaign.hash(s.captain)); }
 function endGame(outcome) {
   if (game.ending) return;
   game.ending = true; game.outcome = outcome; game.endT = 7; bridge?.onEnd();
-  $('coach').hidden = true; endBossEntrance(); Sfx.burn(false);
+  $('coach').hidden = true; endBossEntrance(); Sfx.burn(false); twistLine(null);
   // Mission 3 can end in surrender and mission 5 by transmitting/escaping.
   // Neither should trigger the destroyed-enemy VO.
   if (!(outcome === 'win' && ['surrender','extracted','escort_extracted','driven_off'].includes(game.campaignOutcome)))
@@ -1710,13 +1937,17 @@ function openingShots(crew) {
   // Your flagship, and the officer who would speak first.
   const key = M.rival && M.rival.returning ? 'rival' : M.kind === 'intercept' ? 'intercept' : (M.goal && M.goal.type) || 'destroy';
   const lead = M.story && P.leads[M.story] ? slot(P.leads[M.story]) : slot(['destroy', 'intercept', 'rival', 'pursuit'].includes(key) ? 'renn' : 'varro');
-  const story = M.story && P.briefLines[M.story], line = story ? P.briefLines[M.story] : OPENERS[key] || OPENERS.destroy;
+  // How the battle opened (crew/openings.js) has its own line, unless the story, a returning rival or an ambushed
+  // interception (which already has one recorded) says it better. New lines play as subtitles until they are recorded.
+  const O = game.opening, own = O && O.line && key !== 'rival' && !(key === 'intercept' && O.id === 'ambush') ? O.line : null;
+  const story = M.story && P.briefLines[M.story], line = story ? P.briefLines[M.story] : own || OPENERS[key] || OPENERS.destroy;
   const clip = (o, k) => o && REGULARS.includes(o.id) ? `voice/officers/${o.id}-${k}.mp3` : null;
-  const shots = [{ kind: 'own', ship: player, word: player.name, sub: player.C.cls + ' · ' + (M.label || ''), who: lead, by: said(lead), line, clip: clip(lead, story ? 'op' + M.story : OPENERS[key] ? key : 'destroy') }];
+  const shots = [{ kind: 'own', ship: player, word: player.name, sub: player.C.cls + ' · ' + (M.label || ''), who: lead, by: said(lead), line, clip: clip(lead, story ? 'op' + M.story : own ? 'open-' + O.id : OPENERS[key] ? key : 'destroy') }];
   // The enemy lead: the captain's hail, a commander's, or nothing at all.
   const hail = typeof M.hail === 'number' ? P.commanders[M.hail] : M.hail, faction = hail && hail.faction || '';
   const silent = !M.story && !(M.rival && M.rival.returning) && (/Wraith/.test(faction) || enemy.captain && (window.BroadsideCampaign ? window.BroadsideCampaign.hash(String(M.id)) : 0) % 10 < 3);
-  shots.push({ kind: 'foe', ship: enemy, word: enemy.name, sub: [enemy.C.cls, enemy.captain || (hail && hail.name !== enemy.name ? hail.name : ''), faction].filter(Boolean).join(' · '),
+  // An enemy still to jump in, or hiding in the rocks, is not filmed: it shows itself later, with its hail.
+  if (!unseen(enemy)) shots.push({ kind: 'foe', ship: enemy, word: enemy.name, sub: [enemy.C.cls, enemy.captain || (hail && hail.name !== enemy.name ? hail.name : ''), faction].filter(Boolean).join(' · '),
     who: silent ? null : hail, by: silent ? '' : hail && (hail.name || ''), line: silent ? (/Wraith/.test(faction) ? WRAITH_SILENCE : SILENCE) : hail ? hail.line : SILENCE, quiet: silent });
   // Whoever is on your side: the convoy, the station, an escort or an ally.
   const mate = fleet?.convoy || fleet?.station || (fleet?.allies || []).find(a => a.alive);
@@ -1764,7 +1995,7 @@ function endIntro() {
 function introUpdate(dt, rdt) {
   const s = intro.shots[intro.i]; intro.t += rdt; if (intro.t > (s.dur || SHOT_T[s.kind])) nextShot();
   for (const a of asteroids) { a.mesh.rotation.x += a.spin.x * dt; a.mesh.rotation.y += a.spin.y * dt; }
-  for (const s of ships) { afterburnerUpdate(s, dt); helm(s, dt); shieldsUpdate(s, dt); firesUpdate(s, dt); }
+  for (const s of ships) { if (s.away) continue; afterburnerUpdate(s, dt); helm(s, dt); shieldsUpdate(s, dt); firesUpdate(s, dt); }
 }
 function introCamera() {
   const s = intro.shots[intro.i], S = s.ship, L = hullLen(S), k = Math.min(1, intro.t / (s.dur || SHOT_T[s.kind])), side = intro.side * (s.kind === 'foe' ? -1 : 1);
@@ -1936,6 +2167,9 @@ function shieldsUpdate(s, dt) {
   const u = s.shieldMesh.material.uniforms;
   if (!s.alive) { s.sh.fill(0); u.uStr.value.set(0, 0, 0, 0); return; }
   const C = s.C, e = fx(s), w = weights(s.focus), t = game.time;
+  // A reactor breach (crew/twists.js) holds every facing at zero; an ion storm stops every ship recharging.
+  if (s.breachT > 0) { s.sh.fill(0); u.uStr.value.set(0, 0, 0, 0); return; }
+  const storm = game.storm > 0 ? 0 : 1;
   const gen = C.shieldHardened ? 0.75 + 0.25 * s.sub.shields / 100 : 0.5 + 0.5 * s.sub.shields / 100;
   for (let i = 0; i < 4; i++) s.cap[i] = C.shield * (0.6 + 1.6 * w[i]) * gen * (s.facingK ? s.facingK[i] : 1);   // facingK: a rival's shield refits
   for (let i = 0; i < 4; i++) {
@@ -1944,7 +2178,7 @@ function shieldsUpdate(s, dt) {
       if (s.focus >= 0 && s.focus !== i) s.sh[s.focus] = Math.min(s.cap[s.focus], s.sh[s.focus] + ex * 0.85);
     }
     const pause = t - s.hitT[i] < 1.5 ? 0.35 : 1;
-    s.sh[i] = Math.min(s.cap[i], s.sh[i] + C.regen * e.shd * w[i] * pause * (s.burn ? 0.5 : 1) * dt);
+    s.sh[i] = Math.min(s.cap[i], s.sh[i] + C.regen * e.shd * w[i] * pause * storm * (s.burn ? 0.5 : 1) * dt);
   }
   u.uStr.value.set(s.sh[0] / C.shield, s.sh[1] / C.shield, s.sh[2] / C.shield, s.sh[3] / C.shield); u.uFocus.value = s.focus; u.uT.value = t;
 }
@@ -2150,7 +2384,7 @@ function shellsUpdate(dt) {
       b.pos.addScaledVector(b.vel, dt / 2);
       if (b.cosmetic) continue;
       for (const s of ships) {
-        if (s.team === b.team) continue;
+        if (s.team === b.team || s.away) continue;
         if (s.pos.distanceToSquared(b.pos) > 250 * 250) continue;
         _v1.copy(b.pos).applyMatrix4(s.inv);
         const u = localUnit(s, _v1, _v2);
@@ -2193,7 +2427,7 @@ function torpsUpdate(dt) {
     let boom = t.life <= 0;
     if (!boom) for (const a of asteroids) if (a.pos.distanceToSquared(t.pos) < a.r * a.r) { boom = true; break; }
     if (!boom) for (const s of ships) {
-      if (s.team === t.team) continue;
+      if (s.team === t.team || s.away) continue;
       _v1.copy(t.pos).applyMatrix4(s.inv); const u = localUnit(s, _v1, _v2);
       if (u.lengthSq() > 1) continue;
       const f = facingOfUnit(u), E = s.C.hullE;
@@ -2250,7 +2484,7 @@ function firesUpdate(s, dt) {
 }
 function collisions() {
   for (const s of ships) {
-    if(!s.alive)continue;
+    if(!s.alive||s.away)continue;
     const E = s.C.hullE;
     for (const a of asteroids) {
       if (a.pos.distanceToSquared(s.pos) > (a.r + E.r[2]) ** 2) continue;
@@ -2272,7 +2506,7 @@ function collisions() {
     }
   }
   for(let i=0;i<ships.length;i++)for(let j=i+1;j<ships.length;j++){
-    const pa=ships[i],foe=ships[j];if(!pa.alive||!foe.alive)continue;
+    const pa=ships[i],foe=ships[j];if(!pa.alive||!foe.alive||pa.away||foe.away)continue;
     const d = pa.pos.distanceTo(foe.pos), min = (pa.C.hullE.r[0] + foe.C.hullE.r[0]) * 1.3;
     if (d > min + pa.C.hullE.r[2] + foe.C.hullE.r[2]) continue;
     for (const z of [-0.8, 0, 0.8]) for (const z2 of [-0.8, 0, 0.8]) {
@@ -2301,7 +2535,9 @@ const _br = {}, _bt = {};
 function aiUpdate(s, dt) {
   const ai = s.ai, D = ai.diff, t = s.target;
   if (!s.alive) return;
-  if (!t || !t.alive) { s.rudder += clamp(0 - s.rudder, -dt, dt); s.step = 2; return; }
+  // Lying in wait in the rocks, or holding fire while a surrender is offered: drift, guns cold.
+  if (s.lurk || s.ceasefire) { s.rudder += clamp(0 - s.rudder, -dt, dt); s.climb = 0; s.step = 1; return; }
+  if (!t || !t.alive || unseen(t)) { s.rudder += clamp(0 - s.rudder, -dt, dt); s.step = 2; return; }
   bearingTo(s, t.pos, _br); const b = _br.b, el = _br.el, dist = _br.d;
   const lance = s.groups.find(g => g.type === 'lance' || g.bow);
   const port = s.groups.find(g => g.id === 'port'), stbd = s.groups.find(g => g.id === 'stbd');
@@ -2434,6 +2670,7 @@ window.addEventListener('keydown', e => {
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
   if(k==='KeyH'&&fleet?.toggleHold()){$('escort-hold').textContent=fleet.held?'RESUME CONVOY [H]':'HOLD CONVOY [H]';return;}
   if(k==='KeyJ'&&fleet){fleet.cycle();return;}
+  if (k === 'KeyY' && acceptSurrender()) return;
   if(fleet&&ESCORT_KEYS[k]&&fleet.setOrder(ESCORT_KEYS[k])){drawEscorts();return;}
   if (k === 'KeyM') Sfx.toggle();
   if (k === 'KeyN') toggleMusic();
@@ -2473,7 +2710,7 @@ function playerHelm(dt) {
   if (keys.has('KeyD')) P.rudder = Math.min(1, P.rudder + dt * 0.9);
   P.climb = keys.has('KeyR') ? 1 : keys.has('KeyF') ? -1 : 0;
   P.abWant = keys.has('ShiftLeft') || keys.has('ShiftRight');
-  if (P.autofire) for (const g of P.groups) if (g.type === 'battery' && g.charge >= 1 && P.target.alive && inArc(P, g, P.target.pos)) fireGroup(P, g);
+  if (P.autofire) for (const g of P.groups) if (g.type === 'battery' && g.charge >= 1 && P.target.alive && !unseen(P.target) && inArc(P, g, P.target.pos)) fireGroup(P, g);
 }
 
 // menu
@@ -2542,7 +2779,7 @@ function updateCamera(dt, gdt = dt) {
     return;
   }
   let tYaw, tPitch = cam.pitch, dist = cam.dist;
-  if (cam.mode === 'target' && enemy) {
+  if (cam.mode === 'target' && enemy && !unseen(enemy)) {
     _v1.subVectors(P.pos, enemy.pos); tYaw = Math.atan2(_v1.x, _v1.z) + 0.25; tPitch = 0.22;
     dist = Math.max(cam.dist, 600);
   } else tYaw = P.yaw + cam.yaw;
@@ -2552,7 +2789,7 @@ function updateCamera(dt, gdt = dt) {
   const cp = Math.cos(cam.curPitch);
   _v1.set(Math.sin(cam.curYaw) * cp, Math.sin(cam.curPitch), Math.cos(cam.curYaw) * cp).multiplyScalar(dist);
   camera.position.copy(P.pos).add(_v1);
-  if (cam.mode === 'target' && enemy) camera.lookAt(_v2.copy(P.pos).lerp(enemy.pos, 0.35));
+  if (cam.mode === 'target' && enemy && !unseen(enemy)) camera.lookAt(_v2.copy(P.pos).lerp(enemy.pos, 0.35));
   else camera.lookAt(_v2.copy(P.pos).addScaledVector(P.fwd, dist * 0.15).add(_v3.set(0, dist * 0.06, 0)));
   shakeCamera(dt);
   cam.fov += ((P.burn ? 62 : 55) - cam.fov) * (1 - Math.exp(-3 * dt)); camera.fov = cam.fov - cam.punch * 3; camera.updateProjectionMatrix();
@@ -2738,7 +2975,7 @@ function drawTac(cv, full) {
   g.clearRect(0, 0, w, h);
   if (!player || !w) return;
   const P = player, E = enemy, pr = w / Math.max(1, cv.clientWidth);
-  const dist = P.pos.distanceTo(E.pos);
+  const seen = !unseen(E), dist = seen ? P.pos.distanceTo(E.pos) : 3000;   // nothing to plot until it jumps in or breaks cover
   const range = full ? Math.max(4000, dist * 1.35) : clamp(dist * 1.3, 3200, 6000);
   const sc = Math.min(w, h) / 2 / range;
   _tq.setFromEuler(_e1.set(0, P.yaw, 0)).invert();
@@ -2749,7 +2986,7 @@ function drawTac(cv, full) {
   // own arcs
   for (const gr of P.groups) {
     if (gr.type === 'torpedo' || !P.alive) continue;
-    const inA = E.alive && inArc(P, gr, E.pos), ready = gr.charge >= 1 && subEff(P, gr) >= 0.15;
+    const inA = seen && E.alive && inArc(P, gr, E.pos), ready = gr.charge >= 1 && subEff(P, gr) >= 0.15;
     const col = inA && ready ? 'rgba(127,224,160,' : inA ? 'rgba(255,183,77,' : 'rgba(143,211,255,';
     g.fillStyle = col + (inA ? '.16)' : '.05)'); g.strokeStyle = col + (inA ? '.75)' : '.25)');
     const a0 = deg(gr.center - gr.half) - Math.PI / 2, a1 = deg(gr.center + gr.half) - Math.PI / 2;
@@ -2757,6 +2994,8 @@ function drawTac(cv, full) {
   }
   // enemy arcs and ship
   const ep = toMap(E.pos, _mpE); const rel = -(E.yaw - P.yaw);
+  if (!seen) { g.fillStyle = '#ffb3aa'; g.fillText(E.away ? 'JUMP SIGNATURE · BEARING UNKNOWN' : 'CONTACT LOST IN THE ROCKS', 12 * pr, h - 12 * pr); }
+  else {
   if (E.alive) for (const gr of E.groups) {
     if (gr.type === 'torpedo' || gr.type === 'missile') continue;
     const a0 = deg(gr.center - gr.half) + rel - Math.PI / 2, a1 = deg(gr.center + gr.half) + rel - Math.PI / 2;
@@ -2768,8 +3007,9 @@ function drawTac(cv, full) {
   g.strokeStyle = 'rgba(255,91,79,.55)'; g.setLineDash([3 * pr, 3 * pr]); g.beginPath(); g.moveTo(ep.x, ep.y); g.lineTo(vp.x, vp.y); g.stroke(); g.setLineDash([]);
   drawShip2D(g, ep.x, ep.y, rel, E, Math.max(sc, 6 * pr / E.C.hullE.r[2]), E.alive ? '#ff5b4f' : '#7a4a44', 'rgba(255,91,79,.25)');
   g.fillStyle = '#ffb3aa'; g.fillText((dist / 1000).toFixed(2) + ' km' + (Math.abs(ep.alt) > 60 ? (ep.alt > 0 ? ' ▲' : ' ▼') + Math.round(Math.abs(ep.alt)) + ' m' : ''), ep.x + 10 * pr, ep.y - 8 * pr);
+  }
   for(const ship of ships){
-    if(ship===P||ship===E)continue;
+    if(ship===P||ship===E||unseen(ship))continue;
     const q=toMap(ship.pos,_mp);
     const friendly=ship.team===P.team;
     drawShip2D(g,q.x,q.y,-(ship.yaw-P.yaw),ship,Math.max(sc,5*pr/ship.C.hullE.r[2]),friendly?'#81e7ab':'#ff836b',friendly?'rgba(90,230,164,.22)':'rgba(255,90,70,.22)');
@@ -2844,8 +3084,9 @@ function updateHud(dt) {
   setT($c('foe-name'),E.name);setT($c('foe-cls'),E.captain?E.C.cls+' · '+E.captain:E.C.cls);
   camera.updateMatrixWorld();
   project(E.pos, _sc);
-  const mk = $c('mk'), oa = $c('offarrow');
-  if (_sc.on) {
+  const mk = $c('mk'), oa = $c('offarrow'), seen = !unseen(E);
+  if (!seen) { if (!mk.hidden) mk.hidden = true; if (!oa.hidden) oa.hidden = true; }   // no marker until it jumps in or breaks cover
+  else if (_sc.on) {
     const px = clamp(E.C.hullE.r[2] * 2.2 * (H / 2) / (Math.tan(deg(camera.fov / 2)) * _sc.depth), 34, 320);
     if (mk.hidden) mk.hidden = false; mk.style.width = mk.style.height = px.toFixed(0) + 'px';
     mk.style.transform = `translate(${(_sc.x - px / 2).toFixed(1)}px,${(_sc.y - px / 2).toFixed(1)}px)`;
@@ -2868,20 +3109,20 @@ function updateHud(dt) {
   const brE = bearingTo(P, E.pos, _brE), brP = bearingTo(E, P.pos, _brP);
   const ourF = facingOfBearing(brE.b), theirF = facingOfBearing(brP.b);
   setT($c('mk-l'), `${E.name} · ${(dist / 1000).toFixed(2)} km · ${FACINGS[theirF].toLowerCase()} shield ${Math.round(E.sh[theirF] / E.C.shield * 100)}%`);
-  setT($c('rl-range'), (dist / 1000).toFixed(2) + ' km');
+  setT($c('rl-range'), seen ? (dist / 1000).toFixed(2) + ' km' : '—');
   const side = brE.b < 0 ? 'to port' : 'to starboard';
-  setT($c('rl-sub'), E.alive ? `Enemy ${Math.abs(brE.b) < 8 ? 'dead ahead' : Math.abs(brE.b) > 172 ? 'astern' : Math.abs(Math.round(brE.b)) + '° ' + side} · it shows you its ${FACINGS[theirF].toLowerCase()} side` : 'Enemy disabled');
+  setT($c('rl-sub'), !seen ? (E.away ? 'Jump signature · no bearing yet' : 'Contact lost in the rocks · keep your eyes open') : E.alive ? `Enemy ${Math.abs(brE.b) < 8 ? 'dead ahead' : Math.abs(brE.b) > 172 ? 'astern' : Math.abs(Math.round(brE.b)) + '° ' + side} · it shows you its ${FACINGS[theirF].toLowerCase()} side` : 'Enemy disabled');
   const hf = P.hull / P.C.hull; setX($c('own-hullbar').firstChild, hf); $c('own-hullbar').classList.toggle('crit', hf < 0.3); setT($c('own-hull'), Math.max(0, Math.round(P.hull)));
-  drawShieldDiamond($c('own-sh'), P, ourF);
-  for (let i = 0; i < 4; i++) { const r = ownRows[i]; setC(r.d, P.sh[i] <= 0 ? 'down' : P.focus === i ? 'f' : ''); setT(r.a, FACINGS[i] + (ourF === i ? ' ◂ enemy' : '')); setT(r.b, Math.round(P.sh[i])); }
+  drawShieldDiamond($c('own-sh'), P, seen ? ourF : -1);
+  for (let i = 0; i < 4; i++) { const r = ownRows[i]; setC(r.d, P.sh[i] <= 0 ? 'down' : P.focus === i ? 'f' : ''); setT(r.a, FACINGS[i] + (seen && ourF === i ? ' ◂ enemy' : '')); setT(r.b, Math.round(P.sh[i])); }
   setT(ownRows[4].b, P.focus < 0 ? 'none' : FACINGS[P.focus]);
   setT($c('own-pw'), P.avail);
   for (const k of ['eng', 'shd', 'wpn']) { const pp = pipEls[k]; for (let i = 0; i < 8; i++) setC(pp[i], i < P.pips[k] ? 'on' : ''); }
   for (const k of SUBS) { const o = subEls[k], v = P.sub[k]; setX(o.bar, v / 100); setT(o.v, Math.round(v)); setC(o.r, 'sub' + (v < 50 ? ' dmg' : '') + (P.repair === k ? ' rep' : '')); }
   const ef = E.hull / E.C.hull; setX($c('foe-hullbar').firstChild, ef); $c('foe-hullbar').classList.toggle('crit', ef < 0.3); setT($c('foe-hull'), Math.max(0, Math.round(E.hull)));
-  drawShieldDiamond($c('foe-sh'), E, theirF);
-  for (let i = 0; i < 4; i++) { const r = foeRows[i]; setC(r.d, E.sh[i] <= 0 ? 'down' : ''); setT(r.a, FACINGS[i] + (theirF === i ? ' ◂ you' : '')); setT(r.b, Math.round(E.sh[i] / E.C.shield * 100) + '%'); }
-  setT($c('foe-aspect'), E.alive ? `Toward you: ${FACINGS[theirF].toLowerCase()} · ${E.sh[theirF] <= 0 ? 'shield down, hull exposed' : Math.round(E.sh[theirF]) + ' shield'}` : 'Wrecked');
+  drawShieldDiamond($c('foe-sh'), E, seen ? theirF : -1);
+  for (let i = 0; i < 4; i++) { const r = foeRows[i]; setC(r.d, E.sh[i] <= 0 ? 'down' : ''); setT(r.a, FACINGS[i] + (seen && theirF === i ? ' ◂ you' : '')); setT(r.b, Math.round(E.sh[i] / E.C.shield * 100) + '%'); }
+  setT($c('foe-aspect'), !seen ? 'No contact' : E.alive ? `Toward you: ${FACINGS[theirF].toLowerCase()} · ${E.sh[theirF] <= 0 ? 'shield down, hull exposed' : Math.round(E.sh[theirF]) + ' shield'}` : 'Wrecked');
   const tele = $c('tele').children; for (let i = 0; i < 5; i++) setC(tele[i], i === P.step ? 'on' : '');
   const rl = (50 + P.rudder * 46).toFixed(1) + '%'; const rud = $c('rud'); if (rud._l !== rl) { rud.style.left = rl; rud._l = rl; }
   setT($c('h-spd'), Math.round(P.speed));
@@ -2893,7 +3134,7 @@ function updateHud(dt) {
   const e = fx(P);
   for (const g of P.groups) {
     const o = wEls[g.id]; if (!o) continue;
-    const off = subEff(P, g) < 0.15, inA = E.alive && P.alive && inArc(P, g, E.pos);
+    const off = subEff(P, g) < 0.15, inA = seen && E.alive && P.alive && inArc(P, g, E.pos);
     let st, frac, ready = false, firing = false;
     if (g.type === 'torpedo') {
       let loaded = 0, minT = 1e9; for (const t of g.tubesT) { if (t <= 0) loaded++; if (t < minT) minT = t; }
@@ -2948,11 +3189,13 @@ function updateGame(dt) {
   game.time += dt;
   bridge?.tick(dt);
   fleet?.tick(dt);
+  openingTick(dt); twistTick(dt);
   tutorialTick(dt);
   if(fleet&&Math.floor(game.time*4)!==Math.floor((game.time-dt)*4)){$('fleet-objective').textContent=fleet.status();if(fleet.escaping)$('fleet-objective').hidden=false;}
   for (const a of asteroids) { a.mesh.rotation.x += a.spin.x * dt; a.mesh.rotation.y += a.spin.y * dt; }
   if (player.alive) playerHelm(dt);
   for (const s of ships) {
+    if (s.away) continue;   // not in the battle yet (crew/openings.js)
     if (s.ai) aiUpdate(s, dt);
     powerUpdate(s); afterburnerUpdate(s, dt); helm(s, dt); shieldsUpdate(s, dt); repairsUpdate(s, dt);
     if (s.alive) weaponsUpdate(s, dt); else hideBeams(s);
@@ -3052,7 +3295,7 @@ function frame(now) {
     if (menuPage === 'ship') { if (attract.on) attractStop(); }
     else { if (!attract.on) attractStart(); attractUpdate(dt); }
   }
-  else if (state === 'over') { for (const s of ships) { helm(s, dt); firesUpdate(s, dt); } shellsUpdate(dt); torpsUpdate(dt); minesUpdate(dt); }
+  else if (state === 'over') { for (const s of ships) { if (s.away) continue; helm(s, dt); firesUpdate(s, dt); } shellsUpdate(dt); torpsUpdate(dt); minesUpdate(dt); }
   if (state !== 'paused') { fire.update(dt); smoke.update(dt); updateFlashes(dt); ringsUpdate(dt); }
   updateCamera(state === 'paused' ? 0 : rdt, state === 'paused' ? 0 : dt);
   skyGroup.position.copy(camera.position);
@@ -3065,6 +3308,7 @@ function frame(now) {
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
   get state() { return state; }, get game() { return game; }, get bridge() { return bridge; }, get fleet() {return fleet;}, get cam() { return cam; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
+  get opening() { return game && game.opening; }, get twist() { return game && game.twist; }, acceptSurrender, asteroids,
   start: startGame, setPips, fireGroup, inArc, Sfx, damage, armed, get tutorial() { return tutorial; }, get killCam() { return kc; }, get intro() { return intro; }, endIntro, timeFx, gfx,
   step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } },
   // Balance testing (tools/balance.mjs): stage an encounter from the current save, let the AI fly the player's ship

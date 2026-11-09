@@ -28,7 +28,7 @@ await suite('depth', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check
   await battle('/index.html?campaign=1&sim');
   const adm = await page.evaluate(() => { const S = window.__sim, e = S.enemy; return { label: e.ai.diff.label, hull: e.hull, base: e.C.hull, player: S.player.key, foe: document.getElementById('foe-cls').textContent }; });
   check(adm.player === 'sabre' && adm.label === 'Admiral' && adm.hull === Math.round(adm.base * 1.15) && true, 'Admiral: sharper captain, 15% more hull: ' + JSON.stringify(adm));
-  const hit = await page.evaluate(() => { const S = window.__sim, p = S.player; p.sh = [0, 0, 0, 0]; const h = p.hull; S.damage(p, 100, 'shell', p.pos.clone().set(0, 0, 0), S.enemy); return h - p.hull; });
+  const hit = await page.evaluate(() => { const S = window.__sim, p = S.player; p.sh = [0, 0, 0, 0]; const h = p.hull; S.damage(p, 100, 'shell', p.pos.clone().set(40, 0, 0), S.enemy); return h - p.hull; });
   check(hit > 100 && hit < 130, 'enemy hits land 15% harder: ' + Math.round(hit));
   await page.goto(base + '/campaign.html');
   await page.click('#tabNew');

@@ -1,5 +1,21 @@
 # Balance
 
+**9 November 2026: raking fire and the shield restart.** Two combat rules went in: a stern hit does 40% more hull damage (`RAKE` in `index.html`), and a collapsed shield facing stays down for six seconds and then restarts at 20% of its strength (`SHIELD_RESTART`, `SHIELD_KICK`). The numbers were chosen from AI-pilot runs of all ten story fights (`--quick`, Captain, solo, four hulls; win rates below are the average over everything flown):
+
+| Rules | Fights | Regular operations | Act finales | Timeouts |
+| --- | ---: | ---: | ---: | ---: |
+| Before (two runs) | 240 | 72% and 81% | 33% and 30% | 3 in the second run |
+| Stern +40% only | 120 | 76% | 27% | |
+| Stern +40%, bow −20% | 120 | 75% | 13% | |
+| Stern +40%, six-second lockout, restart from empty | 120 | 64% | 11% | |
+| Stern +40%, six-second lockout, restart at 35% | 160 | 63% | 27% | 24 |
+| **Stern +40%, six-second lockout, restart at 20% (chosen)** | 320 | 60% | 27% | 19 |
+
+- The stern bonus on its own moves nothing for this pilot. A bow penalty was tried and dropped: it made the bosses, which the pilot attacks head-on, much tougher.
+- The lockout favours whoever has more guns, which in most story fights is the enemy. Restarting from empty cut finale wins to about a third of what they were; restarting part-charged gives them back. A four-second lockout from empty did no better than six.
+- With the chosen rules fights run about 10–45% longer (finales about 4:15 to 5:40 against 3:15 to 4:25), and some hit the simulator's 420-second limit, which counts as a loss. The Quiet Relay (two pickets) is the weakest regular operation at 12–25% and should be the first thing a human playtest checks.
+- The pilot does not manoeuvre for the enemy's stern or turn a collapsed facing away, so these figures are a floor for a captain who does. The older tables below predate both rules.
+
 **25 October 2026 focused update:** The three-stage Captain comparison found that AI escorts at full power made almost every tested two-ship fleet battle an automatic win. NPC escorts now deal **55%** of their class's weapon damage (the human flagship remains at full damage). See [the focused three-stage analysis](BALANCE_FOCUSED_2026-10-25.md) for all 96 comparable runs per setting, revised win rates, Halberd targeting diagnosis and limitations. The older results below describe **historical** settings and must not be mistaken for post-adjustment rates.
 
 `tools/balance.mjs` flies every story operation and act finale in headless Chromium with the AI at the flagship's helm, many times over, faster than real time, and records the results in [balance-results.json](balance-results.json). The numbers below are from the last tuning pass (October 2026, 4 runs of each fight).

@@ -93,7 +93,7 @@
       text: ['The far frontier. Its colonies are going quiet one by one, and Verdant, once the greenest world in the Reach, no longer answers at all.'] },
     // Guide
     { id: 'g-shields', cat: 'Guide', title: 'Shields and facings', sub: 'Captain’s guide', unlock: 'start',
-      text: ['Every ship has four shield banks: fore, aft, port and starboard. Damage hits the facing toward the shot. Arrow keys reinforce one facing at the others’ expense.', 'Keep your strongest facing toward the enemy, and move reactor power to shields when a facing runs low.'] },
+      text: ['Every ship has four shield banks: fore, aft, port and starboard. Damage hits the facing toward the shot. Arrow keys reinforce one facing at the others’ expense.', 'Keep your strongest facing toward the enemy, and move reactor power to shields when a facing runs low.', 'A facing that collapses stays down for six seconds, then its generator restarts at a fifth of its strength: turn it away from the enemy, and pour fire and torpedoes into theirs while the gap lasts.', 'Once a shield is down, where the shot lands matters. Hits in the stern rake the length of the ship for 40% more hull damage. Cross their stern and keep yours covered.'] },
     { id: 'g-power', cat: 'Guide', title: 'Reactor power', sub: 'Captain’s guide', unlock: 'start',
       text: ['Keys 1, 2 and 3 move power to engines, shields and weapons; 4 balances it. Damage to the reactor costs power, so protect it.'] },
     { id: 'g-officers', cat: 'Guide', title: 'Bridge officers', sub: 'Captain’s guide', unlock: 'start',

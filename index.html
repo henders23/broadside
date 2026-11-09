@@ -414,7 +414,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
           <div><kbd>P</kbd> pause · <kbd>G</kbd> graphics</div>
           <div><kbd>M</kbd> sound effects on/off · <kbd>N</kbd> music on/off</div>
         </div>
-        <p class="hint">Needs a keyboard. Shells take seconds to arrive and turrets aim where the enemy will be if it holds course, so changing course spoils their aim and yours. Torpedoes are weak against shields and strong against bare hull; the lance is the reverse.</p>
+        <p class="hint">Needs a keyboard. Shells take seconds to arrive and turrets aim where the enemy will be if it holds course, so changing course spoils their aim and yours. Torpedoes are weak against shields and strong against bare hull; the lance is the reverse. A shield facing that collapses stays down for six seconds, and hits in the stern do 40% more hull damage.</p>
       </div>
     </div>
   </section>
@@ -1147,7 +1147,7 @@ function makeShip(key, team, C = CLASSES[key]) {   // C: the class data, or an u
     pos: obj.position, q: obj.quaternion, vel: new V3(), fwd: new V3(0, 0, -1), yaw: 0, pitch: 0, roll: 0, yawRate: 0, speed: 0,
     rudder: 0, step: 3, climb: 0, hull: C.hull, sh: [C.shield, C.shield, C.shield, C.shield], cap: [C.shield, C.shield, C.shield, C.shield],
     focus: -1, pips: { eng: 4, shd: 4, wpn: 4 }, avail: 12, sub: Object.fromEntries(SUBS.map(k => [k, 100])), repair: null,
-    alive: true, dying: 0, fires: [], hitT: [-9, -9, -9, -9], hitIdx: 0, autofire: false, inv: new THREE.Matrix4(), tumble: new V3(),
+    alive: true, dying: 0, fires: [], hitT: [-9, -9, -9, -9], lock: [0, 0, 0, 0], hitIdx: 0, autofire: false, inv: new THREE.Matrix4(), tumble: new V3(),
     stats: { shots: 0, hits: 0, dealt: 0, taken: 0, torpHits: 0, lanceDmg: 0 }, hitBy: [0, 0, 0, 0], kindBy: {}, killedBy: null, ai: null, target: null, fireQ: [], isWinner: false,
     burn: false, abWant: false, abFuel: 1, abLock: false
   };
@@ -2020,6 +2020,11 @@ function shieldFlash(s, u) {
 }
 // how hard each kind of hit drains a shield compared with its hull damage
 const SHIELD_MULT = { lance: 1.4, beam: 1.2, plasma: 1.5, torp: 0.6, mine: 0.6, missile: 0.8, rail: 0.7 };
+// Raking fire: hull damage by the facing it lands on (fore, aft, port, stbd). A hit in the stern runs the length of
+// the ship. Shields are not affected, and nor is ramming.
+const RAKE = [1, 1.4, 1, 1];
+// A facing that collapses stays down this long, then its generator restarts with this share of its full strength.
+const SHIELD_RESTART = 6, SHIELD_KICK = 0.2;
 function damage(s, dmg, kind, local, src) {
   if (!s.alive || (game && game.ending && s.isWinner)) return;
   if (bridge && s.team === 'e' && src === player) dmg *= bridge.attackMultiplier();
@@ -2034,12 +2039,19 @@ function damage(s, dmg, kind, local, src) {
   if (s.sh[f] > 0) {
     const need = dmg * mult;
     if (s.sh[f] >= need) { s.sh[f] -= need; hullD = 0; }
-    else { hullD = dmg * (1 - s.sh[f] / need); s.sh[f] = 0; facingDown(s, f, src); }
+    else { hullD = dmg * (1 - s.sh[f] / need); s.sh[f] = 0; s.lock[f] = t + SHIELD_RESTART; facingDown(s, f, src); }
     const steady = kind === 'lance' || kind === 'beam';   // continuous hits flash now and then, not every frame
     if (!steady || Math.random() < 0.15) shieldFlash(s, u);
     if (!steady) Sfx.shield(volAt(s.pos));
   }
   if (hullD > 0 && s.C.armour) hullD *= s.C.armour;   // campaign armour upgrade
+  if (hullD > 0 && kind !== 'ram' && RAKE[f] !== 1) {
+    const extra = hullD * (RAKE[f] - 1); hullD += extra; dmg += extra;   // dmg is what the numbers, records and rivals see
+    if (f === 1 && t - (s.rakeT || -99) > (s === player ? 8 : 2.5) && (s === player ? hullD >= 20 : src === player && gfx.nums)) {
+      s.rakeT = t;
+      if (s === player) showMsg('Raked from astern · turn your stern away', 2.2, true); else dmgNum(s, 'Raking fire');
+    }
+  }
   if (hullD > 0) {
     if (s === player && s.hull >= s.C.hull * 0.25 && s.hull - hullD < s.C.hull * 0.25) Voice.say('hull-critical', 30, true);
     s.hull -= hullD;
@@ -2068,6 +2080,7 @@ function damage(s, dmg, kind, local, src) {
   if (game.tally && s === player) { const k = (src ? (src.C.boss ? 'boss' : src === enemy ? 'lead' : 'add') : 'env') + ':' + kind; game.tally[k] = (game.tally[k] || 0) + Math.round(dmg); }   // balance tool
   if (s.hull <= 0) { s.killKind = kind; killShip(s, src); }
 }
+function lockLeft(s, f) { return Math.max(0, Math.ceil(s.lock[f] - game.time)); }   // whole seconds until a collapsed facing restarts
 function facingDown(s, f, src) {
   if (s === player) { showMsg(FACINGS[f] + ' shield down', 2.2, true); Sfx.alarm(); Voice.say('shields-down', 8); }
   else { showMsg('Enemy ' + FACINGS[f].toLowerCase() + ' shield down', 2); Voice.say('enemy-shields-down', 8); }
@@ -2173,10 +2186,12 @@ function shieldsUpdate(s, dt) {
   const gen = C.shieldHardened ? 0.75 + 0.25 * s.sub.shields / 100 : 0.5 + 0.5 * s.sub.shields / 100;
   for (let i = 0; i < 4; i++) s.cap[i] = C.shield * (0.6 + 1.6 * w[i]) * gen * (s.facingK ? s.facingK[i] : 1);   // facingK: a rival's shield refits
   for (let i = 0; i < 4; i++) {
-    if (s.sh[i] > s.cap[i]) {   // strength bleeds out of over-cap facings into the reinforced one
+    if (s.sh[i] > s.cap[i]) {   // strength bleeds out of over-cap facings into the reinforced one (not into a collapsed one)
       const ex = Math.min(s.sh[i] - s.cap[i], 60 * dt); s.sh[i] -= ex;
-      if (s.focus >= 0 && s.focus !== i) s.sh[s.focus] = Math.min(s.cap[s.focus], s.sh[s.focus] + ex * 0.85);
+      if (s.focus >= 0 && s.focus !== i && t >= s.lock[s.focus]) s.sh[s.focus] = Math.min(s.cap[s.focus], s.sh[s.focus] + ex * 0.85);
     }
+    if (t < s.lock[i]) continue;   // collapsed: nothing comes back until the generator restarts
+    if (s.lock[i]) { s.lock[i] = 0; s.sh[i] = Math.max(s.sh[i], s.cap[i] * SHIELD_KICK); if (s === player) showMsg(FACINGS[i] + ' shield restarted', 1.6); }
     const pause = t - s.hitT[i] < 1.5 ? 0.35 : 1;
     s.sh[i] = Math.min(s.cap[i], s.sh[i] + C.regen * e.shd * w[i] * pause * storm * (s.burn ? 0.5 : 1) * dt);
   }
@@ -2930,7 +2945,9 @@ function buildHud() {
     'Hold <b>Shift</b> for the afterburner: about seven seconds well past full speed to close on a target or escape, but it widens your turn and halves shield regeneration while it burns.',
     'The rudder stays where you leave it, and a big hull takes seconds to start or stop a turn. Watch the dashed course line on the plot. <b>X</b> centres the rudder.',
     player.C.tip,
-    'Torpedoes (<b>T</b>) are slow and weak against shields. Wait until a facing is down, then launch at that side.'
+    'Torpedoes (<b>T</b>) are slow and weak against shields. Wait until a facing is down, then launch at that side.',
+    'A shield facing that collapses stays down for six seconds, then restarts at a fifth of its strength. Pour fire into the gap while it lasts, and turn your own away from the enemy.',
+    'Hits in the stern do 40% more hull damage. Get across their stern, and never show them yours.'
   ];
   if (enemy.C.intel) game.tips.unshift(`<b>${enemy.name}</b> · ${enemy.C.intel}`);
   game.tipIdx = 0; game.tipT = 0; $('tip').style.opacity = 1; $('tip').innerHTML = game.tips[0];
@@ -3114,15 +3131,15 @@ function updateHud(dt) {
   setT($c('rl-sub'), !seen ? (E.away ? 'Jump signature · no bearing yet' : 'Contact lost in the rocks · keep your eyes open') : E.alive ? `Enemy ${Math.abs(brE.b) < 8 ? 'dead ahead' : Math.abs(brE.b) > 172 ? 'astern' : Math.abs(Math.round(brE.b)) + '° ' + side} · it shows you its ${FACINGS[theirF].toLowerCase()} side` : 'Enemy disabled');
   const hf = P.hull / P.C.hull; setX($c('own-hullbar').firstChild, hf); $c('own-hullbar').classList.toggle('crit', hf < 0.3); setT($c('own-hull'), Math.max(0, Math.round(P.hull)));
   drawShieldDiamond($c('own-sh'), P, seen ? ourF : -1);
-  for (let i = 0; i < 4; i++) { const r = ownRows[i]; setC(r.d, P.sh[i] <= 0 ? 'down' : P.focus === i ? 'f' : ''); setT(r.a, FACINGS[i] + (seen && ourF === i ? ' ◂ enemy' : '')); setT(r.b, Math.round(P.sh[i])); }
+  for (let i = 0; i < 4; i++) { const r = ownRows[i]; setC(r.d, P.sh[i] <= 0 ? 'down' : P.focus === i ? 'f' : ''); setT(r.a, FACINGS[i] + (seen && ourF === i ? ' ◂ enemy' : '')); setT(r.b, P.sh[i] <= 0 && lockLeft(P, i) ? lockLeft(P, i) + ' s' : Math.round(P.sh[i])); }
   setT(ownRows[4].b, P.focus < 0 ? 'none' : FACINGS[P.focus]);
   setT($c('own-pw'), P.avail);
   for (const k of ['eng', 'shd', 'wpn']) { const pp = pipEls[k]; for (let i = 0; i < 8; i++) setC(pp[i], i < P.pips[k] ? 'on' : ''); }
   for (const k of SUBS) { const o = subEls[k], v = P.sub[k]; setX(o.bar, v / 100); setT(o.v, Math.round(v)); setC(o.r, 'sub' + (v < 50 ? ' dmg' : '') + (P.repair === k ? ' rep' : '')); }
   const ef = E.hull / E.C.hull; setX($c('foe-hullbar').firstChild, ef); $c('foe-hullbar').classList.toggle('crit', ef < 0.3); setT($c('foe-hull'), Math.max(0, Math.round(E.hull)));
   drawShieldDiamond($c('foe-sh'), E, seen ? theirF : -1);
-  for (let i = 0; i < 4; i++) { const r = foeRows[i]; setC(r.d, E.sh[i] <= 0 ? 'down' : ''); setT(r.a, FACINGS[i] + (seen && theirF === i ? ' ◂ you' : '')); setT(r.b, Math.round(E.sh[i] / E.C.shield * 100) + '%'); }
-  setT($c('foe-aspect'), !seen ? 'No contact' : E.alive ? `Toward you: ${FACINGS[theirF].toLowerCase()} · ${E.sh[theirF] <= 0 ? 'shield down, hull exposed' : Math.round(E.sh[theirF]) + ' shield'}` : 'Wrecked');
+  for (let i = 0; i < 4; i++) { const r = foeRows[i]; setC(r.d, E.sh[i] <= 0 ? 'down' : ''); setT(r.a, FACINGS[i] + (seen && theirF === i ? ' ◂ you' : '')); setT(r.b, E.sh[i] <= 0 && lockLeft(E, i) ? lockLeft(E, i) + ' s' : Math.round(E.sh[i] / E.C.shield * 100) + '%'); }
+  setT($c('foe-aspect'), !seen ? 'No contact' : E.alive ? `Toward you: ${FACINGS[theirF].toLowerCase()} · ${E.sh[theirF] <= 0 ? 'shield down, hull exposed' + (lockLeft(E, theirF) ? ' for ' + lockLeft(E, theirF) + ' s' : '') : Math.round(E.sh[theirF]) + ' shield'}${theirF === 1 ? ' · raking angle' : ''}` : 'Wrecked');
   const tele = $c('tele').children; for (let i = 0; i < 5; i++) setC(tele[i], i === P.step ? 'on' : '');
   const rl = (50 + P.rudder * 46).toFixed(1) + '%'; const rud = $c('rud'); if (rud._l !== rl) { rud.style.left = rl; rud._l = rl; }
   setT($c('h-spd'), Math.round(P.speed));

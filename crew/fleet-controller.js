@@ -130,7 +130,7 @@ function create({encounter,missionId,makeShip,placeShip,ships,player,primaryEnem
   showMsg(boss.title+' · '+p.name,3.5);
   if(p.line)hail?.({name:b.name,faction:spec.hail&&spec.hail.faction||'',line:p.line});
   (p.spawn||[]).forEach((e,k)=>{const side=k%2?1:-1;addHostile(e,side,new V3(b.pos.x+side*800,b.pos.y+60,b.pos.z+300));hostileCount++;});
-  if(p.shields)b.sh=b.cap.slice();
+  if(p.shields){b.sh=b.cap.slice();if(b.lock)b.lock.fill(0);}
   for(const g of b.groups)if((p.unlock||[]).includes(g.id)&&!g.disabled)g.locked=false;
   if(p.lattice)b.dmgTaken=p.lattice;
   if(p.regen)b.regenK=p.regen;

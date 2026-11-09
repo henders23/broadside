@@ -16,7 +16,7 @@ await suite('impact', {}, async ({ page, base, check, shot }) => {
   const n1 = await S(() => [...document.querySelectorAll('#dmgnums .dn')].filter(e => e.style.display !== 'none').map(e => ({ t: e.textContent, c: e.className })));
   check(n1.some(n => n.c.includes('shd') && n.t === '220'), 'a shield hit shows a blue damage number: ' + JSON.stringify(n1));
   // knock a facing down: the hull number, and quick hits adding into the same number
-  await S(() => { const s = window.__sim; s.step(15); s.enemy.sh[0] = 10; for (let i = 0; i < 4; i++) s.damage(s.enemy, 50, 'shell', s.enemy.pos.clone().set(0, 0, -40), s.player); });
+  await S(() => { const s = window.__sim; s.step(15); s.enemy.sh[3] = 10; for (let i = 0; i < 4; i++) s.damage(s.enemy, 50, 'shell', s.enemy.pos.clone().set(40, 0, 0), s.player); });
   await page.waitForFunction(() => document.querySelector('#dmgnums .dn.hull'), null, { timeout: 30000 }).catch(() => {});
   const n2 = await S(() => [...document.querySelectorAll('#dmgnums .dn.hull')].filter(e => e.style.display !== 'none').map(e => e.textContent));
   check(n2.includes('200'), 'quick hits on the hull add into one amber number: ' + JSON.stringify(n2));

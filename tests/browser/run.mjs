@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const ALL = ['map', 'officers', 'starbases', 'fleet', 'bosses', 'depth', 'war', 'skirmish', 'shields', 'impact', 'drama', 'content', 'acts', 'openings'];
+const ALL = ['map', 'officers', 'starbases', 'fleet', 'bosses', 'depth', 'war', 'skirmish', 'shields', 'gunnery', 'impact', 'drama', 'content', 'acts', 'openings'];
 const pick = process.argv.slice(2), suites = pick.length ? ALL.filter(s => pick.includes(s)) : ALL;
 const rows = [];
 for (const s of suites) {

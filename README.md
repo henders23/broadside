@@ -21,7 +21,10 @@ Met only in the campaign, from Act II and Act III:
 - **Sentinel** – a Directorate lance frigate: a white needle of a ship with blue running lights. It holds at four kilometres and lines up a long spinal lance that charges, with a warning, before it fires; up close its broadsides are light and it carries no torpedoes.
 - **Thrall** – a young Wraith, a green, beak-prowed organic ship about half a bioship's size. Thralls hunt in packs of three or four, close fast to ram and spit plasma, and their thin hulls knit quickly.
 
-The game is about shield facings, reactor power, firing arcs and turning circles rather than twitch flying.
+The game is about shield facings, reactor power, firing arcs and turning circles rather than twitch flying. Two rules make position matter:
+
+- **Raking fire.** Once a shield is down, a hit in the stern does 40% more hull damage; the bow and the beams are unchanged. Shields soak the same from every side and ramming is not affected. A stern hit on the enemy is tagged *Raking fire*, the bridge warns when the flagship is raked, and the target panel says when you hold a raking angle.
+- **Shield restart.** A facing that collapses stays down for six seconds, then restarts at 20% of its strength. Reinforcing it does not bring it back sooner. Both shield panels count down the seconds. The Brace command still puts charge into a collapsed facing, and a boss that restores its shields restarts them all.
 
 The title screen is a live engagement: two AI captains fight a real battle behind the menu, filmed by a cinematic camera that cuts between close shots and moves on to a new matchup and setting when one ship is destroyed.
 

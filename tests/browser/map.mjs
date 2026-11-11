@@ -34,9 +34,10 @@ await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   // a click selects, the panel's button jumps
   const kes = page.locator('.sys[data-id="kestrel"]');
   check((await page.textContent('#selgo')).includes('Jump to Kestrel') && (await page.textContent('#selroute')).includes('1 jump') && (await page.textContent('#selroute')).includes('Clear lanes'), 'the panel offers the jump with its distance and risk: ' + await page.textContent('#selroute'));
-  await kes.locator('.dot').hover();
+  await page.locator('.sys[data-id="vela"] .dot').hover();
   await page.waitForTimeout(300);
-  check(await kes.locator('.tip').evaluate(e => getComputedStyle(e).opacity === '1' && e.textContent.includes('1 JUMP')), 'hovering a star shows the distance and risk');
+  check(await page.locator('.sys[data-id="vela"] .tip').evaluate(e => getComputedStyle(e).opacity === '1' && e.textContent.includes('2 JUMPS')), 'hovering another star shows its distance and risk');
+  check(await kes.locator('.tip').evaluate(e => getComputedStyle(e).opacity === '0'), 'the selected star needs no tip: the panel has it');
   await shot('02-hover');
   await page.locator('.sys[data-id="scour"] .dot').click();
   check((await page.textContent('#selname')) === 'Scour' && await page.locator('#mapview').isVisible() && await page.locator('#arrival').isHidden(), 'a click selects without jumping');

@@ -403,7 +403,8 @@
   const CONTRACT_TYPES = {
     bounty: { label: 'Bounty', verb: 'Destroy' },
     patrol: { label: 'Patrol', verb: 'Clear' },
-    escort: { label: 'Escort', verb: 'Escort' }, pursuit: { label: 'Pursuit', verb: 'Disable' }
+    escort: { label: 'Escort', verb: 'Escort' }, pursuit: { label: 'Pursuit', verb: 'Disable' },
+    defence: { label: 'Counter-attack', verb: 'Hold' }   // never on a board: Fleet Command issues it when the enemy pushes back (counterAttack)
   };
   const SHIP_WORD = { scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship', sentinel: 'lance frigate', thrall: 'swarm' };
   function contractFor(type, station, sys, act, r, id) {
@@ -458,7 +459,7 @@
     const main = near.filter(s => ACTS[a - 1].main.includes(s.faction)), foes = near.filter(s => hostile(s, a));
     const targets = { bounty: main.length ? main : foes, patrol: near.filter(s => hostile(s, a) || s.faction === 'Contested'), pursuit: main.length ? main : foes, escort: near.filter(s => s.faction === 'Independent' || s.faction === 'Contested') };
     for (const [i, type] of (a >= 2 && cycle % 2 === 1 ? ['bounty', 'pursuit', 'escort'] : ['bounty', 'patrol', 'escort']).entries()) {
-      const pool = targets[type].length ? targets[type] : near.filter(s => s.faction !== 'Navy');
+      const pool = targets[type].length ? targets[type] : near.filter(s => s.faction !== 'Navy' && !sealed(s, a));
       if (!pool.length) continue;
       out.push(contractFor(type, station, pick(r, pool), a, r, `c:${station}:${cycle}:${i}`));
     }
@@ -499,6 +500,15 @@
       reward: 90 + 35 * threatLevel(sys) + (pair ? 60 : 0), objective: pair ? 'Destroy both ambushers.' : `Destroy ${theShip(foe, who, SHIP_WORD[foe.cls] || 'ship')}.`,
       brief: `${foe.group} ships dropped out of the jump lane at ${sys.name} and matched your vector before the drive could cycle.`,
       intel: `${pair ? 'Two' : 'One'} ${foe.group} ${{ scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship' }[foe.cls]}${pair ? 's' : ''}.`, enemies, goal: { type: 'destroy' } };
+  }
+  // A blockade: the picket holding an enemy system's lanes. Always two ships, a little stronger than an ambush, and worth more.
+  function blockade(id, act, seed) {
+    const sys = byId[id], foe = foeFor(sys, act), s = strength(sys, act), r = rng(hash('b:' + id + ':' + seed)), who = pick(r, foe.names);
+    return { id: `x:${id}:${seed}`, kind: 'intercept', blockade: true, system: id, act: Math.min(act, 3), name: `Blockade at ${sys.name}`, captain: who, enemy: foe.cls,
+      reward: 180 + 45 * threatLevel(sys), objective: 'Destroy the blockading ships.',
+      brief: `${foe.group} ships hold the jump lanes at ${sys.name}. Nothing passes through without their leave.`,
+      intel: `Two ${foe.group} ${SHIP_WORD[foe.cls] || 'ship'}s on station, waiting for exactly this.`,
+      enemies: [lead(foe, who, { hull: round(Math.min(1, s * 0.75)), shield: round(Math.min(1, s * 0.8)) }), { cls: foe.cls, name: `${foe.group} picket`, hull: round(s * 0.55), shield: round(s * 0.7), diff: 'commander' }], goal: { type: 'destroy' } };
   }
   // The chance of slipping an ambush: fast hulls and healthy engines get away more often.
   const FLEE = { sabre: 0.8, halberd: 0.7, bastion: 0.5, warden: 0.4, scrapjaw: 0.75, seraph: 0.7, revenant: 0.5 };
@@ -552,7 +562,9 @@
   const FRONT_REGIONS = Object.keys(FRONTS);
   const ACT_FRONT = { 1: 'Ash Marches', 2: 'Halcyon Belt', 3: 'Harrow Expanse' };
   const FRONT_STATES = ['Enemy-held', 'Enemy advantage', 'Contested', 'Navy advantage', 'Secured'];
-  const PUSHBACK = { every: 3, by: 2 };   // the act's front loses 2 after 3 battles without a win there
+  // After 3 battles without a win on the act's front the enemy counter-attacks there: Fleet Command orders a defence.
+  // Win it and the front gains ground; lose it, or fight 2 more battles elsewhere without answering, and the front loses 2.
+  const PUSHBACK = { every: 3, by: 2, grace: 2 };
   // What each state does, from Enemy-held to Secured.
   const FRONT_EFFECTS = { ambush: [1.5, 1.2, 1, 0.6, 0], enemyHull: [1.1, 1.05, 1, 0.95, 0.9], danger: [1.2, 1.1, 1, 1, 1], prices: [1.1, 1.05, 1, 0.97, 0.94] };
   const startFronts = () => Object.fromEntries(FRONT_REGIONS.map(r => [r, FRONTS[r].start]));
@@ -568,17 +580,25 @@
     if (!win) return kind === 'intercept' ? -1 : -2;
     return isBoss ? 10 : kind === 'story' ? 4 : kind === 'intercept' ? 1 : 2;
   }
-  // Applies one result: the battle's front moves, and the act's front slips if it was neglected. Returns what changed.
-  function applyBattle(fronts, clock, { kind, win, system, boss, act }) {
+  // Applies one result: the battle's front moves, and the act's front comes under attack if it was neglected. Returns what changed.
+  // `offensive` is the counter-attack waiting for an answer ({ region, left }), if any; `defence` says this battle was that answer.
+  // The result's `offensive` is what is waiting afterwards, and `raised` is true when this battle provoked a new one.
+  function applyBattle(fronts, clock, { kind, win, system, boss, act, offensive, defence }) {
     const out = Object.assign(startFronts(), fronts || {}), changes = [], region = byId[system] && byId[system].region, actFront = ACT_FRONT[Math.min(act, 3)];
     const move = (r, d, why) => { if (!FRONTS[r] || !d) return; const before = front(out, r); out[r] = Math.max(-10, Math.min(10, out[r] + d)); const after = front(out, r); if (after.value !== before.value) changes.push({ region: r, from: before, to: after, why }); };
-    if (FRONTS[region]) move(region, frontShift(kind, win, boss), 'battle');
-    let next = clock || 0;
-    if (actFront && act <= 3) {
+    if (FRONTS[region]) move(region, frontShift(kind, win, boss), defence ? (win ? 'held' : 'broken') : 'battle');
+    let next = clock || 0, off = offensive && act <= 3 && offensive.region === actFront ? { region: offensive.region, left: offensive.left } : null, raised = false;
+    if (off) {
+      // The defence settles it either way (its own result has already moved the front); any other battle runs the clock down.
+      if (defence) off = null;
+      else if (--off.left <= 0) { move(off.region, -PUSHBACK.by, 'pushback'); off = null; }
+      if (off && front(out, off.region).level === 4) off = null;
+      next = 0;
+    } else if (actFront && act <= 3) {
       if (region === actFront && win) next = 0;
-      else if (region !== actFront && ++next >= PUSHBACK.every) { move(actFront, -PUSHBACK.by, 'pushback'); next = 0; }
+      else if (region !== actFront && ++next >= PUSHBACK.every) { next = 0; if (front(out, actFront).value > -10) { off = { region: actFront, left: PUSHBACK.grace }; raised = true; } }
     }
-    return { fronts: out, clock: next, changes };
+    return { fronts: out, clock: next, changes, offensive: off, raised };
   }
 
   // ---------------- who holds what ----------------
@@ -601,6 +621,47 @@
     for (const r of FRONT_REGIONS) { const order = FRONT_ORDER[r], held = heldCount(front(fronts, r).value, order.length); order.forEach((id, i) => { out[id] = i < held ? 'navy' : i === held ? 'front' : 'enemy'; }); }
     return out;
   }
+  // ---------------- travel ----------------
+  // Lanes closed by Fleet order: machine and Wraith space, until the act in which that enemy enters the war.
+  const LATE_FACTIONS = ['Machines', 'Aliens', 'Unknown'];
+  function sealed(sys, act) { return !!sys && LATE_FACTIONS.includes(sys.faction) && !hostile(sys, act); }
+  // A blockade holds every enemy-held system of a faction at war, until it is broken in battle (ctx.broken).
+  function blockaded(id, ctx) { const s = byId[id]; return !!s && hostile(s, ctx.act) && control(ctx.fronts)[id] === 'enemy' && !(ctx.broken || []).includes(id); }
+  // The course from one system to another: never through closed lanes, through as few blockades as possible, then the fewest jumps.
+  // A blockade only matters on the way: the destination itself may be enemy-held. `stop` is the first blockade the course runs into.
+  function route(from, to, ctx) {
+    const act = ctx.act, ctl = control(ctx.fronts), broken = ctx.broken || [];
+    const blocks = id => id !== to && hostile(byId[id], act) && ctl[id] === 'enemy' && !broken.includes(id);
+    if (!byId[from] || !byId[to]) return { path: [], stop: null, sealed: false };
+    if (from === to) return { path: [from], stop: null, sealed: false };
+    if (sealed(byId[to], act)) return { path: [], stop: null, sealed: true };
+    // A fleet already inside closed lanes (an older save) may fly out through them.
+    const shut = sealed(byId[from], act) ? () => false : id => sealed(byId[id], act);
+    const cost = { [from]: 0 }, prev = { [from]: null }, open = [from], done = new Set();
+    while (open.length) {
+      open.sort((a, b) => cost[a] - cost[b]); const n = open.shift(); if (done.has(n)) continue; done.add(n); if (n === to) break;
+      for (const m of neighbors(n)) { if (done.has(m) || shut(m)) continue; const c = cost[n] + 1 + (blocks(m) ? 1000 : 0); if (!(m in cost) || c < cost[m]) { cost[m] = c; prev[m] = n; open.push(m); } }
+    }
+    if (!(to in prev)) return { path: [], stop: null, sealed: false };
+    const out = []; for (let n = to; n !== null; n = prev[n]) out.unshift(n);
+    return { path: out, stop: out.slice(1, -1).find(blocks) || null, sealed: false };
+  }
+
+  // ---------------- counter-attacks ----------------
+  // The order Fleet Command issues when the enemy pushes back on a front: hold a forward post through two waves.
+  // The blow lands on the outermost system the Navy holds there, or, with nothing held, on the system being fought over.
+  function counterAttack(region, act, fronts, seed) {
+    const order = FRONT_ORDER[region]; if (!order) return null;
+    const held = heldCount(front(fronts, region).value, order.length), sys = byId[order[Math.max(0, held - 1)]], a = Math.min(act, 3);
+    const foe = foeFor(sys, a), s = strength(sys, a), ship = SHIP_WORD[foe.cls] || 'ship', e = (name, h, sh, extra) => Object.assign({ cls: foe.cls, name, hull: round(s * h), shield: round(s * sh) }, extra);
+    return { id: `off:${sys.id}:${seed}`, kind: 'contract', type: 'defence', region, station: nearestStation(sys.id), system: sys.id, act: a, enemy: foe.cls, giver: 'Fleet Command',
+      name: `Counter-attack at ${sys.name}`, captain: `${foe.group} assault wing`, reward: 260 + 70 * threatLevel(sys) + 90 * (a - 1), support: 1,
+      brief: `A counter-attack by ${FRONTS[region].foe} is under way in the ${region}. An assault wing is inbound on the Navy’s forward post at ${sys.name}; if the post falls, the line falls back with it.`,
+      objective: 'Defend the forward post through both waves.', intel: `Two waves of ${foe.group} ${ship}s. The first goes for the post; the post has guns of its own and will fight beside you.`,
+      enemies: [e(`${foe.group} assault lead`, 0.62, 0.75, { dmg: 0.75 }), e(`${foe.group} assault ${ship}`, 0.55, 0.7, { diff: 'commander' })],
+      goal: { type: 'defend', station: `${sys.name} forward post · Navy`, waves: [[e(`${foe.group} second wave`, 0.6, 0.7, { dmg: 0.6 }), e(`${foe.group} second wave`, 0.5, 0.65, { diff: 'commander' })]] } };
+  }
+
   // What a change of fronts did on the map: systems the Navy took ('won') and systems it no longer holds ('lost').
   function controlNews(before, after) {
     const a = control(before), b = control(after), out = {};
@@ -652,7 +713,7 @@
   // ctx (optional): { flags, fronts } from the save, so a battle reflects earlier decisions and the war.
   function encounter(src, ctx) {
     const story = storyById[src.id] === src, sys = byId[src.system] || byId.kestrel;
-    const label = story && src.boss ? 'ACT ' + ACTS[src.act - 1].numeral + ' FINALE' : story ? 'OPERATION ' + String(src.id).padStart(2, '0') : src.kind === 'side' ? 'STATION MISSION' : src.kind === 'intercept' ? 'INTERCEPTION' : (CONTRACT_TYPES[src.type] || { label: 'Contract' }).label.toUpperCase() + ' CONTRACT';
+    const label = story && src.boss ? 'ACT ' + ACTS[src.act - 1].numeral + ' FINALE' : story ? 'OPERATION ' + String(src.id).padStart(2, '0') : src.kind === 'side' ? 'STATION MISSION' : src.kind === 'intercept' ? (src.blockade ? 'BLOCKADE' : 'INTERCEPTION') : src.type === 'defence' ? 'COUNTER-ATTACK' : (CONTRACT_TYPES[src.type] || { label: 'Contract' }).label.toUpperCase() + ' CONTRACT';
     const lead = src.enemies[0], foe = foeFor(sys, src.act || 1);
     const spec = {
       id: story ? 'story:' + src.id : src.id, kind: story ? 'story' : src.kind, story: story ? src.id : null, system: sys.id,
@@ -726,9 +787,9 @@
     SYSTEMS, byId, ROUTES, THREATS, threatLevel, neighbors, path, jumps,
     ACTS, STORY, STORY_ORDER, storyById, actOf, storyUnlocked, storyAvailable, openStory,
     STATIONS, nearestStation, SIDE, sideById, sideMissions, sideLeg,
-    CONTRACT_TYPES, contracts, hostile, foeGroup, strength, rollInterception, interceptRisk, interception, fleeChance,
+    CONTRACT_TYPES, contracts, hostile, foeGroup, strength, rollInterception, interceptRisk, interception, blockade, fleeChance,
     ENV_BY_REGION, encounter, storyEncounter, supportCap, NARRATIVE, CONSEQUENCES, CHOICE_STAKES,
-    FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle, FRONT_ORDER, heldCount, control, controlNews,
+    FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle, FRONT_ORDER, heldCount, control, controlNews, sealed, blockaded, route, counterAttack,
     SAVE_BASE, SLOT_KEY, SLOTS, slotKey, activeSlot, saveKey, DIFFICULTY, difficulty,
     REP_TIERS, REP, standing, adjustRep, repChanges,
     FATES, rollFate, fateLine, FATE_TITLES, hash,

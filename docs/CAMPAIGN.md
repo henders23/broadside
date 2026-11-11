@@ -59,13 +59,29 @@ Four aftermath decisions change later battles. The after-action report says whic
 
 - Five fronts: Kestrel Verge (starts Contested), Red Narrows, Ash Marches and Harrow Expanse (Enemy-held), Halcyon Belt (Enemy advantage). Each runs from −10 to +10 in five states: Enemy-held, Enemy advantage, Contested, Navy advantage, Secured. The Meridian Core has no front.
 - A battle in a front's region moves it: story win +4, finale win +10, station mission or contract win +2, interception win +1, a loss −2 (interception −1).
-- **Push back:** the current act's front (Ash Marches, Halcyon Belt, Harrow Expanse) loses 2 after three battles anywhere without a win there; a win there resets the count. The map's front strip counts down, and the after-action report says when it happens.
+- **Counter-attacks:** after three battles without a win on the current act's front (Ash Marches, Halcyon Belt, Harrow Expanse; a win there resets the count) the enemy counter-attacks. Fleet Command issues an order to defend a forward post (`counterAttack()`, kept in `state.offensive`): two waves against the outermost system the Navy holds in that region, or the system being fought over when it holds none. The order takes none of the four order slots and cannot be abandoned. The map marks the system **UNDER ATTACK**, and the front strip counts down.
+  - Hold the post: the front gains 2, with pay and standing as for a contract.
+  - Lose the defence: the front loses 2 and the order is gone.
+  - Fight two more battles elsewhere without answering it (`PUSHBACK.grace`): the enemy breaks through and the front loses 2. A win elsewhere on the same front does not answer it.
+  - It lapses if the front is secured or the act ends. Nothing is attacked on a front already at −10.
 - Effects by state (Enemy-held → Secured): ambush chance ×1.5 / 1.2 / 1 / 0.6 / none; enemy hull ×1.1 / 1.05 / 1 / 0.95 / 0.9; pay for work there ×1.2 / 1.1 / 1 (danger money); prices at a starbase in the region ×1.1 / 1.05 / 1 / 0.97 / 0.94.
 - Finales: the Red Narrows decide how many clan raiders answer Halloran (2, then 1 at Navy advantage, none when secured) and a turning Ash Marches strips the Pyre's escort; the Halcyon Belt thins the Arbiter's lattice (to 35% or 50% damage taken); the Harrow Expanse sets the Bloom-Mother's brood (3 when enemy-held, down to none when secured).
 - On the map, region borders shift from their own colour toward Navy blue and brighten as a front is won; a selected system shows its front, and Intel and the final report list all five.
 - **Zones:** each system's control is read off its region's front (`control(fronts)`); nothing extra is saved. A region's systems fall to the Navy in order of distance from Navy space (`FRONT_ORDER`; the quieter system first on a tie, so each finale system falls last): none while the front is Enemy-held, all once it is Secured, evenly in between (`heldCount`). The map tints Navy-held territory blue and the rest in its region's colour, hatches the one system on each front that is being fought over (tagged **FRONT**), and draws a bright front line along the edge of what the Navy holds. The Meridian Core is always Navy-held. A selected system's **Holding** reads Navy-held, Front line, Enemy-held or (for independent and contested systems beyond the line) Unsecured.
 - When a result moves a system across the line, the map tags it **▲ TAKEN** or **▼ LOST** and pulses its territory until the next battle (`state.frontNews`, from `controlNews()`).
-- Zones are display only for now: ambush odds, prices and enemy strength still follow the region's front state, and travel is not restricted by who holds a system.
+- Ambush odds, prices and enemy strength still follow the region's front state; who holds a system decides where the fleet can go (below).
+
+## Travel: closed lanes and blockades
+
+- **Closed lanes.** Machine space (Halcyon, Midway) is closed by Fleet order until Act II and Wraith space (the six Harrow systems) until Act III (`sealed()`): no course can be set into or through it, the map dims it, and the panel says when it opens. No story operation, station mission or contract is ever behind closed lanes in its act (tested).
+- **Blockades.** An enemy-held system of a faction at war is blockaded (`blockaded()`; a dashed red ring on the map). The fleet can jump *to* one, which is how operations there are reached, but not *through* one. Independent and contested systems beyond the line are never blockaded.
+- **Courses** (`route()`) avoid closed lanes, then run through as few blockades as possible, then take the fewest jumps, so a longer way round is chosen when it is clear. The panel names the blockade a course runs into, and the route past it is dashed.
+- **At a blockade** the fleet stops in that system (`state.ambush` with `blockade: true`, so it survives a reload and cannot be dismissed) and chooses:
+  - **Battle stations**: a two-ship picket (`blockade()`), a little stronger than an ambush and worth more salvage. Winning breaks the blockade (`state.broken`): the lane stays open until the region's front loses ground, when its blockades re-form.
+  - **Run the blockade**: 75% of the fleet's breakaway chance. Getting through costs every deployed ship 6% hull and carries on toward the destination (the next blockade on the way stops the fleet again); failing costs 10% and forces the fight.
+  - **Turn back** to the system the fleet came from, at no cost.
+- Ambush rolls are made only for the systems before the blockade. Slipping an ambush carries on along the course without new rolls, but still stops at a blockade.
+- Blockades also disappear as the front advances: a system that becomes the front line or Navy-held is no longer blockaded.
 - `encounter(src, ctx)` builds every battle with the save's flags and fronts (`ctx`), and `applyBattle()` turns a result into front changes; both are covered by `tests/war.test.js`.
 
 ## Officers and admirals in reports
@@ -80,7 +96,7 @@ Four aftermath decisions change later battles. The after-action report says whic
 
 ## Core loop
 
-1. Jump across the Reach. Jumps are free, but hostile space can spring an interception.
+1. Jump across the Reach. Jumps are free, but hostile space can spring an interception, enemy-held systems are blockaded, and machine and Wraith space stays closed until its act.
 2. Dock at a starbase to take station missions and contracts, repair, rearm and fit upgrades.
 3. Fly to a story operation or an accepted order and launch it from the system's arrival screen.
 4. Fight using the 3D capital-ship combat engine; hull, subsystems and ordnance carry over.
@@ -193,7 +209,7 @@ Operations unlock in story order (1, 2, 3, 8, 4, 6, 9, 5, 7, 10); the numbers 1�
 ## Ship and economy
 
 - Campaign saves use localStorage key `broadside-campaign-v1` and a `version: 1` schema.
-- Save fields include: `ship`, `shipName`, `system`, `completed`, `flags`, `credits`, `hull`, `sub`, `torps`, `attempts`, `pendingResult`, `upgrades`, `officers`, `actBriefed`, `boardCycle`, `orders`, `contracts`, `sideDone`, `launch`, `interceptSeed`, `ambush` and `frontNews`. Saves from before the grand campaign gain the new fields on load.
+- Save fields include: `ship`, `shipName`, `system`, `completed`, `flags`, `credits`, `hull`, `sub`, `torps`, `attempts`, `pendingResult`, `upgrades`, `officers`, `actBriefed`, `boardCycle`, `orders`, `contracts`, `sideDone`, `launch`, `interceptSeed`, `ambush`, `frontNews`, `broken`, `offensive` and `offSeq`. Saves from before the grand campaign gain the new fields on load.
 - Torpedo capacity depends on hull class: Bastion 8, Halberd 6, Sabre 6, Warden 16.
 - Full-hull overhaul costs 6 requisition per lost hull percentage point, rounded up. Emergency repairs cost 100 requisition for up to 15% hull. Torpedoes can be restocked at 25 requisition each.
 - Ship damage and remaining ordnance persist after victory; success or failure results enter a pending after-action state, shown when the player returns to the map.

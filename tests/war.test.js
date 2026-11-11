@@ -71,12 +71,53 @@ assert.equal(r.fronts['Red Narrows'], -4); assert.equal(r.changes[0].to.name, 'E
 r = step(r.fronts, r.clock, { kind: 'story', win: false, system: 'rednarrows', act: 1 });
 assert.equal(r.fronts['Red Narrows'], -6, 'a loss gives ground back');
 r = step(r.fronts, r.clock, { kind: 'side', win: true, system: 'driftwall', act: 1 });
-assert.equal(r.clock, 0, 'third battle away from the act front'); assert.equal(r.fronts['Ash Marches'], -8, 'the Ash Fleet pushes back');
-assert.ok(r.changes.some(c => c.why === 'pushback' && c.region === 'Ash Marches'));
+assert.equal(r.clock, 0, 'third battle away from the act front'); assert.equal(r.fronts['Ash Marches'], -6, 'no ground is lost yet');
+assert.ok(r.raised, 'the Ash Fleet counter-attacks'); same(r.offensive, { region: 'Ash Marches', left: 2 });
+// The counter-attack: answer it, lose it, or let it land
+const raisedAt = r;
+let d = step(raisedAt.fronts, 0, { kind: 'contract', win: true, system: 'emberfall', act: 1, offensive: raisedAt.offensive, defence: true });
+assert.equal(d.fronts['Ash Marches'], -4, 'holding the post gains ground'); assert.equal(d.offensive, null); assert.equal(d.changes[0].why, 'held');
+d = step(raisedAt.fronts, 0, { kind: 'contract', win: false, system: 'emberfall', act: 1, offensive: raisedAt.offensive, defence: true });
+assert.equal(d.fronts['Ash Marches'], -8, 'losing the post loses ground, once'); assert.equal(d.offensive, null); same(d.changes.map(c => c.why), ['broken']);
+d = step(raisedAt.fronts, 0, { kind: 'side', win: true, system: 'driftwall', act: 1, offensive: raisedAt.offensive });
+same(d.offensive, { region: 'Ash Marches', left: 1 }, 'one battle elsewhere is allowed'); assert.equal(d.fronts['Ash Marches'], -6); assert.ok(!d.raised);
+d = step(d.fronts, d.clock, { kind: 'contract', win: true, system: 'cinder', act: 1, offensive: d.offensive });
+same(d.offensive, null, 'even a win elsewhere on that front does not answer it'); assert.equal(d.fronts['Ash Marches'], -6, 'the win (+2) and the breakthrough (-2)');
+assert.ok(d.changes.some(c => c.why === 'pushback' && c.region === 'Ash Marches')); assert.equal(d.clock, 0);
+assert.equal(step({ 'Ash Marches': -10 }, 2, { kind: 'side', win: true, system: 'driftwall', act: 1 }).raised, false, 'nothing is attacked where nothing is left to lose');
+assert.equal(step(C.startFronts(), 0, { kind: 'story', win: true, system: 'halcyon', act: 2, offensive: { region: 'Ash Marches', left: 1 } }).offensive, null, 'a counter-attack does not outlive its act');
+assert.equal(step({ 'Ash Marches': 4 }, 0, { kind: 'contract', win: true, system: 'cinder', act: 1, offensive: { region: 'Ash Marches', left: 2 } }).offensive, null, 'nor a secured front');
+const ca = C.counterAttack('Ash Marches', 1, C.startFronts(), 1);
+assert.equal(ca.system, 'emberfall', 'with nothing held the blow falls on the system being fought over'); assert.equal(ca.type, 'defence'); assert.equal(ca.kind, 'contract'); assert.equal(ca.station, 'tarn');
+assert.equal(C.counterAttack('Kestrel Verge', 1, C.startFronts(), 1).system, 'driftwall', 'otherwise on the outermost system the Navy holds');
+const caSpec = C.encounter(ca, { fronts: C.startFronts() });
+assert.equal(caSpec.goal.type, 'defend'); assert.equal(caSpec.goal.waves.length, 1); assert.equal(caSpec.label, 'COUNTER-ATTACK'); assert.ok(caSpec.enemies.every(e => e.cls === 'revenant'));
+for (const [reg, a] of [['Ash Marches', 1], ['Halcyon Belt', 2], ['Harrow Expanse', 3]]) { const o = C.counterAttack(reg, a, C.startFronts(), 3); assert.equal(C.byId[o.system].region, reg); assert.ok(C.STATIONS[o.station] && o.reward > 0 && !C.sealed(C.byId[o.system], a)); }
 r = step(r.fronts, 2, { kind: 'contract', win: true, system: 'cinder', act: 1 });
-assert.equal(r.clock, 0, 'a win on the act front resets the push back'); assert.equal(r.fronts['Ash Marches'], -6);
+assert.equal(r.clock, 0, 'a win on the act front resets the count'); assert.equal(r.fronts['Ash Marches'], -4);
+
+// Travel: closed lanes, blockades and the course around them
+const rc = { fronts: C.startFronts(), act: 1, broken: [] };
+assert.ok(C.sealed(C.byId.halcyon, 1) && C.sealed(C.byId.nex, 2) && !C.sealed(C.byId.halcyon, 2) && !C.sealed(C.byId.nex, 3) && !C.sealed(C.byId.juniper, 1), 'machine and Wraith space opens with its act');
+same(C.route('meridian', 'verdant', rc), { path: [], stop: null, sealed: true }, 'no course into closed lanes');
+assert.ok(!C.route('meridian', 'juniper', rc).path.some(id => C.sealed(C.byId[id], 1)), 'and none through them');
+same(C.route('meridian', 'cinder', rc), { path: ['meridian', 'tarn', 'emberfall', 'cinder'], stop: null, sealed: false }, 'an enemy-held destination is not a blockade');
+assert.equal(C.route('meridian', 'grimhold', rc).stop, 'cinder', 'but an enemy-held system on the way is');
+assert.equal(C.route('meridian', 'grimhold', { ...rc, broken: ['cinder'] }).stop, null, 'until its blockade is broken');
+assert.equal(C.route('meridian', 'grimhold', { ...rc, fronts: { 'Ash Marches': 2 } }).stop, null, 'or the front takes it');
+assert.ok(C.blockaded('cinder', rc) && !C.blockaded('emberfall', rc) && !C.blockaded('peregrine', rc) && !C.blockaded('meridian', rc), 'only enemy systems beyond the front line are blockaded, never independent ones');
+// a longer way round is taken when it avoids a blockade
+const around = C.route('scour', 'bastion', { fronts: { 'Red Narrows': -2 }, act: 1, broken: [] });   // Scour held, Red Narrows fought over, Blackrift enemy-held
+same(around.path, ['scour', 'rednarrows', 'bastion']); assert.equal(around.stop, null);
+same(C.route('kestrel', 'kestrel', rc).path, ['kestrel']);
+same(C.route('verdant', 'juniper', rc).path, ['verdant', 'bloom', 'nex', 'juniper'], 'a fleet caught inside closed lanes by an older save can fly out');
+for (const m of C.SIDE) for (const sys of [m.system, ...(m.legs || []).map(l => l.system)]) assert.ok(!C.sealed(C.byId[sys], m.act), m.id + ' is not behind closed lanes in its act');
+for (const st of Object.keys(C.STATIONS)) for (let a = 1; a <= 3; a++) for (let cy = 0; cy < 12; cy++) for (const k of C.contracts(st, cy, a, true)) assert.ok(!C.sealed(C.byId[k.system], a), 'no contract targets closed lanes');
+for (const m of C.STORY) assert.ok(!C.sealed(C.byId[m.system], m.act), 'every story operation can be reached in its act');
+const bl = C.blockade('cinder', 1, 4), blSpec = C.encounter(bl, { fronts: C.startFronts() });
+assert.equal(bl.kind, 'intercept'); assert.ok(bl.blockade && bl.enemies.length === 2 && bl.reward > C.interception('cinder', 1, 4).reward); assert.equal(blSpec.label, 'BLOCKADE');
 r = step(r.fronts, 0, { kind: 'story', win: true, system: 'grimhold', boss: true, act: 1 });
-assert.equal(r.fronts['Ash Marches'], 4, 'a finale takes ten'); assert.equal(C.front(r.fronts, 'Ash Marches').name, 'Navy advantage');
+assert.equal(r.fronts['Ash Marches'], 6, 'a finale takes ten'); assert.equal(C.front(r.fronts, 'Ash Marches').name, 'Secured');
 const defendedLoss=step(C.startFronts(),2,{kind:'contract',win:false,system:'cinder',act:1});
 assert.equal(defendedLoss.clock,2,'a failed defence on the act front is not an elsewhere battle');
 assert.equal(defendedLoss.fronts['Ash Marches'],-8,'one loss costs ground without an extra pushback');

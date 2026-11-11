@@ -54,6 +54,11 @@ assert.ok(C.SYSTEMS.filter(s => s.region === 'Meridian Core').every(s => ctl0[s.
 assert.equal(Object.keys(ctl0).length, C.SYSTEMS.length);
 same(['northpoint', 'kestrel', 'driftwall', 'vela', 'peregrine', 'emberfall', 'kharon'].map(id => ctl0[id]), ['navy', 'navy', 'navy', 'front', 'enemy', 'front', 'enemy'], 'a new campaign: half the Verge held, the Ash Marches fought over at Emberfall');
 assert.ok(C.FRONT_REGIONS.every(r => C.FRONT_ORDER[r].filter(id => ctl0[id] === 'front').length === 1), 'one system on each front is being fought over');
+// On the map, a system whose story operation is still to be fought is never shown as held
+assert.equal(C.control(C.startFronts(), [])['kestrel'], 'front', 'Kestrel is fought over until Operation 1 is won');
+assert.equal(C.control(C.startFronts(), [1])['kestrel'], 'navy', 'and held afterwards');
+assert.equal(C.control(C.startFronts(), [])['northpoint'], 'navy'); assert.equal(C.control(C.startFronts(), [])['cinder'], 'enemy', 'it never promotes a system');
+assert.equal(C.route('meridian', 'vela', { fronts: C.startFronts(), act: 1 }).stop, null, 'routes do not depend on it');
 const won = Object.fromEntries(C.FRONT_REGIONS.map(r => [r, 10]));
 assert.ok(Object.values(C.control(won)).every(v => v === 'navy'), 'a secured Reach is all Navy-held');
 assert.equal(C.control({})['emberfall'], 'front', 'missing fronts read as the starting ones');
@@ -95,6 +100,15 @@ assert.equal(caSpec.goal.type, 'defend'); assert.equal(caSpec.goal.waves.length,
 for (const [reg, a] of [['Ash Marches', 1], ['Halcyon Belt', 2], ['Harrow Expanse', 3]]) { const o = C.counterAttack(reg, a, C.startFronts(), 3); assert.equal(C.byId[o.system].region, reg); assert.ok(C.STATIONS[o.station] && o.reward > 0 && !C.sealed(C.byId[o.system], a)); }
 r = step(r.fronts, 2, { kind: 'contract', win: true, system: 'cinder', act: 1 });
 assert.equal(r.clock, 0, 'a win on the act front resets the count'); assert.equal(r.fronts['Ash Marches'], -4);
+
+// Time under way: a tick of the clock, which can provoke a counter-attack but never runs one down
+let tr = C.applyTransit(C.startFronts(), 1, { act: 1 });
+assert.equal(tr.clock, 2); assert.equal(tr.changes.length, 0); assert.ok(!tr.raised);
+tr = C.applyTransit(tr.fronts, tr.clock, { act: 1 });
+assert.ok(tr.raised && tr.offensive.region === 'Ash Marches' && tr.clock === 0, 'enough time under way brings on the counter-attack');
+tr = C.applyTransit(tr.fronts, 0, { act: 1, offensive: tr.offensive });
+same(tr.offensive, { region: 'Ash Marches', left: 2 }, 'a waiting counter-attack is not run down by travel'); assert.equal(tr.changes.length, 0);
+assert.equal(C.PUSHBACK.jumps, 6);
 
 // Travel: closed lanes, blockades and the course around them
 const rc = { fronts: C.startFronts(), act: 1, broken: [] };

@@ -70,6 +70,18 @@ await suite('war', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   st = await read();
   check(st.fronts['Ash Marches'] === -6 && !st.offensive, 'Ash Marches slipped back to -6');
 
+  // Time under way: the sixth jump counts as a battle elsewhere, and the third of those brings the counter-attack
+  await patch({ system: 'meridian', frontClock: 2, jumpClock: 5 }); await page.reload();
+  check((await page.textContent('#frontstrip')).includes('1 more battle, or 1 jump'), 'the strip counts the jumps left: ' + await page.textContent('#frontstrip'));
+  await jump('tarn');
+  st = await read();
+  check(st.offensive && st.offensive.left === 2 && st.jumpClock === 0 && st.fronts['Ash Marches'] === -6 && (await page.textContent('#notice')).includes('While you were under way'), 'a jump too many and the Ash Fleet counter-attacks: ' + await page.textContent('#notice'));
+  for (const id of ['meridian', 'tarn', 'meridian', 'tarn', 'meridian', 'tarn', 'meridian']) { await page.click('#arrback'); await jump(id); }
+  st = await read();
+  check(st.offensive && st.offensive.left === 2 && st.fronts['Ash Marches'] === -6, 'travel does not run a waiting counter-attack down');
+  await page.click('#arrback');
+  await patch({ offensive: null, frontClock: 0, jumpClock: 0 });
+
   // Closed lanes and blockades
   await patch({ system: 'meridian', broken: [] }); await page.reload();
   check(await page.locator('.sys.sealed').count() === 8 && await page.locator('.sys.blockade[data-id="cinder"]').count() === 1 && await page.locator('.sys.blockade[data-id="peregrine"]').count() === 0, 'machine and Wraith space is closed in Act I; enemy systems beyond the line are blockaded');

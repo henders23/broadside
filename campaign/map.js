@@ -63,7 +63,7 @@ function courseText(c){return c.stop?`Blockade at ${byId[c.stop].name}`:riskText
 function closedText(s){return `Closed by Fleet order until Act ${Campaign.ACTS.find(a=>a.foes.includes(s.faction)).numeral}`;}
 function goButton(id,here){const b=el('button','go',id===here?'Open →':'Jump →');b.type='button';b.setAttribute('aria-label',id===here?`Open system details for ${byId[id].name}`:`Jump to ${byId[id].name}`);b.addEventListener('click',()=>travel(id));return b;}
 function opRow(cls,tag,tagCls,name,sub,sys,here){const row=el('div','opitem'+cls+(sys===selected?' active':'')),b=el('button','pick'),t=el('span','t');b.type='button';t.append(el('b',null,name),el('small',null,sub));b.append(el('span',tagCls,tag),t,el('span','d',jumpsText(getPath(here,sys).length-1).toUpperCase()));b.addEventListener('click',()=>selectSystem(sys));row.append(b,goButton(sys,here));return row;}
-function refresh(){const here=state.system&&byId[state.system]?state.system:HOME,course=courseTo(here,selected),path=course.path,onPath=new Set(path),rc=routeCtx(),avail=availableOps(),availAt=new Map(avail.map(m=>[m.system,m])),orders=activeOrders(),ctl=Campaign.control(state.fronts),news=state.frontNews||{};
+function refresh(){const here=state.system&&byId[state.system]?state.system:HOME,course=courseTo(here,selected),path=course.path,onPath=new Set(path),rc=routeCtx(),avail=availableOps(),availAt=new Map(avail.map(m=>[m.system,m])),orders=activeOrders(),ctl=Campaign.control(state.fronts,state.completed),news=state.frontNews||{};
  for(const w of $('nodes').children){const id=w.dataset.id,s=byId[id],m=availAt.get(id),here_o=orders.filter(o=>o.system===id);
   w.classList.toggle('sel',id===selected);w.classList.toggle('home',id===here);w.classList.toggle('path',onPath.has(id));w.classList.toggle('avail',!!m||here_o.length>0);w.classList.toggle('order',!m&&here_o.length>0);
   const hit=here_o.some(o=>o.type==='defence');w.classList.toggle('attack',hit);w.classList.toggle('blockade',Campaign.blockaded(id,rc));w.classList.toggle('sealed',Campaign.sealed(s,rc.act));
@@ -91,12 +91,12 @@ const FOE_FACTIONS=['Pirates','Renegades','Machines','Aliens'];
 function drawZones(ctl){const news=state.frontNews||{},fl=$('frontline');fl.replaceChildren();
  SYSTEMS.forEach((s,i)=>{const c=ctl[s.id],pg=$('zonefill').children[i],k=regionOf(s);pg.setAttribute('class',c+(news[s.id]?' changed':''));pg.setAttribute('fill',c==='navy'?`rgb(${NAVY.join(',')})`:c==='front'?`url(#hatch${k})`:`rgb(${REGION_HUE[k].join(',')})`);
   if(c==='navy')for(const e of CELLS[i])if(e.to>=0&&ctl[SYSTEMS[e.to].id]!=='navy')fl.append(svgEl('line',{x1:e.a[0].toFixed(1),y1:e.a[1].toFixed(1),x2:e.b[0].toFixed(1),y2:e.b[1].toFixed(1)}));});}
-function drawFronts(ctl){drawZones(ctl||Campaign.control(state.fronts));
+function drawFronts(ctl){drawZones(ctl||Campaign.control(state.fronts,state.completed));
  for(const [k,r] of REGIONS.entries()){const f=Campaign.front(state.fronts,r),t=f?(f.value+10)/20:1,c=REGION_HUE[k].map((v,i)=>Math.round(v+(NAVY[i]-v)*t)).join(','),op=f?(0.14+0.3*t).toFixed(2):'0.3';
   for(const l of $('borders').querySelectorAll('.r'+k)){l.setAttribute('stroke',`rgb(${c})`);l.style.strokeOpacity=op;}}
- const n=Math.min(act(),Campaign.ACTS.length),r=Campaign.ACT_FRONT[n],f=Campaign.front(state.fronts,r),left=Campaign.PUSHBACK.every-state.frontClock,el=$('frontstrip'),off=offensive();
+ const n=Math.min(act(),Campaign.ACTS.length),r=Campaign.ACT_FRONT[n],f=Campaign.front(state.fronts,r),left=Campaign.PUSHBACK.every-state.frontClock,el=$('frontstrip'),off=offensive(),jl=Math.max(1,left*Campaign.PUSHBACK.jumps-(state.jumpClock||0));
  if(act()>Campaign.ACTS.length){el.hidden=true;return;}el.hidden=false;
- el.innerHTML=`<span class="k">Act ${Campaign.ACTS[n-1].numeral} front</span><b>${r}</b><span class="fbar"><i style="width:${((f.value+10)/20*100).toFixed(0)}%"></i></span><span>${f.name}</span><span class="k${off?' alarm':''}">${off?`Counter-attack at ${byId[off.order.system].name} · ${off.left===1?'the next battle elsewhere':off.left+' more battles elsewhere'} and the line falls back`:f.level===4?'Secured':f.value<=-10?'Nothing left here to lose':`${f.foe} will counter-attack after ${left} more ${left===1?'battle':'battles'} without a win here`}</span>`;}
+ el.innerHTML=`<span class="k">Act ${Campaign.ACTS[n-1].numeral} front</span><b>${r}</b><span class="fbar"><i style="width:${((f.value+10)/20*100).toFixed(0)}%"></i></span><span>${f.name}</span><span class="k${off?' alarm':''}">${off?`Counter-attack at ${byId[off.order.system].name} · ${off.left===1?'the next battle elsewhere':off.left+' more battles elsewhere'} and the line falls back`:f.level===4?'Secured':f.value<=-10?'Nothing left here to lose':`${f.foe} will counter-attack after ${left} more ${left===1?'battle':'battles'}, or ${jl} ${jl===1?'jump':'jumps'}, without a win here`}</span>`;}
 function selectSystem(id){if(!byId[id])return;selected=id;refresh();}
 function updateFleet(){refresh();}
 function setView(v){view=v;$('codexview').hidden=v!=='codex';$('tabCodex').classList.toggle('current',v==='codex');if(v==='codex')renderCodex();$('arrival').hidden=v!=='arrival';$('boardview').hidden=v!=='board';$('yard').hidden=v!=='yard';$('crewview').hidden=v!=='crew';$('tabMap').classList.toggle('current',v==='map'||v==='arrival'||v==='board');if(v==='board')renderBoard();$('tabShip').classList.toggle('current',v==='yard');$('tabCrew').classList.toggle('current',v==='crew');if(v==='yard')openYard();else closeYard();if(v==='crew')renderCrew();}
@@ -106,10 +106,11 @@ function travel(id){const here=state.system&&byId[state.system]?state.system:HOM
  // Ambushes can only come before the blockade: the blockade itself is the fight waiting there.
  const leg=legOf(course),open=course.stop?leg.slice(0,-1):leg;
  const hit=Campaign.rollInterception(open,act(),rand,ambushScale);
- if(hit){arriveAt(hit);ambush(hit,id);return;}
+ if(hit){underWay(open.indexOf(hit));arriveAt(hit);ambush(hit,id);return;}
  // A rival who got away may be waiting in their own space (crew/rivals.js), and anything can happen on the lane (crew/events.js).
  const rv=Rivals.ambush(state.rivals,open,Math.min(act(),3),state.attempts,rand);
- if(rv){arriveAt(rv.at);rivalAmbush(rv.rival,rv.at,id);return;}
+ if(rv){underWay(open.indexOf(rv.at));arriveAt(rv.at);rivalAmbush(rv.rival,rv.at,id);return;}
+ underWay(leg.length-1);
  if(course.stop){arriveAt(course.stop);blockade(course.stop,id,leg[leg.length-2]);return;}
  arriveAt(id);
  const ev=Events.roll(eventCtx(id),rand);
@@ -117,19 +118,20 @@ function travel(id){const here=state.system&&byId[state.system]?state.system:HOM
  showArrival(id,here,path.length-1);}
 // Carrying on after slipping an ambush or running a blockade: no new ambush rolls, but the next blockade still stops the fleet.
 function onward(dest){const from=state.system,course=courseTo(from,dest),leg=legOf(course);if(leg.length<2){refresh();return;}
+ underWay(leg.length-1);
  if(course.stop){arriveAt(course.stop);blockade(course.stop,dest,leg[leg.length-2]);return;}
  arriveAt(dest);showArrival(dest,from,leg.length-1);}
 function blockade(at,dest,back){const dead=new Set((state.rivals||[]).filter(r=>r.status==='dead').map(r=>r.name));let x;for(let i=0;i<6;i++){state.interceptSeed++;x=Campaign.blockade(at,act(),state.interceptSeed);if(!dead.has(x.captain))break;}state.ambush={x,dest,blockade:true,back};persist();showAmbush();}
 // Running a blockade is harder than slipping an ambush, and costs more hull either way.
 const BLOCKADE_RUN={chance:.75,cost:.06,fail:.1};
-function arriveAt(id){state.system=id;selected=id;if(!state.visited.includes(id))state.visited.push(id);persist();refresh();}
+function arriveAt(id){state.system=id;selected=id;if(!state.visited.includes(id))state.visited.push(id);const news=state.transitNews;state.transitNews=null;persist();refresh();if(news)toast(news);}
 // Interceptions: hostiles drop out of the lane in enemy space. Fight, or try to break away and carry on.
 // A captain you killed as a rival does not come back from the dead under the same name: draw again.
 function ambush(at,dest){const dead=new Set((state.rivals||[]).filter(r=>r.status==='dead').map(r=>r.name));let x;for(let i=0;i<6;i++){state.interceptSeed++;x=Campaign.interception(at,act(),state.interceptSeed);if(!dead.has(x.captain))break;}state.ambush={x,dest};persist();showAmbush();}
 function showAmbush(){const a=state.ambush;if(!a)return;const x=a.x,spec=Campaign.encounter(x,cctx()),fleet=deployedShips(),eng=Math.round(Math.min(...fleet.map(r=>(r.sub||{}).engines??100))),chance=Campaign.fleetFleeChance(fleet),pct=Math.round(chance*100),onward=a.dest&&a.dest!==x.system;setView('map');selectSystem(x.system);
  if(a.blockade){const run=Math.round(chance*BLOCKADE_RUN.chance*100)/100,rp=Math.round(run*100),back=byId[a.back]?a.back:null;
   openModal(x.name,'CONTACT / THE LANE IS HELD',`<p>${x.brief}</p><div class="commander-brief">${Personnel.portrait({name:x.captain,faction:spec.hail.faction,asset:spec.hail.asset})}<div><small>${spec.hail.faction}</small><b>${x.captain}</b><blockquote>“${spec.hail.line}”</blockquote><p>${x.intel}</p></div></div><p>Break the blockade for salvage worth about <b>${pay(x)}</b> requisition and the lane stays open while the ${byId[x.system].region} front holds. Or run it${onward?' for '+byId[a.dest].name:''}: a <b>${rp}%</b> chance, ${Math.round(BLOCKADE_RUN.cost*100)}% of every hull if you get through and ${Math.round(BLOCKADE_RUN.fail*100)}% and the fight if you do not.${back?` Or turn back to ${byId[back].name} untouched.`:''}</p>${flagshipLine()}`,[
-   ...(back?[{label:'Turn back',run:()=>{state.ambush=null;closeModal();arriveAt(back);toast(`The fleet fell back to ${byId[back].name}.`);}}]:[]),{label:`Run the blockade · ${rp}%`,run:()=>flee(run)},{label:'Battle stations',primary:true,run:()=>launch(spec)}],{locked:true});return;}
+   ...(back?[{label:'Turn back',run:()=>{state.ambush=null;closeModal();underWay(1);arriveAt(back);toast(`The fleet fell back to ${byId[back].name}.`);}}]:[]),{label:`Run the blockade · ${rp}%`,run:()=>flee(run)},{label:'Battle stations',primary:true,run:()=>launch(spec)}],{locked:true});return;}
  openModal(x.name,'CONTACT / HOSTILES IN THE LANE',`<p>${x.brief}</p><div class="commander-brief">${Personnel.portrait({name:x.captain,faction:spec.hail.faction,asset:spec.hail.asset})}<div><small>${spec.hail.faction}</small><b>${x.captain}</b><blockquote>“${spec.hail.line}”</blockquote><p>${x.intel}</p></div></div><p>Turn and fight for salvage worth about <b>${pay(x)}</b> requisition, or try to break away${onward?' and carry on to '+byId[a.dest].name:''}. ${fleet.length>1?'Your fleet moves at the pace of its slowest ship and':flag().shipName} has a <b>${pct}%</b> chance of slipping them${eng<100?` with ${fleet.length>1?'the worst':'her'} engines at ${eng}%`:''}.</p>${flagshipLine()}`,[
   {label:`Break away · ${pct}%`,run:()=>flee(chance)},{label:'Battle stations',primary:true,run:()=>launch(spec)}],{locked:true});}
 function flee(chance){const a=state.ambush;if(!a)return;const x=a.x,b=a.blockade;

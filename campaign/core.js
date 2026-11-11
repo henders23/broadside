@@ -60,12 +60,15 @@ function frontAt(id){return Campaign.frontOf(state.fronts,id);}
 // A neglected act front comes under attack: state.offensive holds Fleet Command's order to defend it and the battles left to answer.
 // Ground lost in a region lets its broken blockades (state.broken) re-form.
 function offensive(){const o=state.offensive;return o&&o.order&&act()<=Campaign.ACTS.length&&o.order.region===Campaign.ACT_FRONT[act()]?o:null;}   // a counter-attack does not outlive its act
-function war(kind,win,system,boss,apply,defence){const a=Math.min(act(),Campaign.ACTS.length),off=offensive(),r=Campaign.applyBattle(state.fronts,state.frontClock,{kind,win,system,boss,act:a,offensive:off&&{region:off.order.region,left:off.left},defence:!!defence}),out=[...r.changes];
+function war(kind,win,system,boss,apply,defence){const a=Math.min(act(),Campaign.ACTS.length),off=offensive(),offNow=off&&{region:off.order.region,left:off.left},transit=kind==='transit',r=transit?Campaign.applyTransit(state.fronts,state.frontClock,{act:a,offensive:offNow}):Campaign.applyBattle(state.fronts,state.frontClock,{kind,win,system,boss,act:a,offensive:offNow,defence:!!defence}),out=[...r.changes];
  const order=r.raised?Campaign.counterAttack(r.offensive.region,a,r.fronts,(state.offSeq||0)+1):null;if(order)out.push({region:order.region,why:'raised',system:order.system,foe:Campaign.FRONTS[order.region].foe});
- if(apply){state.frontNews=Campaign.controlNews(state.fronts,r.fronts);state.fronts=r.fronts;state.frontClock=r.clock;
+ if(apply){if(!transit){state.frontNews=Campaign.controlNews(state.fronts,r.fronts);if(!r.clock)state.jumpClock=0;}state.fronts=r.fronts;state.frontClock=r.clock;
   for(const c of r.changes)if(c.to.value<c.from.value)state.broken=(state.broken||[]).filter(id=>byId[id].region!==c.region);
   if(order){state.offSeq=(state.offSeq||0)+1;state.offensive={order,left:r.offensive.left};}else state.offensive=r.offensive&&off?{order:off.order,left:r.offensive.left}:null;}
  return out;}
+// Time under way: every few jumps flown counts as a battle fought elsewhere, and can bring on a counter-attack.
+function underWay(jumps){if(!(jumps>0)||act()>Campaign.ACTS.length)return;state.jumpClock=(state.jumpClock||0)+jumps;
+ while(state.jumpClock>=Campaign.PUSHBACK.jumps){state.jumpClock-=Campaign.PUSHBACK.jumps;const c=war('transit',false,null,false,true).find(x=>x.why==='raised');if(c)state.transitNews=`While you were under way, ${c.foe} counter-attacked at ${byId[c.system].name}. Fleet orders: hold the post.`;}}
 function warHtml(ch){if(!ch.length)return '';const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);return `<div class="warlog"><small>THE WAR</small>${ch.map(c=>c.why==='raised'?`<div><span><b>${c.region}</b> · ${cap(c.foe)} ${c.foe.endsWith('s')||c.foe==='the Wraith'?'are':'is'} counter-attacking at ${byId[c.system].name}</span><span><b>Fleet orders: hold the post</b></span></div>`:`<div><span><b>${c.region}</b>${c.why==='pushback'?` · ${cap(c.to.foe)} broke through while you fought elsewhere`:c.why==='held'?' · the counter-attack was thrown back':c.why==='broken'?' · the forward post fell':''}</span><span>${c.from.name===c.to.name?`${c.to.value>c.from.value?'ground gained':'ground lost'} · ${c.to.name}`:`${c.from.name} → <b>${c.to.name}</b>`}</span></div>`).join('')}</div>`;}
 // Officer and admiral cards: a large portrait, who is speaking, and what they say.
 function txCard(person,kicker,text,tone=''){return `<div class="tx ${tone}">${Personnel.portrait(person)}<div><small>${kicker}</small><p>“${text}”</p></div></div>`;}

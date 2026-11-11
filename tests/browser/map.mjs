@@ -27,9 +27,11 @@ await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
 
   // zones: Navy-held territory, the systems being fought over, and the front line between them
   check(await page.locator('#zonefill polygon').count() === 33, 'every system has a territory cell');
-  check(await page.locator('#zonefill polygon.navy').count() === 10 && await page.locator('#zonefill polygon.front').count() === 5, 'the Core and the near systems are Navy-held, one system on each front is fought over');
+  check(await page.locator('#zonefill polygon.navy').count() === 9 && await page.locator('#zonefill polygon.front').count() === 6, 'the Core and the near systems are Navy-held; one system on each front is fought over, and so is Kestrel until Operation 1 is won');
   check(await page.locator('#frontline line').count() > 4, 'the front line is drawn: ' + await page.locator('#frontline line').count());
-  check((await page.textContent('.sys[data-id="vela"] .war')) === 'FRONT' && (await page.textContent('#selhold')) === 'Navy-held', 'the front system is tagged and the selected system says who holds it');
+  check((await page.textContent('.sys[data-id="vela"] .war')) === 'FRONT' && (await page.textContent('#selhold')) === 'Front line' && (await page.textContent('.sys[data-id="kestrel"] .war')) === 'FRONT', 'the front system is tagged and Kestrel, under attack, is on the front line');
+  check(await page.locator('#legend span').count() === 5 && (await page.textContent('#legend')).includes('Blockade'), 'the map has a key');
+  check((await page.textContent('#frontstrip')).includes('3 more battles, or 18 jumps'), 'the front strip counts battles and jumps: ' + await page.textContent('#frontstrip'));
 
   // a click selects, the panel's button jumps
   const kes = page.locator('.sys[data-id="kestrel"]');
@@ -59,6 +61,7 @@ await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   await page.keyboard.press('Escape');
   check(await page.locator('#mapview').isVisible() && await page.locator('#arrival').isHidden(), 'Escape returns to map');
   check(await page.evaluate(k => JSON.parse(localStorage.getItem(k)).system, KEY) === 'kestrel', 'jump saved to campaign state');
+  check((await read()).jumpClock === 1 && (await page.textContent('#frontstrip')).includes('or 17 jumps'), 'the jump took time');
   check(await page.locator('.sys.home[data-id="kestrel"]').count() === 1, 'flagship marker moved to Kestrel');
 
   // a system with no open operation

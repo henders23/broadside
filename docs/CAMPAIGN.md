@@ -64,10 +64,13 @@ Four aftermath decisions change later battles. The after-action report says whic
   - Lose the defence: the front loses 2 and the order is gone.
   - Fight two more battles elsewhere without answering it (`PUSHBACK.grace`): the enemy breaks through and the front loses 2. A win elsewhere on the same front does not answer it.
   - It lapses if the front is secured or the act ends. Nothing is attacked on a front already at −10.
+- **Time under way:** every 6 jumps flown (`PUSHBACK.jumps`, counted in `state.jumpClock`, including the jump back from a blockade) count as one battle fought elsewhere (`applyTransit()`), so wandering brings the counter-attack sooner; the front strip shows the battles and the jumps left, and a notice says when one arrives while the fleet is under way. Travel never runs down a counter-attack that is already waiting, so the fleet can always fly to answer it, and a tow after a defeat takes no time. The count restarts with a win on the act's front.
 - Effects by state (Enemy-held → Secured): ambush chance ×1.5 / 1.2 / 1 / 0.6 / none; enemy hull ×1.1 / 1.05 / 1 / 0.95 / 0.9; pay for work there ×1.2 / 1.1 / 1 (danger money); prices at a starbase in the region ×1.1 / 1.05 / 1 / 0.97 / 0.94.
 - Finales: the Red Narrows decide how many clan raiders answer Halloran (2, then 1 at Navy advantage, none when secured) and a turning Ash Marches strips the Pyre's escort; the Halcyon Belt thins the Arbiter's lattice (to 35% or 50% damage taken); the Harrow Expanse sets the Bloom-Mother's brood (3 when enemy-held, down to none when secured).
 - On the map, region borders shift from their own colour toward Navy blue and brighten as a front is won; a selected system shows its front, and Intel and the final report list all five.
 - **Zones:** each system's control is read off its region's front (`control(fronts)`); nothing extra is saved. A region's systems fall to the Navy in order of distance from Navy space (`FRONT_ORDER`; the quieter system first on a tie, so each finale system falls last): none while the front is Enemy-held, all once it is Secured, evenly in between (`heldCount`). The map tints Navy-held territory blue and the rest in its region's colour, hatches the one system on each front that is being fought over (tagged **FRONT**), and draws a bright front line along the edge of what the Navy holds. The Meridian Core is always Navy-held. A selected system's **Holding** reads Navy-held, Front line, Enemy-held or (for independent and contested systems beyond the line) Unsecured.
+- A system whose story operation has not been won yet is never shown as held: it is hatched as fought over until then (`control(fronts, completed)`), so Kestrel starts on the front line and becomes Navy-held with Operation 1. This is for the map only; routes and blockades do not use it.
+- A key under the map explains the tints, the hatching, the blockade ring and the dimmed closed lanes.
 - When a result moves a system across the line, the map tags it **▲ TAKEN** or **▼ LOST** and pulses its territory until the next battle (`state.frontNews`, from `controlNews()`).
 - Ambush odds, prices and enemy strength still follow the region's front state; who holds a system decides where the fleet can go (below).
 
@@ -96,7 +99,7 @@ Four aftermath decisions change later battles. The after-action report says whic
 
 ## Core loop
 
-1. Jump across the Reach. Jumps are free, but hostile space can spring an interception, enemy-held systems are blockaded, and machine and Wraith space stays closed until its act.
+1. Jump across the Reach. Jumps cost no requisition but take time (the enemy counter-attacks sooner), hostile space can spring an interception, enemy-held systems are blockaded, and machine and Wraith space stays closed until its act.
 2. Dock at a starbase to take station missions and contracts, repair, rearm and fit upgrades.
 3. Fly to a story operation or an accepted order and launch it from the system's arrival screen.
 4. Fight using the 3D capital-ship combat engine; hull, subsystems and ordnance carry over.
@@ -197,7 +200,7 @@ Operations unlock in story order (1, 2, 3, 8, 4, 6, 9, 5, 7, 10); the numbers 1�
 
 ## Interceptions
 
-- Jumping is free. Every system on the route (not counting the start) that is hostile in the current act rolls for an ambush: 6–30% depending on threat. Act I's hostile factions are pirates and renegades; Act II adds the machines and Act III the Wraith.
+- Jumping costs no requisition (it does take time: see Frontlines). Every system on the route (not counting the start) that is hostile in the current act rolls for an ambush: 6–30% depending on threat. Act I's hostile factions are pirates and renegades; Act II adds the machines and Act III the Wraith.
 - An ambush stops the flagship in that system and cannot be dismissed. **Battle stations** fights one or two ambushers for salvage. **Break away** succeeds with a chance set by the hull (Sabre 80%, Halberd 70%, Bastion 50%, Warden 40%) and engine condition: success costs 3% hull and carries on to the destination; failure costs 6% hull and forces the fight. A pending ambush survives a reload (`state.ambush`).
 
 ## Encounters
@@ -209,7 +212,7 @@ Operations unlock in story order (1, 2, 3, 8, 4, 6, 9, 5, 7, 10); the numbers 1�
 ## Ship and economy
 
 - Campaign saves use localStorage key `broadside-campaign-v1` and a `version: 1` schema.
-- Save fields include: `ship`, `shipName`, `system`, `completed`, `flags`, `credits`, `hull`, `sub`, `torps`, `attempts`, `pendingResult`, `upgrades`, `officers`, `actBriefed`, `boardCycle`, `orders`, `contracts`, `sideDone`, `launch`, `interceptSeed`, `ambush`, `frontNews`, `broken`, `offensive` and `offSeq`. Saves from before the grand campaign gain the new fields on load.
+- Save fields include: `ship`, `shipName`, `system`, `completed`, `flags`, `credits`, `hull`, `sub`, `torps`, `attempts`, `pendingResult`, `upgrades`, `officers`, `actBriefed`, `boardCycle`, `orders`, `contracts`, `sideDone`, `launch`, `interceptSeed`, `ambush`, `frontNews`, `broken`, `offensive`, `offSeq`, `jumpClock` and `transitNews`. Saves from before the grand campaign gain the new fields on load.
 - Torpedo capacity depends on hull class: Bastion 8, Halberd 6, Sabre 6, Warden 16.
 - Full-hull overhaul costs 6 requisition per lost hull percentage point, rounded up. Emergency repairs cost 100 requisition for up to 15% hull. Torpedoes can be restocked at 25 requisition each.
 - Ship damage and remaining ordnance persist after victory; success or failure results enter a pending after-action state, shown when the player returns to the map.

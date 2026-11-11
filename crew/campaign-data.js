@@ -564,7 +564,8 @@
   const FRONT_STATES = ['Enemy-held', 'Enemy advantage', 'Contested', 'Navy advantage', 'Secured'];
   // After 3 battles without a win on the act's front the enemy counter-attacks there: Fleet Command orders a defence.
   // Win it and the front gains ground; lose it, or fight 2 more battles elsewhere without answering, and the front loses 2.
-  const PUSHBACK = { every: 3, by: 2, grace: 2 };
+  // Time under way counts too: every 6 jumps flown is a battle fought elsewhere (applyTransit), until a counter-attack is waiting.
+  const PUSHBACK = { every: 3, by: 2, grace: 2, jumps: 6 };
   // What each state does, from Enemy-held to Secured.
   const FRONT_EFFECTS = { ambush: [1.5, 1.2, 1, 0.6, 0], enemyHull: [1.1, 1.05, 1, 0.95, 0.9], danger: [1.2, 1.1, 1, 1, 1], prices: [1.1, 1.05, 1, 0.97, 0.94] };
   const startFronts = () => Object.fromEntries(FRONT_REGIONS.map(r => [r, FRONTS[r].start]));
@@ -601,6 +602,13 @@
     return { fronts: out, clock: next, changes, offensive: off, raised };
   }
 
+  // Time spent under way: one tick of the act front's clock, as a battle elsewhere would be. It can provoke a counter-attack,
+  // but it never runs down one that is already waiting: the fleet is expected to be on its way to answer it.
+  function applyTransit(fronts, clock, { act, offensive }) {
+    if (offensive) return { fronts: Object.assign(startFronts(), fronts || {}), clock: clock || 0, changes: [], offensive: { region: offensive.region, left: offensive.left }, raised: false };
+    return applyBattle(fronts, clock, { kind: 'transit', win: false, system: null, act });
+  }
+
   // ---------------- who holds what ----------------
   // Each system's control is read off its region's front; nothing more is saved. A region's systems fall to the Navy in
   // order of their distance from Navy space (the quieter system first on a tie), so the line sweeps outward as the front is won.
@@ -615,10 +623,13 @@
     .sort((a, b) => DEPTH[a.id] - DEPTH[b.id] || threatLevel(a) - threatLevel(b) || SYSTEMS.indexOf(a) - SYSTEMS.indexOf(b)).map(s => s.id)]));
   // Nothing is held while the front is Enemy-held, everything once it is Secured, and the systems fall evenly in between.
   function heldCount(value, n) { return value >= 6 ? n : value <= -6 ? 0 : Math.floor((value + 6) / 12 * n); }
-  function control(fronts) {
+  // With `completed` (the story operations won), a system whose story operation is still to be fought is never shown as held:
+  // it is being fought over until that operation is won. This is for the map only; routes and blockades do not use it.
+  function control(fronts, completed) {
     const out = {};
     for (const s of SYSTEMS) if (!FRONTS[s.region]) out[s.id] = 'navy';
     for (const r of FRONT_REGIONS) { const order = FRONT_ORDER[r], held = heldCount(front(fronts, r).value, order.length); order.forEach((id, i) => { out[id] = i < held ? 'navy' : i === held ? 'front' : 'enemy'; }); }
+    if (Array.isArray(completed)) for (const m of STORY) if (!completed.includes(m.id) && out[m.system] === 'navy') out[m.system] = 'front';
     return out;
   }
   // ---------------- travel ----------------
@@ -789,7 +800,7 @@
     STATIONS, nearestStation, SIDE, sideById, sideMissions, sideLeg,
     CONTRACT_TYPES, contracts, hostile, foeGroup, strength, rollInterception, interceptRisk, interception, blockade, fleeChance,
     ENV_BY_REGION, encounter, storyEncounter, supportCap, NARRATIVE, CONSEQUENCES, CHOICE_STAKES,
-    FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle, FRONT_ORDER, heldCount, control, controlNews, sealed, blockaded, route, counterAttack,
+    FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle, applyTransit, FRONT_ORDER, heldCount, control, controlNews, sealed, blockaded, route, counterAttack,
     SAVE_BASE, SLOT_KEY, SLOTS, slotKey, activeSlot, saveKey, DIFFICULTY, difficulty,
     REP_TIERS, REP, standing, adjustRep, repChanges,
     FATES, rollFate, fateLine, FATE_TITLES, hash,

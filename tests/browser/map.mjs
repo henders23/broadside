@@ -25,13 +25,26 @@ await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   check(await page.locator('#availlist .opitem').count() === 1, 'only one available operation listed');
   await shot('01-map');
 
+  // zones: Navy-held territory, the systems being fought over, and the front line between them
+  check(await page.locator('#zonefill polygon').count() === 33, 'every system has a territory cell');
+  check(await page.locator('#zonefill polygon.navy').count() === 10 && await page.locator('#zonefill polygon.front').count() === 5, 'the Core and the near systems are Navy-held, one system on each front is fought over');
+  check(await page.locator('#frontline line').count() > 4, 'the front line is drawn: ' + await page.locator('#frontline line').count());
+  check((await page.textContent('.sys[data-id="vela"] .war')) === 'FRONT' && (await page.textContent('#selhold')) === 'Navy-held', 'the front system is tagged and the selected system says who holds it');
+
+  // a click selects, the panel's button jumps
   const kes = page.locator('.sys[data-id="kestrel"]');
+  check((await page.textContent('#selgo')).includes('Jump to Kestrel') && (await page.textContent('#selroute')).includes('1 jump') && (await page.textContent('#selroute')).includes('Clear lanes'), 'the panel offers the jump with its distance and risk: ' + await page.textContent('#selroute'));
   await kes.locator('.dot').hover();
   await page.waitForTimeout(300);
-  const pill = kes.locator('.course button');
-  check(await pill.isVisible(), 'set course pill shows on hover: ' + await pill.textContent());
+  check(await kes.locator('.tip').evaluate(e => getComputedStyle(e).opacity === '1' && e.textContent.includes('1 JUMP')), 'hovering a star shows the distance and risk');
   await shot('02-hover');
-  await pill.click();
+  await page.locator('.sys[data-id="scour"] .dot').click();
+  check((await page.textContent('#selname')) === 'Scour' && await page.locator('#mapview').isVisible() && await page.locator('#arrival').isHidden(), 'a click selects without jumping');
+  check(/\d+% interception risk/.test(await page.textContent('#selroute')) && await page.locator('#lanehot line.risk').count() === 1, 'a route into pirate space shows its risk, with the hostile leg in red: ' + await page.textContent('#selroute'));
+  check((await page.textContent('#selhold')) === 'Front line', 'Scour is the Red Narrows front line');
+  await shot('02b-route-risk');
+  check(await page.locator('#availlist .opitem .go').count() === 1, 'the operation row has its own jump button');
+  await page.click('#availlist .opitem .go');
   check(await page.locator('#arrival').isVisible(), 'arrival screen opens after jump');
   check((await page.textContent('#arrname')) === 'Kestrel', 'arrival shows Kestrel');
   check((await page.textContent('#arrkicker')).includes('1 jump from Meridian'), 'arrival kicker: ' + await page.textContent('#arrkicker'));
@@ -48,10 +61,17 @@ await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   check(await page.locator('.sys.home[data-id="kestrel"]').count() === 1, 'flagship marker moved to Kestrel');
 
   // a system with no open operation
-  await page.locator('.sys[data-id="vela"] .dot').hover(); await page.waitForTimeout(250);
-  await page.locator('.sys[data-id="vela"] .course button').click();
+  await page.locator('.sys[data-id="vela"] .dot').dblclick();
+  check((await page.textContent('#arrname')) === 'Vela', 'a double-click jumps');
   check((await page.textContent('#arropslist')).includes('No operations in Vela'), 'empty arrival state for Vela');
   await shot('05-arrival-empty');
+  await page.locator('#arronward .lane', { hasText: 'Driftwall' }).click();
+  check((await page.textContent('#arrname')) === 'Driftwall' && (await page.textContent('#arrkicker')).includes('1 jump from Vela'), 'an onward lane jumps straight there');
+  await page.click('#arrback');
+  await page.locator('.sys[data-id="kestrel"] .dot').focus(); await page.keyboard.press('Enter');
+  check((await page.textContent('#selname')) === 'Kestrel' && await page.locator('#arrival').isHidden(), 'Enter on a star selects it');
+  await page.keyboard.press('Enter');
+  check((await page.textContent('#arrname')) === 'Kestrel' && await page.locator('#arrival').isVisible(), 'Enter again jumps there');
   await page.click('#arrback');
 
   // shipyard

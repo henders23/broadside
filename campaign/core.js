@@ -56,7 +56,8 @@ function standingText(id){const st=standingOf(id);return `${st.name} (${st.value
 function cctx(){return {flags:state.flags,fronts:state.fronts,rivals:state.rivals};}
 function frontAt(id){return Campaign.frontOf(state.fronts,id);}
 // The war: a result moves the region's front, and the act's front slips if neglected. Previewed in reports, applied on closing.
-function war(kind,win,system,boss,apply){const r=Campaign.applyBattle(state.fronts,state.frontClock,{kind,win,system,boss,act:Math.min(act(),Campaign.ACTS.length)});if(apply){state.fronts=r.fronts;state.frontClock=r.clock;}return r.changes;}
+// frontNews keeps the systems that last result won or lost, for the map to mark until the next battle.
+function war(kind,win,system,boss,apply){const r=Campaign.applyBattle(state.fronts,state.frontClock,{kind,win,system,boss,act:Math.min(act(),Campaign.ACTS.length)});if(apply){state.frontNews=Campaign.controlNews(state.fronts,r.fronts);state.fronts=r.fronts;state.frontClock=r.clock;}return r.changes;}
 function warHtml(ch){if(!ch.length)return '';const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);return `<div class="warlog"><small>THE WAR</small>${ch.map(c=>`<div><span><b>${c.region}</b>${c.why==='pushback'?` · ${cap(c.to.foe)} pushed back while you fought elsewhere`:''}</span><span>${c.from.name===c.to.name?`${c.to.value>c.from.value?'ground gained':'ground lost'} · ${c.to.name}`:`${c.from.name} → <b>${c.to.name}</b>`}</span></div>`).join('')}</div>`;}
 // Officer and admiral cards: a large portrait, who is speaking, and what they say.
 function txCard(person,kicker,text,tone=''){return `<div class="tx ${tone}">${Personnel.portrait(person)}<div><small>${kicker}</small><p>“${text}”</p></div></div>`;}

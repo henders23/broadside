@@ -44,6 +44,27 @@ same([-10, -6, -5, -2, -1, 1, 2, 5, 6, 10].map(v => C.front({ 'Red Narrows': v }
 assert.equal(C.front({}, 'Ash Marches').name, 'Enemy-held', 'the Ash Marches start in enemy hands');
 assert.equal(C.front({}, 'Meridian Core'), null, 'the Core has no front');
 assert.equal(C.frontOf({}, 'kestrel').region, 'Kestrel Verge');
+// Who holds what: read off the fronts, falling outward from Navy space
+same(C.FRONT_ORDER['Ash Marches'], ['emberfall', 'kharon', 'cinder', 'vostok', 'grimhold'], 'the Ash Marches fall from the Core outward, the dockyard last');
+for (const r of C.FRONT_REGIONS) same([...C.FRONT_ORDER[r]].sort(), C.SYSTEMS.filter(s => s.region === r).map(s => s.id).sort(), r + ': every system has its place in the order');
+for (const [boss, r] of [['grimhold', 'Ash Marches'], ['verdant', 'Harrow Expanse']]) assert.equal(C.FRONT_ORDER[r].at(-1), boss, 'the finale system is the last to fall');
+same([-10, -6, -4, -2, 0, 2, 4, 5, 6, 10].map(v => C.heldCount(v, 5)), [0, 0, 0, 1, 2, 3, 4, 4, 5, 5], 'nothing held while enemy-held, everything once secured');
+const ctl0 = C.control(C.startFronts());
+assert.ok(C.SYSTEMS.filter(s => s.region === 'Meridian Core').every(s => ctl0[s.id] === 'navy'), 'the Core is always Navy-held');
+assert.equal(Object.keys(ctl0).length, C.SYSTEMS.length);
+same(['northpoint', 'kestrel', 'driftwall', 'vela', 'peregrine', 'emberfall', 'kharon'].map(id => ctl0[id]), ['navy', 'navy', 'navy', 'front', 'enemy', 'front', 'enemy'], 'a new campaign: half the Verge held, the Ash Marches fought over at Emberfall');
+assert.ok(C.FRONT_REGIONS.every(r => C.FRONT_ORDER[r].filter(id => ctl0[id] === 'front').length === 1), 'one system on each front is being fought over');
+const won = Object.fromEntries(C.FRONT_REGIONS.map(r => [r, 10]));
+assert.ok(Object.values(C.control(won)).every(v => v === 'navy'), 'a secured Reach is all Navy-held');
+assert.equal(C.control({})['emberfall'], 'front', 'missing fronts read as the starting ones');
+same(C.controlNews(C.startFronts(), { ...C.startFronts(), 'Ash Marches': 0 }), { emberfall: 'won', kharon: 'won' }, 'ground taken is named');
+same(C.controlNews({ 'Kestrel Verge': 0 }, { 'Kestrel Verge': -2 }), { driftwall: 'lost' }, 'and ground lost');
+same(C.controlNews({ 'Ash Marches': -6 }, { 'Ash Marches': -8 }), {}, 'a front that moves without a system changing hands is no news');
+// Route risk matches the interception roll
+assert.equal(C.interceptRisk(['meridian', 'kestrel', 'vela'], 1), 0, 'no risk in contested Kestrel during act I');
+assert.ok(Math.abs(C.interceptRisk(['peregrine', 'sable', 'scour'], 1) - 0.18) < 1e-9, 'one High system: 18%');
+assert.ok(Math.abs(C.interceptRisk(['sable', 'rednarrows', 'razor'], 1, 0.5) - (1 - 0.88 * 0.91)) < 1e-9, 'risks compound along the route and follow the scale');
+assert.equal(C.interceptRisk(['peregrine', 'sable', 'scour'], 1, () => 0), 0, 'a secured front has clear lanes');
 const step = (f, k, o) => C.applyBattle(f, k, o);
 let r = step(C.startFronts(), 0, { kind: 'contract', win: true, system: 'scour', act: 1 });
 assert.equal(r.fronts['Red Narrows'], -4); assert.equal(r.changes[0].to.name, 'Enemy advantage'); assert.equal(r.clock, 1);

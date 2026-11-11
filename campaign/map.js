@@ -17,21 +17,30 @@ function drawSky(canvas,seed){const g=canvas.getContext('2d'),r=rng(seed);g.clea
 // Faction influence: each system claims the part of a 125 px disc nearer to it than to any other system (a clipped Voronoi cell).
 // Only edges facing another region, or open space, are drawn, pulled 3 px inside so neighbouring regions show side-by-side lines.
 function clipHalf(poly,nx,ny,k,lab){const out=[];for(let i=0;i<poly.length;i++){const A=poly[i],B=poly[(i+1)%poly.length],da=nx*A.p[0]+ny*A.p[1]-k,db=nx*B.p[0]+ny*B.p[1]-k,ain=da<=0;if(ain)out.push(A);if(ain!==(db<=0)){const t=da/(da-db);out.push({p:[A.p[0]+(B.p[0]-A.p[0])*t,A.p[1]+(B.p[1]-A.p[1])*t],e:ain?lab:A.e});}}return out;}
-function cellEdges(i,pts,regs,R,gap){const p=pts[i];let poly=[];for(let k=0;k<36;k++){const a=k/36*Math.PI*2;poly.push({p:[p[0]+Math.cos(a)*R,p[1]+Math.sin(a)*R],e:-1});}
+function cellPoly(i,pts,regs,R,gap){const p=pts[i];let poly=[];for(let k=0;k<36;k++){const a=k/36*Math.PI*2;poly.push({p:[p[0]+Math.cos(a)*R,p[1]+Math.sin(a)*R],e:-1});}
  for(let j=0;j<pts.length&&poly.length;j++){if(j===i)continue;const q=pts[j],dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy);if(L>R*2.2)continue;const nx=dx/L,ny=dy/L;poly=clipHalf(poly,nx,ny,nx*(p[0]+q[0])/2+ny*(p[1]+q[1])/2-(regs[i]===regs[j]?0:gap),j);}
- const out=[];for(let k=0;k<poly.length;k++){const A=poly[k],B=poly[(k+1)%poly.length];if(A.e===-1||regs[A.e]!==regs[i])out.push([A.p,B.p]);}return out;}
+ return poly;}
+// A cell's sides, each with the system across it (-1 for open space).
+function cellSides(poly){return poly.map((A,k)=>({a:A.p,b:poly[(k+1)%poly.length].p,to:A.e}));}
+let CELLS=[];
 function buildMap(){drawSky($('sky'),7);
+ $('selgo').addEventListener('click',()=>travel(selected));
+ // The system being fought over is hatched in Navy blue over its region's colour.
+ REGIONS.forEach((r,k)=>{const pt=svgEl('pattern',{id:'hatch'+k,width:8,height:8,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'});pt.append(svgEl('rect',{width:8,height:8,fill:`rgb(${REGION_HUE[k].join(',')})`,'fill-opacity':.14}),svgEl('rect',{width:3,height:8,fill:`rgb(${NAVY.join(',')})`,'fill-opacity':.3}));$('hatches').append(pt);});
  const neb=$('nebulae');REGIONS.forEach((r,k)=>{const ps=SYSTEMS.filter(s=>regionOf(s)===k).map(proj),cx=ps.reduce((a,p)=>a+p[0],0)/ps.length,cy=ps.reduce((a,p)=>a+p[1],0)/ps.length,d=el('div','neb');d.style.left=(cx-230)+'px';d.style.top=(cy-150)+'px';d.style.background=`radial-gradient(closest-side,${hue(k,.16)},${hue(k,0)})`;neb.append(d);});
  const pts=SYSTEMS.map(proj),regs=SYSTEMS.map(regionOf),b=$('borders');
- SYSTEMS.forEach((s,i)=>{for(const [p,q] of cellEdges(i,pts,regs,125,3))b.append(svgEl('line',{x1:p[0].toFixed(1),y1:p[1].toFixed(1),x2:q[0].toFixed(1),y2:q[1].toFixed(1),class:'r'+regs[i],stroke:`rgb(${REGION_HUE[regs[i]].join(',')})`}));});
+ CELLS=SYSTEMS.map((s,i)=>cellSides(cellPoly(i,pts,regs,125,3)));
+ const zg=$('zonefill');SYSTEMS.forEach((s,i)=>zg.append(svgEl('polygon',{points:CELLS[i].map(e=>e.a.map(v=>v.toFixed(1)).join(',')).join(' '),'data-id':s.id})));
+ SYSTEMS.forEach((s,i)=>{for(const {a:p,b:q} of CELLS[i].filter(e=>e.to===-1||regs[e.to]!==regs[i]))b.append(svgEl('line',{x1:p[0].toFixed(1),y1:p[1].toFixed(1),x2:q[0].toFixed(1),y2:q[1].toFixed(1),class:'r'+regs[i],stroke:`rgb(${REGION_HUE[regs[i]].join(',')})`}));});
  const lb=$('lanebase');for(const [a,c] of ROUTES){const p=proj(byId[a]),q=proj(byId[c]);lb.append(svgEl('line',{x1:p[0].toFixed(1),y1:p[1].toFixed(1),x2:q[0].toFixed(1),y2:q[1].toFixed(1)}));}
  const nodes=$('nodes');
  for(const s of SYSTEMS){const [x,y]=proj(s),k=regionOf(s),w=el('div','sys');w.dataset.id=s.id;w.style.left=x+'px';w.style.top=y+'px';
   const halo=el('span','halo');halo.style.background=`radial-gradient(closest-side,${hue(k,.35)},${hue(k,0)})`;
-  const dot=el('button','dot'),core=el('span');dot.type='button';dot.setAttribute('aria-label',`${s.name}, ${s.region}`);core.style.boxShadow=`0 0 6px rgba(255,255,255,.9),0 0 14px ${hue(k,.9)}`;dot.append(core);dot.addEventListener('click',()=>selectSystem(s.id));
-  const course=el('div','course'),go=el('button');go.type='button';go.addEventListener('click',()=>travel(s.id));course.append(go);
+  const dot=el('button','dot'),core=el('span');dot.type='button';dot.setAttribute('aria-label',`${s.name}, ${s.region}`);core.style.boxShadow=`0 0 6px rgba(255,255,255,.9),0 0 14px ${hue(k,.9)}`;dot.append(core);
+  // A click selects; a double-click, or Enter on a star that is already selected, jumps there.
+  dot.addEventListener('click',e=>{if(e.detail===0&&selected===s.id)travel(s.id);else selectSystem(s.id);});dot.addEventListener('dblclick',()=>travel(s.id));
   if(STATIONS[s.id]){w.classList.add('station');dot.setAttribute('aria-label',`${s.name}, ${s.region}, starbase`);}
-  w.append(halo,el('span','spk'),el('span','rings'),el('span','stn'),dot,el('span','lbl',s.name),el('span','op'),el('span','ship'),course);nodes.append(w);}}
+  w.append(halo,el('span','spk'),el('span','rings'),el('span','stn'),dot,el('span','lbl',s.name),el('span','op'),el('span','war'),el('span','ship'),el('span','tip'));nodes.append(w);}}
 function availableOps(){return Campaign.openStory(state.completed);}
 function jumpsText(n){return n===0?'Here':n+(n===1?' jump':' jumps');}
 function opNo(m){return String(m.id).padStart(2,'0');}
@@ -39,23 +48,41 @@ function opTag(m){return m.boss?'FINALE':'OP '+opNo(m);}
 function finaleOf(m){return `Act ${Campaign.ACTS[m.act-1].numeral} finale`;}
 function fillBars(box,n){box.replaceChildren();for(let i=1;i<=5;i++){const b=el('i');if(i<=n)b.className='on';box.append(b);}}
 function orderTag(o){return o.kind==='side'?'MISSION':Campaign.CONTRACT_TYPES[o.type].label.toUpperCase();}
-function refresh(){const here=state.system&&byId[state.system]?state.system:HOME,path=getPath(here,selected),onPath=new Set(path),avail=availableOps(),availAt=new Map(avail.map(m=>[m.system,m])),orders=activeOrders();
+// The odds of an ambush in a system follow difficulty and the state of its front; a route's risk is the chance of any on the way.
+function ambushScale(id){const f=frontAt(id);return diff().intercept*(f?Campaign.FRONT_EFFECTS.ambush[f.level]:1);}
+function risky(id){return Campaign.hostile(byId[id],act())&&ambushScale(id)>0;}
+function routeRisk(path){return Math.round(Campaign.interceptRisk(path,act(),ambushScale)*100);}
+function riskText(path){const r=routeRisk(path);return r?`${r}% interception risk`:'Clear lanes';}
+function goButton(id,here){const b=el('button','go',id===here?'Open →':'Jump →');b.type='button';b.setAttribute('aria-label',id===here?`Open system details for ${byId[id].name}`:`Jump to ${byId[id].name}`);b.addEventListener('click',()=>travel(id));return b;}
+function opRow(cls,tag,tagCls,name,sub,sys,here){const row=el('div','opitem'+cls+(sys===selected?' active':'')),b=el('button','pick'),t=el('span','t');b.type='button';t.append(el('b',null,name),el('small',null,sub));b.append(el('span',tagCls,tag),t,el('span','d',jumpsText(getPath(here,sys).length-1).toUpperCase()));b.addEventListener('click',()=>selectSystem(sys));row.append(b,goButton(sys,here));return row;}
+function refresh(){const here=state.system&&byId[state.system]?state.system:HOME,path=getPath(here,selected),onPath=new Set(path),avail=availableOps(),availAt=new Map(avail.map(m=>[m.system,m])),orders=activeOrders(),ctl=Campaign.control(state.fronts),news=state.frontNews||{};
  for(const w of $('nodes').children){const id=w.dataset.id,s=byId[id],m=availAt.get(id),here_o=orders.filter(o=>o.system===id);
   w.classList.toggle('sel',id===selected);w.classList.toggle('home',id===here);w.classList.toggle('path',onPath.has(id));w.classList.toggle('avail',!!m||here_o.length>0);w.classList.toggle('order',!m&&here_o.length>0);
   w.querySelector('.op').textContent=m?opTag(m):here_o.length>1?here_o.length+' ORDERS':here_o.length?orderTag(here_o[0]):'';w.querySelector('.ship').textContent='▲ '+flag().shipName.toUpperCase();
-  const go=w.querySelector('.course button');if(id===here){go.textContent='System details →';go.setAttribute('aria-label',`Open system details for ${s.name}`);}else{const n=getPath(here,id).length-1;go.textContent=`Set course · ${jumpsText(n)} →`;go.setAttribute('aria-label',`Set course for ${s.name}, ${jumpsText(n)}`);}}
- $('lanehot').firstElementChild.setAttribute('points',path.map(id=>proj(byId[id]).map(v=>v.toFixed(1)).join(',')).join(' '));
+  const wt=w.querySelector('.war'),nw=news[id];wt.textContent=nw==='won'?'▲ TAKEN':nw==='lost'?'▼ LOST':ctl[id]==='front'?'FRONT':'';wt.className='war'+(nw?' '+nw:'');w.dataset.ctl=ctl[id];
+  const p=id===here?[]:getPath(here,id);w.querySelector('.tip').textContent=p.length>1?`${jumpsText(p.length-1)} · ${riskText(p)}`.toUpperCase():'';}
+ // The plotted route: a leg into a system where hostiles may be waiting is drawn in red.
+ const hot=$('lanehot');hot.replaceChildren();for(let i=1;i<path.length;i++){const a=proj(byId[path[i-1]]),b=proj(byId[path[i]]);hot.append(svgEl('line',{x1:a[0].toFixed(1),y1:a[1].toFixed(1),x2:b[0].toFixed(1),y2:b[1].toFixed(1),class:risky(path[i])?'risk':''}));}
  const s=byId[selected],[x,y]=proj(s);$('cross').querySelector('.h').style.top=y+'px';$('cross').querySelector('.v').style.left=x+'px';$('borders').dataset.sel=regionOf(s);
- $('selname').textContent=s.name;$('seldesc').textContent=s.description;$('selfaction').textContent=s.faction;$('selthreat').textContent=s.threat;fillBars($('selbars'),threatLevel(s));$('selstation').textContent=STATIONS[s.id]?STATIONS[s.id].name:'None';const sf=frontAt(s.id);$('selfront').textContent=sf?sf.name:'Navy space';drawFronts();
+ $('selname').textContent=s.name;$('seldesc').textContent=s.description;$('selfaction').textContent=s.faction;$('selthreat').textContent=s.threat;fillBars($('selbars'),threatLevel(s));$('selstation').textContent=STATIONS[s.id]?STATIONS[s.id].name:'None';const sf=frontAt(s.id);$('selfront').textContent=sf?sf.name:'Navy space';$('selhold').textContent=ctl[s.id]==='navy'?'Navy-held':ctl[s.id]==='front'?'Front line':FOE_FACTIONS.includes(s.faction)?'Enemy-held':'Unsecured';
+ const jumps=path.length-1,go=$('selgo');go.textContent=selected===here?'System details →':`Jump to ${s.name} →`;go.disabled=selected!==here&&jumps<1;
+ $('selroute').textContent=selected===here?'Your flagship is here':jumps<1?'No established jump route':`${jumpsText(jumps)} · ${riskText(path)}`;$('selroute').classList.toggle('risk',selected!==here&&routeRisk(path)>0);drawFronts(ctl);
  const list=$('availlist');list.replaceChildren();
- for(const m of avail){const b=el('button','opitem'+(m.system===selected?' active':'')),t=el('span','t');b.type='button';t.append(el('b',null,m.name),el('small',null,`${byId[m.system].name} · ${m.captain}`));b.append(el('span','n'+(m.boss?' boss':''),opTag(m)),t,el('span','d',jumpsText(getPath(here,m.system).length-1).toUpperCase()));b.addEventListener('click',()=>selectSystem(m.system));list.append(b);}
- for(const o of orders){const b=el('button','opitem order'+(o.system===selected?' active':'')),t=el('span','t');b.type='button';t.append(el('b',null,o.name),el('small',null,`${byId[o.system].name} · ${stationOf(o)}`));b.append(el('span','n',orderTag(o)),t,el('span','d',jumpsText(getPath(here,o.system).length-1).toUpperCase()));b.addEventListener('click',()=>selectSystem(o.system));list.append(b);}
+ for(const m of avail)list.append(opRow('',opTag(m),'n'+(m.boss?' boss':''),m.name,`${byId[m.system].name} · ${m.captain}`,m.system,here));
+ for(const o of orders)list.append(opRow(' order',orderTag(o),'n',o.name,`${byId[o.system].name} · ${stationOf(o)}`,o.system,here));
  if(!avail.length&&!orders.length)list.append(el('div','empty',act()>Campaign.ACTS.length?'Every operation in the Reach is complete. Starbases still post work for any captain.':'No open orders. Starbases post station missions and contracts.'));
  const t=torpStock(flag());$('fleetstatus').innerHTML=`${act()<=Campaign.ACTS.length?'ACT '+actInfo().numeral+' · ':''}REQ <b>${state.credits.toLocaleString()}</b> · HULL ${Math.round((flag().hull??1)*100)}% · ${t.cap?`TORP ${t.have}/${t.cap}`:'NO TORPEDOES'}${state.ships.length>1?` · FLEET ${deployedShips().length}/${state.ships.length}`:''}`;
  if(view==='yard')renderYard();}
 // Fronts on the map: each region's border shifts from its own colour toward Navy blue and brightens as it is won.
+// Zones: every system's territory is tinted Navy blue where the Navy holds it and in its region's colour where the enemy does;
+// the system being fought over is hatched, and the front line runs along the edge of what the Navy holds.
 const NAVY=[110,170,255];
-function drawFronts(){
+// Beyond the front line, a system belonging to one of the Reach's enemies is theirs; an independent or contested one is only unsecured.
+const FOE_FACTIONS=['Pirates','Renegades','Machines','Aliens'];
+function drawZones(ctl){const news=state.frontNews||{},fl=$('frontline');fl.replaceChildren();
+ SYSTEMS.forEach((s,i)=>{const c=ctl[s.id],pg=$('zonefill').children[i],k=regionOf(s);pg.setAttribute('class',c+(news[s.id]?' changed':''));pg.setAttribute('fill',c==='navy'?`rgb(${NAVY.join(',')})`:c==='front'?`url(#hatch${k})`:`rgb(${REGION_HUE[k].join(',')})`);
+  if(c==='navy')for(const e of CELLS[i])if(e.to>=0&&ctl[SYSTEMS[e.to].id]!=='navy')fl.append(svgEl('line',{x1:e.a[0].toFixed(1),y1:e.a[1].toFixed(1),x2:e.b[0].toFixed(1),y2:e.b[1].toFixed(1)}));});}
+function drawFronts(ctl){drawZones(ctl||Campaign.control(state.fronts));
  for(const [k,r] of REGIONS.entries()){const f=Campaign.front(state.fronts,r),t=f?(f.value+10)/20:1,c=REGION_HUE[k].map((v,i)=>Math.round(v+(NAVY[i]-v)*t)).join(','),op=f?(0.14+0.3*t).toFixed(2):'0.3';
   for(const l of $('borders').querySelectorAll('.r'+k)){l.setAttribute('stroke',`rgb(${c})`);l.style.strokeOpacity=op;}}
  const n=Math.min(act(),Campaign.ACTS.length),r=Campaign.ACT_FRONT[n],f=Campaign.front(state.fronts,r),left=Campaign.PUSHBACK.every-state.frontClock,el=$('frontstrip');
@@ -66,7 +93,7 @@ function updateFleet(){refresh();}
 function setView(v){view=v;$('codexview').hidden=v!=='codex';$('tabCodex').classList.toggle('current',v==='codex');if(v==='codex')renderCodex();$('arrival').hidden=v!=='arrival';$('boardview').hidden=v!=='board';$('yard').hidden=v!=='yard';$('crewview').hidden=v!=='crew';$('tabMap').classList.toggle('current',v==='map'||v==='arrival'||v==='board');if(v==='board')renderBoard();$('tabShip').classList.toggle('current',v==='yard');$('tabCrew').classList.toggle('current',v==='crew');if(v==='yard')openYard();else closeYard();if(v==='crew')renderCrew();}
 // Jumping moves the flagship at once and opens the arrival screen for the new system.
 function travel(id){const here=state.system&&byId[state.system]?state.system:HOME;if(id===here){showArrival(id,here,0);return;}const path=getPath(here,id);if(path.length<2){toast('No established jump route.');return;}
- const hit=Campaign.rollInterception(path,act(),rand,id=>{const f=frontAt(id);return diff().intercept*(f?Campaign.FRONT_EFFECTS.ambush[f.level]:1);});
+ const hit=Campaign.rollInterception(path,act(),rand,ambushScale);
  if(hit){arriveAt(hit);ambush(hit,id);return;}
  // A rival who got away may be waiting in their own space (crew/rivals.js), and anything can happen on the lane (crew/events.js).
  const rv=Rivals.ambush(state.rivals,path,Math.min(act(),3),state.attempts,rand);
@@ -97,7 +124,7 @@ function showArrival(id,from,jumps){const s=byId[id],k=regionOf(s),h=REGION_HUE[
  $('arrkicker').textContent=jumps?`Arrived · ${jumps} ${jumps===1?'jump':'jumps'} from ${byId[from].name}`:`Current position · ${s.region}`;$('arrkicker').style.color=accent;
  $('arrname').textContent=s.name;$('arrregion').textContent=`${s.region} · ${REGION_SUB[k]}`;$('arrregion').style.color=accent;$('arrdesc').textContent=s.description;$('arrfaction').textContent=s.faction;$('arrthreat').textContent=s.threat;fillBars($('arrbars'),threatLevel(s));
  const nb=neighbors(id),on=$('arronward');$('arrlanes').textContent=nb.length+(nb.length===1?' system':' systems');on.replaceChildren();
- for(const n of nb){const t=byId[n],b=el('button','lane'),d=el('i');b.type='button';d.style.background=`rgb(${REGION_HUE[regionOf(t)].join(',')})`;b.append(d,el('span',null,t.name),el('small',null,t.threat.toUpperCase()));b.setAttribute('aria-label',`Show ${t.name} on the sector map`);b.addEventListener('click',()=>{setView('map');selectSystem(n);});on.append(b);}
+ for(const n of nb){const t=byId[n],b=el('button','lane'),d=el('i');b.type='button';d.style.background=`rgb(${REGION_HUE[regionOf(t)].join(',')})`;b.append(d,el('span',null,t.name),el('small',null,risky(n)?riskText([id,n]).toUpperCase():t.threat.toUpperCase()),el('span','arrow','→'));if(risky(n))b.classList.add('risk');b.setAttribute('aria-label',`Jump to ${t.name}, ${t.threat} threat${risky(n)?', '+riskText([id,n]):''}`);b.addEventListener('click',()=>travel(n));on.append(b);}
  renderArrivalOps(id);setView('arrival');$('arrback').focus();}
 function storyCard(m){const c=commanderByMission(m.id)||{},lead=leadFor(m),card=el('article','opcard'+(m.boss?' boss':'')),row=el('div','row'),num=el('span',null,(m.boss?finaleOf(m).toUpperCase()+' · ':'')+'OPERATION '+opNo(m));num.style.color=m.boss?'#ff9a7a':'var(--amber)';row.append(num,el('span',null,`REWARD ${pay(m)} REQ`));
   const who=el('div','who'),two=el('div','two'),obj=el('div'),intel=el('div'),off=el('div','officer'),go=el('button','pill solid','Open briefing →');

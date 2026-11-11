@@ -34,6 +34,9 @@ await suite('war', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   st = await read();
   check(st.flags.thorne_amnesty && st.fronts['Red Narrows'] === -2 && st.credits === creditsBefore+quotedReward, 'amnesty and front recorded, the advertised danger pay was credited: ' + st.credits);
 
+  check((await page.textContent('.sys[data-id="scour"] .war')) === '▲ TAKEN' && await page.locator('#zonefill polygon.navy.changed[data-id="scour"]').count() === 1 && (await page.textContent('.sys[data-id="rednarrows"] .war')) === 'FRONT', 'the map shows Scour taken and the front line moved on to the Red Narrows');
+  await shot('w02b-map-taken');
+
   // Push back: three battles away from the Ash Marches
   for (const [i, sys] of ['kestrel', 'driftwall', 'vela'].entries()) {
     await patch({ pendingResult: { id: 'x:' + i, kind: 'intercept', ref: 'x:' + i, system: sys, outcome: 'win', tacticalOutcome: 'enemy_destroyed' }, launch: null });

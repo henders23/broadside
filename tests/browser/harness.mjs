@@ -56,7 +56,7 @@ export async function suite(name, opts, body) {
     write: s => page.evaluate(([k, s]) => localStorage.setItem(k, JSON.stringify(s)), [KEY, s]),
     patch: p => page.evaluate(([k, p]) => { const s = JSON.parse(localStorage.getItem(k)); Object.assign(s, p); localStorage.setItem(k, JSON.stringify(s)); }, [KEY, p]),
     random: v => page.evaluate(v => { const q = [].concat(v); window.__campaignRandom = () => q.length > 1 ? q.shift() : q[0]; }, v),
-    jump: async id => { await page.locator(`.sys[data-id="${id}"] .dot`).hover(); await page.waitForTimeout(200); await page.locator(`.sys[data-id="${id}"] .course button`).click(); },
+    jump: async id => { await page.locator(`.sys[data-id="${id}"] .dot`).click(); await page.click('#selgo'); },
     // Waits for a battle page (opened with ?sim) to be playing.
     playing: async (timeout = 240000) => { await page.waitForFunction(() => window.__sim && window.__sim.state === 'playing', null, { timeout }); await page.waitForTimeout(1000); }
   };

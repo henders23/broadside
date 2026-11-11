@@ -484,6 +484,12 @@
     for (const id of route.slice(1)) { const s = byId[id], k = typeof scale === 'function' ? scale(id) : scale; if (s && hostile(s, act) && k > 0 && random() < INTERCEPT_CHANCE[threatLevel(s)] * k) return id; }
     return null;
   }
+  // The chance that a route is intercepted somewhere along it, by the same rules.
+  function interceptRisk(route, act, scale = 1) {
+    let clear = 1;
+    for (const id of route.slice(1)) { const s = byId[id], k = typeof scale === 'function' ? scale(id) : scale; if (s && hostile(s, act) && k > 0) clear *= 1 - Math.min(1, INTERCEPT_CHANCE[threatLevel(s)] * k); }
+    return 1 - clear;
+  }
   function interception(id, act, seed) {
     const sys = byId[id], foe = foeFor(sys, act), s = strength(sys, act), r = rng(hash(id + ':' + seed)), pair = threatLevel(sys) >= 4 || r() < 0.3, who = pick(r, foe.names);
     const enemies = pair
@@ -573,6 +579,33 @@
       else if (region !== actFront && ++next >= PUSHBACK.every) { move(actFront, -PUSHBACK.by, 'pushback'); next = 0; }
     }
     return { fronts: out, clock: next, changes };
+  }
+
+  // ---------------- who holds what ----------------
+  // Each system's control is read off its region's front; nothing more is saved. A region's systems fall to the Navy in
+  // order of their distance from Navy space (the quieter system first on a tie), so the line sweeps outward as the front is won.
+  // 'navy' is held, 'front' is the system being fought over (the next to fall), 'enemy' is everything beyond it.
+  const DEPTH = (() => {
+    const d = {}, q = SYSTEMS.filter(s => !FRONTS[s.region]).map(s => s.id);
+    for (const id of q) d[id] = 0;
+    for (let i = 0; i < q.length; i++) for (const n of neighbors(q[i])) if (!(n in d)) { d[n] = d[q[i]] + 1; q.push(n); }
+    return d;
+  })();
+  const FRONT_ORDER = Object.fromEntries(FRONT_REGIONS.map(r => [r, SYSTEMS.filter(s => s.region === r)
+    .sort((a, b) => DEPTH[a.id] - DEPTH[b.id] || threatLevel(a) - threatLevel(b) || SYSTEMS.indexOf(a) - SYSTEMS.indexOf(b)).map(s => s.id)]));
+  // Nothing is held while the front is Enemy-held, everything once it is Secured, and the systems fall evenly in between.
+  function heldCount(value, n) { return value >= 6 ? n : value <= -6 ? 0 : Math.floor((value + 6) / 12 * n); }
+  function control(fronts) {
+    const out = {};
+    for (const s of SYSTEMS) if (!FRONTS[s.region]) out[s.id] = 'navy';
+    for (const r of FRONT_REGIONS) { const order = FRONT_ORDER[r], held = heldCount(front(fronts, r).value, order.length); order.forEach((id, i) => { out[id] = i < held ? 'navy' : i === held ? 'front' : 'enemy'; }); }
+    return out;
+  }
+  // What a change of fronts did on the map: systems the Navy took ('won') and systems it no longer holds ('lost').
+  function controlNews(before, after) {
+    const a = control(before), b = control(after), out = {};
+    for (const id in b) if (a[id] !== b[id]) { if (b[id] === 'navy') out[id] = 'won'; else if (a[id] === 'navy') out[id] = 'lost'; }
+    return out;
   }
 
   // ---------------- the fleet ----------------
@@ -693,9 +726,9 @@
     SYSTEMS, byId, ROUTES, THREATS, threatLevel, neighbors, path, jumps,
     ACTS, STORY, STORY_ORDER, storyById, actOf, storyUnlocked, storyAvailable, openStory,
     STATIONS, nearestStation, SIDE, sideById, sideMissions, sideLeg,
-    CONTRACT_TYPES, contracts, hostile, foeGroup, strength, rollInterception, interception, fleeChance,
+    CONTRACT_TYPES, contracts, hostile, foeGroup, strength, rollInterception, interceptRisk, interception, fleeChance,
     ENV_BY_REGION, encounter, storyEncounter, supportCap, NARRATIVE, CONSEQUENCES, CHOICE_STAKES,
-    FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle,
+    FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle, FRONT_ORDER, heldCount, control, controlNews,
     SAVE_BASE, SLOT_KEY, SLOTS, slotKey, activeSlot, saveKey, DIFFICULTY, difficulty,
     REP_TIERS, REP, standing, adjustRep, repChanges,
     FATES, rollFate, fateLine, FATE_TITLES, hash,

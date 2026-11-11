@@ -89,8 +89,7 @@ await suite('fleet', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check
   await patch({ system: 'kestrel' }); await page.reload();
   st = await read();
   check(st.ships.length === 3, 'three ships for the battle');
-  await page.locator('.sys[data-id="kestrel"] .dot').hover(); await page.waitForTimeout(200);
-  await page.locator('.sys[data-id="kestrel"] .course button').click();
+  await jump('kestrel');
   await page.locator('#arropslist .opcard', { hasText: 'Distress at Kestrel' }).locator('button', { hasText: 'Open briefing' }).click();
   check((await page.textContent('#modalbody')).includes('Fleet:') && (await page.textContent('#modalbody')).includes('MNS Harrier &lt;b&gt;'.replace('&lt;', '<').replace('&gt;', '>')), 'briefing lists the fleet');
   await page.locator('#modalactions .primary').click();

@@ -54,7 +54,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #coach{position:absolute;right:calc(20px + env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);width:min(330px,36vw);z-index:6;padding:14px 16px;border:1px solid #9fd8ff66;border-right:3px solid #9fd8ff;border-radius:10px;background:linear-gradient(120deg,rgba(8,24,38,.92),rgba(4,10,18,.85));box-shadow:0 10px 30px #0009;animation:coachin .4s ease}#coach[hidden]{display:none}#coach small{display:block;font-size:10px;letter-spacing:.22em;color:#9fd8ff;text-transform:uppercase}#coach b{display:block;margin:4px 0 6px;font-size:17px;color:#f4e6cc}#coach p{margin:0 0 10px;font-size:12.5px;line-height:1.55;color:#c9d8e4}#coach .ck{display:flex;justify-content:space-between;align-items:center;gap:8px}#coach kbd:empty{visibility:hidden}#coach button{pointer-events:auto;background:none;border:1px solid #ffffff33;color:#c9d8e4;border-radius:999px;padding:4px 10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}@keyframes coachin{from{opacity:0;transform:translate(12px,-50%)}}
 #bosscard{position:absolute;inset:0;z-index:7;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:16vh;gap:6px;text-align:center;background:linear-gradient(#000 0 9vh,transparent 9vh calc(100% - 9vh),#000 calc(100% - 9vh));opacity:0}#bosscard[hidden]{display:none}#bosscard small{font-size:12px;letter-spacing:.42em;color:#ffb36b;text-transform:uppercase}#bosscard b{font-size:clamp(34px,6vw,72px);letter-spacing:.18em;color:#ffe3c4;text-shadow:0 0 28px #ff5b4f99;font-weight:800}#bosscard span{font-size:14px;letter-spacing:.2em;color:#e9d2bd;text-transform:uppercase}#bosscard em{margin-top:10px;font-style:normal;font-size:10px;letter-spacing:.3em;color:#ffffff66;text-transform:uppercase}#bossbar.warn .bt span{color:#ff6b5f;animation:bosswarn .5s steps(2) infinite}@keyframes bosswarn{50%{opacity:.35}}
 #bossbar{position:absolute;top:calc(188px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(560px,60vw);z-index:5;pointer-events:none}#bossbar .bt{display:flex;justify-content:space-between;gap:12px;font-size:11px;letter-spacing:.16em;color:#ffd0a0;text-transform:uppercase;margin-bottom:5px}#bossbar .bt b{font-weight:700}#bossbar .bb{position:relative;height:10px;background:rgba(255,91,79,.15);border:1px solid rgba(255,140,110,.5)}#bossbar .bb i{position:absolute;inset:0;background:linear-gradient(90deg,#ff5b4f,#ffb36b);transform-origin:left}#bossbar .bb .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:#ffe3c4}#bossbar.lattice .bb i{background:linear-gradient(90deg,#6fd0ff,#cfefff)}#bossbar.lattice .bt span{color:#9fd8ff}
-#escorts{right:max(14px,env(safe-area-inset-right,0px));top:calc(300px + env(safe-area-inset-top,0px));width:230px;pointer-events:auto}#esc-list{display:flex;flex-direction:column;gap:7px}.esc{display:flex;flex-direction:column;gap:3px}.esc .en{display:flex;justify-content:space-between;gap:8px;font-size:11px}.esc .en b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.esc .en span{color:var(--dim,#9ab)}.esc.lost{opacity:.45}.esc small{font-size:10px;opacity:.82;white-space:normal;line-height:1.3;overflow:visible}.escbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.escbtns button{font:inherit;font-size:10px;letter-spacing:.06em;padding:5px 2px;background:#0a1b2a;border:1px solid #2f485c;color:#e1eaf2;cursor:pointer}.escbtns button.on{border-color:#f0c27c;color:#f0d3a4;background:#173044}
+#escorts{right:max(14px,env(safe-area-inset-right,0px));top:calc(var(--esc-top,408px) + env(safe-area-inset-top,0px));width:230px;pointer-events:auto}#esc-list{display:flex;flex-direction:column;gap:7px}.esc{display:flex;flex-direction:column;gap:3px}.esc .en{display:flex;justify-content:space-between;gap:8px;font-size:11px}.esc .en b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.esc .en span{color:var(--dim,#9ab)}.esc.lost{opacity:.45}.esc small{font-size:10px;opacity:.82;white-space:normal;line-height:1.3;overflow:visible}.escbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.escbtns button{font:inherit;font-size:10px;letter-spacing:.06em;padding:5px 2px;background:#0a1b2a;border:1px solid #2f485c;color:#e1eaf2;cursor:pointer}.escbtns button.on{border-color:#f0c27c;color:#f0d3a4;background:#173044}
 .shieldbox{display:grid;grid-template-columns:118px 1fr;gap:10px;align-items:center}
 .shieldbox canvas{width:118px;height:118px;display:block}
 .shlist{display:flex;flex-direction:column;gap:3px;font-size:11px}
@@ -72,6 +72,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .subs{display:flex;flex-direction:column;gap:1px;pointer-events:auto}
 .sub{display:grid;grid-template-columns:1fr 54px 30px;gap:6px;align-items:center;font-size:11px;color:var(--muted);background:none;border:0;padding:3px 2px;text-align:left;cursor:pointer;min-height:22px}
 .sub:hover,.sub:focus-visible{background:rgba(255,183,77,.08);outline:none}
+.sub.ok{display:none}
 .sub.rep{color:var(--hud-hi)}
 .sub.rep span:first-child::after{content:" · repairing"}
 .sub .bar{height:5px}
@@ -104,15 +105,34 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #wrows{display:flex;flex-direction:column;gap:8px}
 .wrow{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:center}
 .wrow kbd{text-align:center}
-.wrow .wn{display:flex;justify-content:space-between;gap:6px;font-size:11px;margin-bottom:3px}
+.wrow>div{position:relative}
+.wrow .bar{height:20px}
+.wrow .bar i{opacity:.3}
+.wrow.ready .bar i{opacity:.42}
+.wrow .wn{position:absolute;inset:0;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:11px;padding:0 7px;white-space:nowrap}
 .wrow .wn span:first-child{color:var(--text)}
-.wrow .wn span:last-child{color:var(--muted);letter-spacing:.08em;text-align:right}
+.wrow .wn span:last-child{color:var(--muted);letter-spacing:.06em;text-align:right;font-size:10px;overflow:hidden;text-overflow:ellipsis}
 .wrow.ready .wn span:last-child{color:var(--ok)}
 .wrow.ready .bar i{background:var(--ok)}
 .wrow.off .wn span:last-child{color:var(--hostile)}
 .wrow.fire .bar i{background:#fff}
 .auto{font-size:10px;letter-spacing:.12em;color:var(--muted)}
 .auto b{color:var(--hud-hi);font-weight:400}
+#pd:empty{display:none}
+#gcam{position:absolute;top:100%;left:-1px;right:-1px;margin-top:7px;height:100px;border:1px solid var(--line);pointer-events:none;overflow:hidden}
+#gcam.off{background:rgba(4,7,12,.82)}
+#gcam small{position:absolute;left:7px;top:5px;font-size:9px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;text-shadow:0 0 4px #000}
+#gcam b{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-weight:400;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+#gcam.off b{display:flex}
+#gcam::before,#gcam::after{content:"";position:absolute;left:50%;top:50%;background:rgba(255,183,77,.28)}
+#gcam::before{width:14px;height:1px;margin:0 0 0 -7px}#gcam::after{width:1px;height:14px;margin:-7px 0 0}
+#gcam.off::before,#gcam.off::after{display:none}
+@media (max-height:780px),(max-width:900px){#gcam{display:none}#escorts{--esc-top:300px}}
+#in-place{position:absolute;z-index:8;pointer-events:none;left:max(28px,5vw);top:calc(11vh + 26px);display:flex;flex-direction:column;gap:6px;max-width:min(560px,70vw);opacity:0;transform:translateY(8px);transition:opacity .9s,transform .9s;text-shadow:0 1px 10px #000}
+#in-place.on{opacity:1;transform:none}
+#in-place small{font:400 11px 'JetBrains Mono',ui-monospace,monospace;letter-spacing:.22em;text-transform:uppercase;color:#f0c27c}
+#in-place b{font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-weight:200;font-size:clamp(34px,5vw,64px);letter-spacing:.02em;line-height:1;color:#f4f7fb}
+#in-place span{font:300 15px/1.5 'Inter Tight','Segoe UI',Arial,sans-serif;color:#cfd8e3}
 #mk{position:absolute;left:0;top:0;width:60px;height:60px;will-change:transform;--c:var(--hostile);
   background:
    linear-gradient(var(--c),var(--c)) top left/12px 2px no-repeat,linear-gradient(var(--c),var(--c)) top left/2px 12px no-repeat,
@@ -267,6 +287,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
   <canvas id="gl" aria-label="Broadside 3D battle view"></canvas>
   <div id="attract-fade" aria-hidden="true"></div>
   <div id="letterbox" aria-live="polite"><i><b id="in-word"></b><small id="in-sub"></small></i><i><b id="kc-word"></b><small id="kc-sub"></small><div id="in-line"></div><em id="kc-skip">Any key to skip</em></i></div>
+  <div id="in-place" aria-live="polite"><small id="ip-region"></small><b id="ip-name"></b><span id="ip-line"></span></div>
 
   <div id="hud" hidden>
     <div id="bridge-orders" hidden aria-label="Bridge officer commands"></div>
@@ -291,7 +312,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
       <div class="shieldbox"><canvas id="own-sh" width="236" height="236" aria-label="Your shield facings"></canvas><div class="shlist" id="own-shl"></div></div>
       <div class="sec">Power · <span id="own-pw">12</span> units</div>
       <div class="pips" id="own-pips"></div>
-      <div class="sec">Systems · click one to repair it first</div>
+      <div class="sec" id="own-subs-h">Systems · all nominal</div>
       <div class="subs" id="own-subs"></div>
     </div>
 
@@ -300,6 +321,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
       <div class="row"><span class="sec">Hull</span><div class="bar" id="foe-hullbar"><i></i></div><span class="num" id="foe-hull">0</span></div>
       <div class="shieldbox"><canvas id="foe-sh" width="236" height="236" aria-label="Enemy shield facings"></canvas><div class="shlist" id="foe-shl"></div></div>
       <div class="sec" id="foe-aspect">—</div>
+      <div id="gcam" class="off" aria-hidden="true"><small>Gun camera</small><b>No contact</b></div>
     </div>
 
     <div id="tacwrap"><canvas id="tac" aria-label="Tactical plot"></canvas><span class="sec">Tactical · <kbd>Tab</kbd> enlarge</span></div>
@@ -330,7 +352,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
       <div class="ptitle"><b>Weapons</b></div>
       <div id="wrows"></div>
       <div class="auto">Batteries free <kbd>B</kbd> <b id="autofire">OFF</b></div>
-      <div class="auto" id="pd">Point defence · automatic</div>
+      <div class="auto" id="pd"></div>
     </div>
   </div>
 
@@ -470,6 +492,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 <script src="crew/openings.js"></script>
 <script src="crew/twists.js"></script>
 <script src="crew/battle-environments.js"></script>
+<script src="crew/soundscape.js"></script>
 <script src="crew/upgrades.js"></script>
 <script src="crew/ships.js"></script>
 <script src="crew/tutorial.js"></script>
@@ -992,7 +1015,7 @@ const Music = {
     a._starting = true;
     a.play().then(() => { a._starting = false; }, () => { a._starting = false; this.blocked = true; });
   },
-  toggle() { this.on = !this.on; try { localStorage.setItem('broadside-music', this.on ? 'on' : 'off'); } catch (e) {} musicLabels(); this.start(); return this.on; },
+  toggle() { this.on = !this.on; try { localStorage.setItem('broadside-music', this.on ? 'on' : 'off'); } catch (e) {} musicLabels(); this.start(); Bed.sync(); return this.on; },
   tick(dt) {
     this.start();
     for (const k in this.tracks) {
@@ -1000,6 +1023,17 @@ const Music = {
       a.volume = a.paused ? 0 : clamp(a.volume + clamp(target - a.volume, -dt * 0.4, dt * 0.4), 0, 1);   // a held-back track fades in once it starts
       if (target === 0 && a.volume === 0 && !a.paused) a.pause();
     }
+  }
+};
+// The region's synthesised bed (crew/soundscape.js) under the battle music. It follows the music switch.
+const Bed = {
+  p: null, id: null,
+  set(id) { this.id = id; this.sync(); },
+  sync() {
+    if (!this.p && Sfx.ctx && window.BroadsideSoundscape) this.p = window.BroadsideSoundscape.create(Sfx.ctx, Sfx.ctx.destination, 0.06);
+    if (!this.p) return;
+    this.p.set(Music.on && (state === 'playing' || state === 'paused') ? this.id : null);
+    this.p.level(state === 'paused' ? 0.025 : 0.06);
   }
 };
 function musicLabels() {
@@ -1329,7 +1363,7 @@ function clearWorld() {
 function startGame() {
   attractStop();
   Sfx.init(); Music.play('battle', true);
-  clearWorld(); battleEnvironment.configure(campaignMission ? campaignMission.env : 0, { gate: !!(campaignMission && campaignMission.gate) }); display.visible = false;
+  clearWorld(); const sceneryName = battleEnvironment.configure(campaignMission ? campaignMission.env : 0, { gate: !!(campaignMission && campaignMission.gate) }); display.visible = false;
   const campaignSave = campaignMission ? readCampaignSave() : null, fleetRecs = campaignShips(campaignSave), flagRec = fleetRecs[0] || null;
   const pk = flagRec ? flagRec.ship : choice.ship;
   const others = Object.keys(CLASSES).filter(k => k !== pk && !CLASSES[k].campaignOnly);   // bosses, the Sentinel and the Thrall stay in the campaign
@@ -1370,6 +1404,9 @@ function startGame() {
   const aiKey = campaignDiff ? campaignDiff.ai : choice.diff;
   enemy.ai = { diff: DIFF[aiKey], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
   game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [], bridgeHits: { time: 0, last: -99, count: 0 }, opening, storm: 0, twist: null };
+  // Where this is being fought: the system and its region (campaign), and the scenery laid for it.
+  const sysHere = campaignMission && window.BroadsideCampaign ? window.BroadsideCampaign.byId[campaignMission.system] : null;
+  game.place = sysHere ? { name: sysHere.name, region: sysHere.region, scenery: sceneryName, line: sysHere.description } : null;
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
     encounter:campaignMission,allies,makeShip,placeShip,ships,player,primaryEnemy:enemy,
     getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
@@ -1395,6 +1432,7 @@ function startGame() {
   tacFull = false; $('tacfull').hidden = true;
   buildHud();
   state = 'playing';
+  Bed.set(campaignMission ? campaignMission.env : null);
   $('menu').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
   sizeCanvases();
   renderer.compile(scene, camera);
@@ -1438,8 +1476,11 @@ function stageOpening(tutorialWanted) {
   const O = window.BroadsideOpenings, force = campaignParams.get('opening');
   const id = SIM && !force ? 'headon' : O.choose(campaignMission, Math.random, { force, tutorial: tutorialWanted });
   const keep = (SIM && !force) || O.fixed(campaignMission);   // ?sim balance runs and fixed-geometry goals keep the old field
-  const L = O.layout(id, Math.random, keep ? { turn: 0 } : {});
-  L.keepField = keep; L.t = 0; L.hailPending = false; L.warned = false;
+  // A head-on meeting starts closer and faster than it used to, so the guns speak sooner. The coached first battle,
+  // the fixed-geometry goals and ?sim runs keep the long approach.
+  const close = !keep && !tutorialWanted && !(campaignMission && campaignMission.boss);
+  const L = O.layout(id, Math.random, keep ? { turn: 0 } : { close });
+  L.close = close && L.id === 'headon'; L.keepField = keep; L.t = 0; L.hailPending = false; L.warned = false;
   return L;
 }
 function placeAt(s, p) {
@@ -1452,7 +1493,7 @@ function placeAt(s, p) {
 function formWingmen(L) {
   const O = window.BroadsideOpenings, wing = ships.filter(s => s.team === 'e' && s !== enemy);
   wing.forEach((s, i) => {
-    if (L.id === 'headon') { if (L.theta) placeAt(s, { ...O.turn({ x: s.pos.x, y: s.pos.y, z: s.pos.z, yaw: s.yaw }, L.theta), speed: 0.5 }); return; }
+    if (L.id === 'headon' && !L.close) { if (L.theta) placeAt(s, { ...O.turn({ x: s.pos.x, y: s.pos.y, z: s.pos.z, yaw: s.yaw }, L.theta), speed: 0.5 }); return; }
     if (L.enemy.away) { placeAt(s, { x: 0, z: 0, away: L.enemy.away }); return; }
     const side = i % 2 ? 1 : -1;
     placeAt(s, { ...O.beside(L.enemy, side * (800 + i * 250), 350 + i * 300), y: (L.enemy.y || 0) + 60, speed: L.enemy.speed, hidden: L.enemy.hidden });
@@ -1647,6 +1688,31 @@ function endGame(outcome) {
   if (!(outcome === 'win' && ['surrender','extracted','escort_extracted','driven_off'].includes(game.campaignOutcome)))
     Voice.say(outcome === 'win' ? 'enemy-destroyed' : 'ship-lost', 0, true);
 }
+// What sank the flagship, from the battle's own record: the first shield facing to fail and when, the weapon that did
+// most of the hull damage and the side it came through, and one line of advice for that weapon.
+const HURT_KINDS = { shell: 'Gunfire', rail: 'Railgun fire', torp: 'Torpedoes', missile: 'Missiles', plasma: 'Plasma', lance: 'The lance', beam: 'Beam fire', mine: 'Mines', ram: 'Ramming', rock: 'Collisions' };
+const HURT_TIPS = {
+  shell: 'Turn a fresh shield facing toward the guns before the one under fire collapses.',
+  rail: 'Turn a fresh shield facing toward the guns before the one under fire collapses.',
+  torp: 'Torpedoes are weak against shields: keep a charged facing toward them, and never show them a facing that is down.',
+  missile: 'Missiles are weak against shields: keep a charged facing toward them, and never show them a facing that is down.',
+  plasma: 'Plasma strips shields quickly: change the facing you show it early, and put power into shields.',
+  lance: 'A lance fires only dead ahead: stay off its bow, and reinforce the facing it is pointed at while it charges.',
+  beam: 'Beams wear a facing down steadily: reinforce the one they are on, then turn another toward them.',
+  mine: 'Mines are dropped astern: do not follow a minelayer straight up its wake.',
+  ram: 'Keep your distance from a ram, or meet it bow-on with the fore shield reinforced.',
+  rock: 'Watch the tactical plot for rocks, and for the edge of the engagement area.'
+};
+function whatSankYou() {
+  const h = player && player.hurt; if (!h) return '';
+  const total = Object.values(h.by).reduce((a, b) => a + b, 0); if (total <= 0) return '';
+  const [kind, most] = Object.entries(h.by).sort((a, b) => b[1] - a[1])[0], side = h.side.indexOf(Math.max(...h.side));
+  const clock = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+  const sideName = f => ['fore', 'aft', 'port', 'starboard'][f] || FACINGS[f].toLowerCase();
+  const first = h.down ? `Your ${sideName(h.down.f)} shield was the first to fail, at ${clock(h.down.t)}. ` : '';
+  const share = Math.round(most / total * 100), through = Math.round(h.side[side] / total * 100);
+  return `${first}${HURT_KINDS[kind] || 'Enemy fire'} did ${share}% of the damage to your hull. ${through}% of all hull damage came in through the ${sideName(side)} side. ${HURT_TIPS[kind] || HURT_TIPS.shell}`;
+}
 function showOver() {
   state = 'over'; for (const s of ships) s.burn = false;
   $('letterbox').classList.remove('on');   // the kill cam keeps filming the wreck behind the results
@@ -1654,7 +1720,7 @@ function showOver() {
   const w = $('over-word'), soft = { convoy_lost: 'Convoy lost', station_lost: 'Station lost', quarry_escaped: 'Quarry escaped' }[game.campaignOutcome];   // lost the objective, not the ship
   w.textContent = win ? enemy.name + ' destroyed' : soft && player.alive ? soft : player.name + ' lost'; w.className = 'bigword ' + (win ? 'win' : 'lose');
   $('over-sub').textContent = win ? (enemy.captainFate ? captainFate(enemy) : 'The enemy ' + enemy.C.cls.toLowerCase() + ' is a drifting wreck.') :
-    'Keep your strongest facing toward the enemy, and move power to shields when a facing drops below a quarter.';
+    (!player.alive && whatSankYou()) || 'Keep your strongest facing toward the enemy, and move power to shields when a facing drops below a quarter.';
   const st = player.stats, acc = st.shots ? Math.round(st.hits / st.shots * 100) : 0;
   const t = game.time, mm = Math.floor(t / 60), ss = Math.floor(t % 60);
   const rows = [['Battle time', mm + ':' + String(ss).padStart(2, '0')], ['Damage dealt', Math.round(st.dealt)], ['Damage taken', Math.round(st.taken)], ['Gun accuracy', acc + '%'], ['Torpedo hits', st.torpHits]];
@@ -1665,7 +1731,7 @@ function showOver() {
   }
   rows.push(['Hull left', Math.max(0, Math.round(player.hull))]);
   $('over-stats').innerHTML = rows.map(r => `<div><small>${r[0]}</small><b>${r[1]}</b></div>`).join('');
-  $('hud').hidden = true; $('escort-hold').hidden=true; $('over').hidden = false; Sfx.engine(0, false);
+  $('hud').hidden = true; $('escort-hold').hidden=true; $('over').hidden = false; Sfx.engine(0, false); Bed.sync();
   if (campaignMission && win) {
     const code = game.campaignOutcome, convoy = (fleet?.convoy?.name || 'The convoy').split(' · ')[0], custom = campaignMission.ends && campaignMission.ends[code];
     const ends = {
@@ -1730,7 +1796,7 @@ function showOver() {
     if(!win&&game.campaignOutcome==='convoy_lost')$('over-sub').textContent=convoyName+' has been lost. Refit at a starbase and attempt the escort again.';
     else if(!win&&game.campaignOutcome==='station_lost')$('over-sub').textContent=(fleet?.station?.name||'The station').split(' · ')[0]+' has been destroyed. Refit at a starbase and try again.';
     else if(!win&&game.campaignOutcome==='quarry_escaped')$('over-sub').textContent=enemy.name+' has jumped out of the system. Refit at a starbase and pick up the trail again.';
-    else if(!win)$('over-sub').textContent='Rescue teams are towing the ship to the nearest starbase. Return to the campaign map to regroup.';
+    else if(!win)$('over-sub').textContent=((!player.alive&&whatSankYou())||'').replace(/(.)$/,'$1 ')+'Rescue teams are towing the ship to the nearest starbase. Return to the campaign map to regroup.';
     else if(game.campaignOutcome==='escort_saved')$('over-sub').textContent=convoyName+' survived. All hostile vessels have been disabled.'+(fates?' '+fates:'');
     else if(game.campaignOutcome==='fleet_destroyed')$('over-sub').textContent=fates||'Every hostile ship is disabled. Ship damage, subsystem condition and remaining torpedoes have been recorded.';
     else if (!game.campaignOutcome) $('over-sub').textContent = 'Operation secured. Ship damage, subsystem condition and remaining torpedoes have been recorded.';
@@ -1738,7 +1804,7 @@ function showOver() {
 }
 function toMenu(page = 'main') {
   attractStop();
-  state = 'menu'; game = null; fleet = null; bridge = null; clearWorld(); battleEnvironment.configure(0); player = enemy = null; Music.play('title');
+  state = 'menu'; game = null; fleet = null; bridge = null; clearWorld(); battleEnvironment.configure(0); player = enemy = null; Music.play('title'); Bed.sync(); placeCard(false);
   display.visible = true; updateDisplay();
   $('hud').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('menu').hidden = false;
   showPage(page);
@@ -1747,6 +1813,7 @@ function toMenu(page = 'main') {
 function pause(on) {
   if (on && state === 'playing') { state = 'paused'; $('pause').hidden = false; Sfx.engine(0, false); Sfx.burn(false); }
   else if (!on && state === 'paused') { state = 'playing'; $('pause').hidden = true; if (player) player.burn = false; }   // a burn still held relights, with its sound
+  Bed.sync();
 }
 
 // ---------------- impact: hit pauses, slow motion, damage numbers, kill cam ----------------
@@ -1962,6 +2029,15 @@ function startIntro(crew) {
   intro = { shots: openingShots(crew), i: -1, t: 0, side: Math.random() < 0.5 ? 1 : -1 };
   for (const x of ships) x.shieldMesh.visible = false;   // shields go up at battle stations, when the opening ends
   $('hud').classList.add('cine'); $('letterbox').classList.add('on'); nextShot();
+  placeCard(true);
+}
+// The place card over the opening shots: region, system and a line about it. It fades when the opening ends.
+function placeCard(on) {
+  const el = $('in-place'), p = game && game.place;
+  if (!on || !p) { el.classList.remove('on'); return; }
+  $('ip-region').textContent = p.region + (p.scenery && p.scenery !== 'Open Space' && p.scenery !== p.region ? ' · ' + p.scenery : '');
+  $('ip-name').textContent = p.name; $('ip-line').textContent = p.line || '';
+  el.classList.add('on');
 }
 // An officer's recorded line, if there is one; the shot holds until it has been said. A missing file is silence.
 let introVoice = null;
@@ -1984,7 +2060,7 @@ function nextShot() {
   el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
 }
 function endIntro() {
-  if (!intro) return; intro = null; stopIntroVoice();
+  if (!intro) return; intro = null; stopIntroVoice(); placeCard(false);
   for (const x of ships) x.shieldMesh.visible = x.alive;
   for (const id of ['in-word', 'in-sub', 'in-line']) $(id).textContent = '';
   if (!kc) { $('letterbox').classList.remove('on'); $('hud').classList.remove('cine'); }
@@ -2065,11 +2141,12 @@ function damage(s, dmg, kind, local, src) {
   if (src) { src.stats.dealt += dmg; if (kind === 'lance') src.stats.lanceDmg += dmg; }
   if (src && src.team === 'p' && s.team === 'e') { s.hitBy[f] += dmg; s.kindBy[kind] = (s.kindBy[kind] || 0) + dmg; }   // what a rival remembers
   s.stats.taken += dmg;
+  if (s === player && hullD > 0) { const k = src ? kind : 'rock', h = s.hurt || (s.hurt = { by: {}, side: [0, 0, 0, 0], down: null }); h.by[k] = (h.by[k] || 0) + hullD; h.side[f] += hullD; }   // for the defeat screen
   if (game.tally && s === player) { const k = (src ? (src.C.boss ? 'boss' : src === enemy ? 'lead' : 'add') : 'env') + ':' + kind; game.tally[k] = (game.tally[k] || 0) + Math.round(dmg); }   // balance tool
   if (s.hull <= 0) { s.killKind = kind; killShip(s, src); }
 }
 function facingDown(s, f, src) {
-  if (s === player) { showMsg(FACINGS[f] + ' shield down', 2.2, true); Sfx.alarm(); Voice.say('shields-down', 8); }
+  if (s === player) { showMsg(FACINGS[f] + ' shield down', 2.2, true); Sfx.alarm(); Voice.say('shields-down', 8); const h = s.hurt || (s.hurt = { by: {}, side: [0, 0, 0, 0], down: null }); if (!h.down) h.down = { f, t: game.time }; }
   else { showMsg('Enemy ' + FACINGS[f].toLowerCase() + ' shield down', 2); Voice.say('enemy-shields-down', 8); }
   if (s.team === 'e') shieldBreak(s, f, src);
 }
@@ -3118,7 +3195,10 @@ function updateHud(dt) {
   setT(ownRows[4].b, P.focus < 0 ? 'none' : FACINGS[P.focus]);
   setT($c('own-pw'), P.avail);
   for (const k of ['eng', 'shd', 'wpn']) { const pp = pipEls[k]; for (let i = 0; i < 8; i++) setC(pp[i], i < P.pips[k] ? 'on' : ''); }
-  for (const k of SUBS) { const o = subEls[k], v = P.sub[k]; setX(o.bar, v / 100); setT(o.v, Math.round(v)); setC(o.r, 'sub' + (v < 50 ? ' dmg' : '') + (P.repair === k ? ' rep' : '')); }
+  // A system is listed only once it is damaged (or being repaired): a healthy ship shows one quiet line.
+  let hurtSubs = 0;
+  for (const k of SUBS) { const o = subEls[k], v = P.sub[k], ok = v >= 99.5 && P.repair !== k; if (!ok) hurtSubs++; setX(o.bar, v / 100); setT(o.v, Math.round(v)); setC(o.r, 'sub' + (ok ? ' ok' : '') + (v < 50 ? ' dmg' : '') + (P.repair === k ? ' rep' : '')); }
+  setT($c('own-subs-h'), hurtSubs ? 'Systems · click one to repair it first' : 'Systems · all nominal');
   const ef = E.hull / E.C.hull; setX($c('foe-hullbar').firstChild, ef); $c('foe-hullbar').classList.toggle('crit', ef < 0.3); setT($c('foe-hull'), Math.max(0, Math.round(E.hull)));
   drawShieldDiamond($c('foe-sh'), E, seen ? theirF : -1);
   for (let i = 0; i < 4; i++) { const r = foeRows[i]; setC(r.d, E.sh[i] <= 0 ? 'down' : ''); setT(r.a, FACINGS[i] + (seen && theirF === i ? ' ◂ you' : '')); setT(r.b, Math.round(E.sh[i] / E.C.shield * 100) + '%'); }
@@ -3139,7 +3219,7 @@ function updateHud(dt) {
     if (g.type === 'torpedo') {
       let loaded = 0, minT = 1e9; for (const t of g.tubesT) { if (t <= 0) loaded++; if (t < minT) minT = t; }
       frac = g.ammo ? (loaded ? 1 : 1 - minT / g.reload) : 0;
-      st = off ? 'OFFLINE' : g.ammo <= 0 ? 'EMPTY' : `${g.ammo} LEFT · ${loaded}/${g.tubesT.length} TUBES` + (inA ? '' : ' · NO ARC'); ready = !off && loaded > 0 && g.ammo > 0 && inA;
+      st = off ? 'OFFLINE' : g.ammo <= 0 ? 'EMPTY' : `${g.ammo} LEFT · ${loaded}/${g.tubesT.length}` + (inA ? '' : ' · NO ARC'); ready = !off && loaded > 0 && g.ammo > 0 && inA;
     } else if (g.type === 'lance') {
       frac = g.beamT > 0 ? g.beamT / g.dur : g.charge; firing = g.beamT > 0;
       // Firing arc and actual beam intersection differ at long range: never promise a hit on angle alone.
@@ -3147,11 +3227,11 @@ function updateHud(dt) {
       const beamOrigin=muzzle ? muzzle.clone().applyMatrix4(P.obj.matrixWorld) : null;
       const rayT=beamOrigin && E.alive ? rayEllipsoid(E,E.C.shieldE,beamOrigin,P.fwd) : -1;
       const clearShot=inA && rayT >= 0 && rayT <= g.range;
-      st = off ? 'OFFLINE' : firing ? 'FIRING' : g.charge < 1 ? 'CHARGING ' + Math.ceil((1 - g.charge) * g.chargeT / (e.wpn * (0.3 + 0.7 * subEff(P, g)))) + ' s' : clearShot ? 'READY · BEAM ON TARGET' : inA ? 'CHARGED · BEAM WILL MISS' : dist >= g.range ? 'CHARGED · OUT OF RANGE' : 'CHARGED · '+Math.round(Math.abs(brE.b))+'° OFF BOW';
+      st = off ? 'OFFLINE' : firing ? 'FIRING' : g.charge < 1 ? '' + Math.ceil((1 - g.charge) * g.chargeT / (e.wpn * (0.3 + 0.7 * subEff(P, g)))) + ' s' : clearShot ? 'ON TARGET' : inA ? 'BEAM WILL MISS' : dist >= g.range ? 'OUT OF RANGE' : Math.round(Math.abs(brE.b))+'° OFF BOW';
       ready = !off && g.charge >= 1 && clearShot;
     } else {
       frac = g.charge;
-      st = off ? 'OFFLINE' : g.charge < 1 ? 'LOADING' : inA ? 'READY · IN ARC' : 'LOADED · NO ARC';
+      st = off ? 'OFFLINE' : g.charge < 1 ? '' : inA ? 'IN ARC' : 'NO ARC';
       ready = !off && g.charge >= 1 && inA;
     }
     setX(o.bar, frac); setT(o.st, st);
@@ -3163,7 +3243,7 @@ function updateHud(dt) {
   else if (incoming !== game.saidIncoming && P.alive && Voice.say(incoming === 'torp' ? 'torpedoes-inbound' : 'missiles-inbound', 12)) game.saidIncoming = incoming;
   if (!mineNear) game.saidMine = false;
   else if (!game.saidMine && P.alive && Voice.say('mines-detected', 20)) game.saidMine = true;
-  setT($c('pd'), incoming ? 'Point defence · engaging ' + (incoming === 'torp' ? 'torpedoes' : 'missiles') : 'Point defence · automatic');
+  setT($c('pd'), incoming ? 'Point defence · engaging ' + (incoming === 'torp' ? 'torpedoes' : 'missiles') : '');
   let warn = '';
   if (incoming && P.alive) warn = incoming === 'torp' ? 'TORPEDOES INBOUND' : 'MISSILES INBOUND';
   else if (mineNear && P.alive) warn = 'MINES CLOSE';
@@ -3284,6 +3364,45 @@ async function boot() {
   }
 }
 let last = performance.now();
+// ---------------- gun camera ----------------
+// A long-lens view of the current target in a small window under the enemy panel, so the ship you are fighting is
+// more than a bracket at three kilometres. The scene is drawn again from a camera on your line of fire into a small
+// target every other frame (every third on Low), and that picture is copied into the window each frame.
+const gcam = {
+  cam: new THREE.PerspectiveCamera(20, 2.32, 20, 90000), W: 464, H: 200, rt: null, scene: new THREE.Scene(), ortho: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1),
+  n: 0, rectT: 0, rect: null, live: false, dir: new V3(0, 0, -1), side: new V3(), at: new V3(), sky: new V3()
+};
+gcam.rt = new THREE.WebGLRenderTarget(gcam.W, gcam.H, { type: THREE.HalfFloatType });
+gcam.scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: gcam.rt.texture, depthTest: false, depthWrite: false })));
+function gunCamera(rdt) {
+  const el = $c('gcam'), E = enemy;
+  const want = (state === 'playing' || state === 'paused') && player && E && !intro && !kc && !unseen(E) && E.obj.visible && !$c('hud').classList.contains('cine');
+  gcam.rectT -= rdt;
+  if (want && gcam.rectT <= 0) { gcam.rectT = 0.5; const r = el.getBoundingClientRect(); gcam.rect = r.width > 8 && r.height > 8 ? r : null; }
+  const live = !!(want && gcam.rect);
+  if (live !== gcam.live) { gcam.live = live; el.classList.toggle('off', !live); gcam.n = 0; }
+  if (!live) return;
+  if (gcam.n++ % (gfx.q === 'low' ? 3 : 2) === 0 && state === 'playing') {
+    // On the line from your ship to theirs, a little above and to one side, framed to the hull's length.
+    const c = gcam.cam, R = Math.max(E.C.hullE.r[0], E.C.hullE.r[2]);
+    if (player.pos.distanceToSquared(E.pos) > 1) gcam.dir.subVectors(E.pos, player.pos).normalize();
+    gcam.side.set(-gcam.dir.z, 0, gcam.dir.x).normalize();
+    const d = R * 3;
+    c.position.copy(E.pos).addScaledVector(gcam.dir, -d).addScaledVector(gcam.side, d * 0.22); c.position.y += d * 0.2;
+    c.lookAt(gcam.at.copy(E.pos)); c.updateMatrixWorld();
+    // Particles are sized for the main view's height and the sky and dust ride with the main camera: borrow them for this shot.
+    const sky = gcam.sky.copy(skyGroup.position), sc = fire.mat.uniforms.uScale.value, dv = dust.visible;
+    const k = gcam.H * 0.5 / Math.tan(deg(c.fov * 0.5));
+    skyGroup.position.copy(c.position); fire.mat.uniforms.uScale.value = smoke.mat.uniforms.uScale.value = k; dust.visible = false;
+    renderer.setRenderTarget(gcam.rt); renderer.render(scene, c); renderer.setRenderTarget(null);
+    skyGroup.position.copy(sky); fire.mat.uniforms.uScale.value = smoke.mat.uniforms.uScale.value = sc; dust.visible = dv;
+  }
+  const r = gcam.rect, ac = renderer.autoClear;
+  renderer.autoClear = false; renderer.setScissorTest(true);
+  renderer.setViewport(r.left, H - r.bottom, r.width, r.height); renderer.setScissor(r.left, H - r.bottom, r.width, r.height);
+  renderer.render(gcam.scene, gcam.ortho);
+  renderer.setScissorTest(false); renderer.setViewport(0, 0, W, H); renderer.autoClear = ac;
+}
 function frame(now) {
   requestAnimationFrame(frame);
   const ms = now - last; trackFrame(ms);
@@ -3303,13 +3422,14 @@ function frame(now) {
   if (player && state === 'playing') Sfx.engine(player.burn ? 1.8 : STEPS[player.step], player.alive);
   drawShells();
   if (!(state === 'loading' || (state === 'menu' && menuPage !== 'ship' && !attract.on))) composer.render();
+  gunCamera(rdt);
   updateHud(rdt); hudFast(rdt); if (game) dmgNumsUpdate(rdt); Music.tick(Math.min(ms / 1000, 0.1));
 }
 // test hook: open with ?sim to drive the game from automated tests
 if (location.search.includes('sim')) window.__sim = {
   get state() { return state; }, get game() { return game; }, get bridge() { return bridge; }, get fleet() {return fleet;}, get cam() { return cam; }, get player() { return player; }, get enemy() { return enemy; }, ships, torps, mines, choice, DIFF, Music, CLASSES, Voice,
   get opening() { return game && game.opening; }, get twist() { return game && game.twist; }, acceptSurrender, asteroids,
-  start: startGame, setPips, fireGroup, inArc, Sfx, damage, armed, get tutorial() { return tutorial; }, get killCam() { return kc; }, get intro() { return intro; }, endIntro, timeFx, gfx,
+  start: startGame, setPips, fireGroup, inArc, Sfx, damage, armed, get tutorial() { return tutorial; }, get killCam() { return kc; }, get intro() { return intro; }, endIntro, timeFx, gfx, gcam, whatSankYou,
   step(n, dt = 1 / 30) { for (let i = 0; i < n && state === 'playing'; i++) { updateGame(dt); fire.update(dt); smoke.update(dt); } },
   // Balance testing (tools/balance.mjs): stage an encounter from the current save, let the AI fly the player's ship
   // (Captain grade, picking targets and using officer commands), and run it to the end or to maxTime seconds without rendering.

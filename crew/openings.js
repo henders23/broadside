@@ -93,10 +93,10 @@ function layout(id,rnd=Math.random,opts={}){
    p={x:r(-400,400),z:r(200,900),yaw:0,speed:.5};
    e={x:0,y:0,z:-9000,yaw:Math.PI,speed:.7,away:Math.round(r(6,13)*10)/10};
    break;}
-  default:{   // the old opening: nose to nose, five kilometres apart
-   const off=r(-900,900);
-   p={x:off*.3,z:2700,yaw:0,speed:.5};
-   e={x:-off,y:y(),z:-2700,yaw:Math.PI,speed:.5};
+  default:{   // nose to nose: five kilometres apart at half speed, or (opts.close) under four and already running in
+   const off=r(-900,900),half=opts.close?1850:2700,sp=opts.close?.7:.5;
+   p={x:off*.3,z:half,yaw:0,speed:sp};
+   e={x:-off,y:y(),z:-half,yaw:Math.PI,speed:sp};
   }
  }
  out.label=OPENINGS[out.id].label;out.line=OPENINGS[out.id].line;

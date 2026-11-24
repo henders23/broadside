@@ -81,11 +81,14 @@ function harlanQuiet(){if(harlanAudio){harlanAudio.pause();harlanAudio=null;}Amb
 // click or key, so it starts then; it dips while Harlan speaks and goes quiet while the tab is hidden. M or the
 // speaker button in the top bar turns it off (remembered in this browser).
 const AMB_PREF='broadside-ambience',AMB_VOL=.3;
-const Ambience={ctx:null,gain:null,started:false,on:(()=>{try{return localStorage.getItem(AMB_PREF)!=='off';}catch(e){return true;}})(),
+const Ambience={ctx:null,gain:null,bed:null,started:false,on:(()=>{try{return localStorage.getItem(AMB_PREF)!=='off';}catch(e){return true;}})(),
  async start(){if(this.started||!this.on||window.__noVoice)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;this.started=true;
   const c=this.ctx=new C();this.gain=c.createGain();this.gain.gain.value=0;this.gain.connect(c.destination);
-  try{const buf=await c.decodeAudioData(await(await fetch('music/ambience.mp3')).arrayBuffer()),src=c.createBufferSource();src.buffer=buf;src.loop=true;src.connect(this.gain);src.start();}catch(e){return;}
-  this.level(2.5);},
+  try{const buf=await c.decodeAudioData(await(await fetch('music/ambience.mp3')).arrayBuffer()),src=c.createBufferSource();src.buffer=buf;src.loop=true;src.connect(this.gain);src.start();}catch(e){}
+  this.level(2.5);this.place();},
+ // The region the flagship is in has its own quiet bed under the hum (crew/soundscape.js).
+ place(){if(!this.ctx||!window.BroadsideSoundscape||typeof state==='undefined'||!state)return;if(!this.bed)this.bed=window.BroadsideSoundscape.create(this.ctx,this.gain,.22);
+  const s=byId[state.system]||byId[HOME];this.bed.set(window.BroadsideSoundscape.forRegion(s.region));},
  // Fades to where the hum should sit now; `slow` is the fade's time constant in seconds.
  level(slow=.6){if(!this.ctx)return;const t=this.ctx.currentTime,v=!this.on||document.hidden?0:harlanAudio?AMB_VOL*.35:AMB_VOL;this.gain.gain.cancelScheduledValues(t);this.gain.gain.setTargetAtTime(v,t,slow/3);},
  toggle(){this.on=!this.on;try{localStorage.setItem(AMB_PREF,this.on?'on':'off');}catch(e){}if(this.on){if(this.ctx)this.ctx.resume();this.start();}this.level();this.mark();toast(this.on?'Ship ambience on':'Ship ambience off');},

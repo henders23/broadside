@@ -32,6 +32,14 @@ await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   check((await page.textContent('.sys[data-id="vela"] .war')) === 'FRONT' && (await page.textContent('#selhold')) === 'Front line' && (await page.textContent('.sys[data-id="kestrel"] .war')) === 'FRONT', 'the front system is tagged and Kestrel, under attack, is on the front line');
   check(await page.locator('#legend span').count() === 5 && (await page.textContent('#legend')).includes('Blockade'), 'the map has a key');
   check((await page.textContent('#frontstrip')).includes('3 more battles, or 18 jumps'), 'the front strip counts battles and jumps: ' + await page.textContent('#frontstrip'));
+  // a new captain's map leaves the war's fine print out until the first operation is won
+  check(await page.locator('#legend').isHidden() && await page.locator('#frontstrip').isHidden() && await page.locator('#selhold').isHidden() && await page.locator('#selthreat').isVisible(), 'before the first victory the key, the front strip and the war facts are hidden');
+  await page.evaluate(() => { state.completed = [1]; refresh(); });
+  check(await page.locator('#legend').isVisible() && await page.locator('#frontstrip').isVisible() && await page.locator('#selhold').isVisible(), 'and they appear once it is won');
+  await page.evaluate(() => { state.completed = []; refresh(); });
+  // each system has its own view on arrival
+  const views = await page.evaluate(() => ['meridian', 'kestrel', 'cinder'].map(id => { const c = document.getElementById('sky2'); drawPlace(c, byId[id], REGION_HUE[regionOf(byId[id])]); const d = c.getContext('2d').getImageData(900, 0, 700, 900).data; let n = 0; for (let i = 0; i < d.length; i += 4) n += d[i] + d[i + 1] * 3 + d[i + 2] * 7; return n; }));
+  check(new Set(views).size === 3 && views.every(v => v > 1e6), 'arrival backdrops are drawn, and differ from system to system');
 
   // a click selects, the panel's button jumps
   const kes = page.locator('.sys[data-id="kestrel"]');

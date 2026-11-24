@@ -80,4 +80,6 @@ assert.deepEqual(X.choose(contract,seeded(1),{fleet:true,force:'navy'}),{id:'nav
 assert.equal(X.choose(contract,seeded(1),{fleet:false,force:'navy'}),null,'but only where it can happen');
 assert.equal(X.support('revenant').cls,'scrapjaw');assert.equal(X.support('wraith').cls,'thrall');assert.ok(X.support('nothing').cls);
 assert.ok(X.navyCall(seeded(2)).line.includes(X.navyCall(seeded(2)).name),'the Navy ship names itself');
+// A close head-on (skirmishes and ordinary contracts): under four kilometres, both ships already at speed.
+{const rr=seeded(13);for(let k=0;k<200;k++){const L=O.layout('headon',rr,{close:true}),d=dist(L.player,L.enemy);assert.ok(d>3600&&d<4200,'close head-on: under four kilometres ('+d.toFixed(0)+')');assert.equal(L.player.speed,.7);assert.equal(L.enemy.speed,.7);}}
 console.log('openings and twists: all checks passed');

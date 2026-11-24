@@ -1202,7 +1202,7 @@ function fx(s) {
   o.eng = (0.55 + 0.1125 * p.eng) * (0.45 + 0.55 * sub.engines / 100);
   o.turn = (0.7 + 0.075 * p.eng) * (0.5 + 0.5 * sub.engines / 100);
   o.shd = (p.shd / 4) * (s.C.shieldHardened ? 0.575 + 0.425 * sub.shields / 100 : 0.15 + 0.85 * sub.shields / 100);
-  o.wpn = 0.35 + 0.1625 * p.wpn;
+  o.wpn = 0.5 + 0.125 * p.wpn;   // 4 pips is 1.0; all eight is 1.5
   return o;
 }
 const WEIGHTS = [[0.25, 0.25, 0.25, 0.25], ...[0, 1, 2, 3].map(f => [0, 1, 2, 3].map(i => i === f ? 0.55 : 0.15))];
@@ -1406,7 +1406,7 @@ function startGame() {
   game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [], bridgeHits: { time: 0, last: -99, count: 0 }, opening, storm: 0, twist: null };
   // Where this is being fought: the system and its region (campaign), and the scenery laid for it.
   const sysHere = campaignMission && window.BroadsideCampaign ? window.BroadsideCampaign.byId[campaignMission.system] : null;
-  game.place = sysHere ? { name: sysHere.name, region: sysHere.region, scenery: sceneryName, line: sysHere.description } : null;
+  game.place = sysHere ? { name: sysHere.name, region: sysHere.region, scenery: sceneryName, line: window.BroadsideCampaign.describe(sysHere, campaignSave && campaignSave.completed) } : null;
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
     encounter:campaignMission,allies,makeShip,placeShip,ships,player,primaryEnemy:enemy,
     getSelected:()=>enemy,setSelected:s=>{enemy=s;player.target=s;},
@@ -1754,7 +1754,7 @@ function showOver() {
       // (A lost convoy is not the destruction of the player's flagship.)
       const flown = ships.filter(s => s.team === 'p' && s.recId), lost = [];
       const record = s => { const alive = s.alive && s.hull > 0, torpGroup = s.groups.find(g => g.type === 'torpedo'); if (!alive && s !== player) lost.push(s.name);
-        return { hull: alive ? clamp(s.hull / s.C.hull, 0.1, 1) : s === player ? 0.45 : 0.3, sub: alive ? { ...s.sub } : null, torps: alive && torpGroup ? torpGroup.ammo : null }; };
+        return { hull: alive ? clamp(s.hull / s.C.hull, 0.1, 1) : s === player ? 0.45 : 0.3, sub: alive ? { ...s.sub } : null, torps: torpGroup && (alive || s === player) ? torpGroup.ammo : null }; };   // a towed flagship keeps only the torpedoes she had left
       if (Array.isArray(saved.ships)) { for (const s of flown) { const rec = saved.ships.find(r => r.id === s.recId); if (rec) Object.assign(rec, record(s)); } }
       else Object.assign(saved, record(player));
       saved.pendingResult.lost = lost;
@@ -1993,7 +1993,7 @@ const OPENERS = {
   surrender: 'If we hurt them badly enough, the crew may strike their colours.', rival: 'I know that transponder, captain. They have come back for us.'
 };
 const FRIEND_LINES = {
-  convoy: 'Slow, unarmed and full of people. Nothing gets near her.', station: 'It has guns of its own, captain, and not nearly enough of them.',
+  convoy: 'Slow and unarmed, captain. Nothing gets near her.', station: 'It has guns of its own, captain, and not nearly enough of them.',
   escort: 'On our flank, captain. Ready when you are.', friend: 'Flying Navy colours today. Strange times.'
 };
 const REGULARS = ['varro', 'okoye', 'vale', 'sato', 'renn'];   // the officers with recorded lines; anyone else is subtitles only
@@ -2254,7 +2254,7 @@ function shieldsUpdate(s, dt) {
       const ex = Math.min(s.sh[i] - s.cap[i], 60 * dt); s.sh[i] -= ex;
       if (s.focus >= 0 && s.focus !== i) s.sh[s.focus] = Math.min(s.cap[s.focus], s.sh[s.focus] + ex * 0.85);
     }
-    const pause = t - s.hitT[i] < 1.5 ? 0.35 : 1;
+    const pause = t - s.hitT[i] < 1.5 ? 0.55 : 1;   // a facing under fire still recharges at a little over half rate, so shield power is worth having
     s.sh[i] = Math.min(s.cap[i], s.sh[i] + C.regen * e.shd * w[i] * pause * storm * (s.burn ? 0.5 : 1) * dt);
   }
   u.uStr.value.set(s.sh[0] / C.shield, s.sh[1] / C.shield, s.sh[2] / C.shield, s.sh[3] / C.shield); u.uFocus.value = s.focus; u.uT.value = t;
@@ -2415,17 +2415,26 @@ function rayEllipsoid(s, E, originW, dirW) {
   return t >= 0 ? t : (c < 0 ? 0 : -1);
 }
 const _lh = new V3(), _ll = new V3();
+// Where a lance points: dead ahead, or (a weapon with `gimbal` degrees of train, the Halberd's) slewed that far toward its target.
+const _la = new V3(), _lt = new V3();
+function lanceAim(s, g, from, tgt) {
+  _la.copy(s.fwd); if (!g.gimbal || !tgt) return _la;
+  _lt.subVectors(tgt.pos, from).normalize();
+  const ang = Math.acos(clamp(_la.dot(_lt), -1, 1)), lim = deg(g.gimbal);
+  if (ang < 1e-4) return _la;
+  return ang <= lim ? _la.copy(_lt) : _la.lerp(_lt, lim / ang).normalize();   // near enough for a few degrees
+}
 function lanceTick(s, g, dt) {
   const m = g.mounts[0]; _v1.copy(m.local).applyMatrix4(s.obj.matrixWorld);
-  let len = g.range; const tgt = s.target;
+  let len = g.range; const tgt = s.target, aim = lanceAim(s, g, _v1, tgt);
   if (tgt) {
-    let t = rayEllipsoid(tgt, tgt.C.shieldE, _v1, s.fwd);
+    let t = rayEllipsoid(tgt, tgt.C.shieldE, _v1, aim);
     if (t >= 0 && t <= g.range) {
-      _lh.copy(_v1).addScaledVector(s.fwd, t); _ll.copy(_lh).applyMatrix4(tgt.inv);
+      _lh.copy(_v1).addScaledVector(aim, t); _ll.copy(_lh).applyMatrix4(tgt.inv);
       const f = facingOfUnit(localUnit(tgt, _ll, _v4));
       if (tgt.sh[f] <= 0 || !tgt.alive) {
-        const th = rayEllipsoid(tgt, tgt.C.hullE, _v1, s.fwd); t = th >= 0 ? th : -1;
-        if (t >= 0) { _lh.copy(_v1).addScaledVector(s.fwd, t); _ll.copy(_lh).applyMatrix4(tgt.inv); }
+        const th = rayEllipsoid(tgt, tgt.C.hullE, _v1, aim); t = th >= 0 ? th : -1;
+        if (t >= 0) { _lh.copy(_v1).addScaledVector(aim, t); _ll.copy(_lh).applyMatrix4(tgt.inv); }
       }
       if (t >= 0) {
         len = t;
@@ -2436,10 +2445,10 @@ function lanceTick(s, g, dt) {
     }
   }
   for (const a of asteroids) {
-    _v2.subVectors(a.pos, _v1); const al = _v2.dot(s.fwd);
-    if (al > 0 && al < len) { const lat = _v2.addScaledVector(s.fwd, -al).length(); if (lat < a.r * 0.9) len = Math.max(0, al - Math.sqrt(Math.max(0, a.r * a.r * 0.8 - lat * lat))); }
+    _v2.subVectors(a.pos, _v1); const al = _v2.dot(aim);
+    if (al > 0 && al < len) { const lat = _v2.addScaledVector(aim, -al).length(); if (lat < a.r * 0.9) len = Math.max(0, al - Math.sqrt(Math.max(0, a.r * a.r * 0.8 - lat * lat))); }
   }
-  s.beam.visible = g.beamT > 0; s.beam.position.copy(_v1); s.beam.quaternion.setFromUnitVectors(FWD, s.fwd);
+  s.beam.visible = g.beamT > 0; s.beam.position.copy(_v1); s.beam.quaternion.setFromUnitVectors(FWD, aim);
   const w = 7 * Math.min(1, g.beamT * 3, (g.dur - g.beamT) * 6 + 0.3);
   s.beam.scale.set(w, w, Math.max(1, len)); s.beam.material.uniforms.uT.value = game.time;
 }
@@ -3225,7 +3234,7 @@ function updateHud(dt) {
       // Firing arc and actual beam intersection differ at long range: never promise a hit on angle alone.
       const muzzle=g.mounts[0]?.local;
       const beamOrigin=muzzle ? muzzle.clone().applyMatrix4(P.obj.matrixWorld) : null;
-      const rayT=beamOrigin && E.alive ? rayEllipsoid(E,E.C.shieldE,beamOrigin,P.fwd) : -1;
+      const rayT=beamOrigin && E.alive ? rayEllipsoid(E,E.C.shieldE,beamOrigin,lanceAim(P,g,beamOrigin,E)) : -1;
       const clearShot=inA && rayT >= 0 && rayT <= g.range;
       st = off ? 'OFFLINE' : firing ? 'FIRING' : g.charge < 1 ? '' + Math.ceil((1 - g.charge) * g.chargeT / (e.wpn * (0.3 + 0.7 * subEff(P, g)))) + ' s' : clearShot ? 'ON TARGET' : inA ? 'BEAM WILL MISS' : dist >= g.range ? 'OUT OF RANGE' : Math.round(Math.abs(brE.b))+'° OFF BOW';
       ready = !off && g.charge >= 1 && clearShot;

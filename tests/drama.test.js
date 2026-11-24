@@ -122,7 +122,7 @@ const player = { alive: true, sh: [100, 100, 100, 100], cap: [600, 600, 600, 600
 const mk = wounds => B.create({ player, enemy: { alive: true }, showMsg() {}, facings: [], levels: {}, crew: P.activeCrew({}), wounds });
 let br = mk(['varro']); br.activate('varro');
 assert.ok(Math.abs(player.sh[0] - (100 + 600 * 0.16 * 0.6)) < 1e-6, 'a wounded first officer restores 60% as much shield');
-assert.equal(Math.round(br.cooldown.varro), Math.round(100 * 1.4));
+assert.equal(Math.round(br.cooldown.varro), Math.round(70 * 1.4));
 br = mk([]); const hit = br.bridgeHit(() => 0);
 assert.deepEqual(plain(hit), { id: 'varro', severity: 'wounded' }); assert.equal(br.activate('varro'), false, 'the medics have the first officer');
 assert.equal(br.down.varro, K.RULES.offline); br.tick(K.RULES.offline + 1); assert.equal(br.down.varro, undefined, 'back after the medics are done');

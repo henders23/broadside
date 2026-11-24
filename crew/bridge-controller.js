@@ -52,7 +52,7 @@ function create({player,enemy,getTarget,showMsg,facings,levels,crew,world,wounds
    if(restored<1){report(id,'Shields at capacity. Holding reserve power.');
     return false;}}
   else if(cmd==='okoye'){if(!targetEnemy().alive)return false;
-   active.target=o.duration;active.targetK=1+.12*str(id);}
+   active.target=o.duration;active.targetK=1+.2*str(id);}
   else if(cmd==='vale'){const k=Object.keys(player.sub).sort((a,b)=>player.sub[a]-player.sub[b])[0];
    if(!k||(player.sub[k]>=99.5&&!player.fires.length)){report(id,'No repairs needed. Engineering standing by.');
     return false;}

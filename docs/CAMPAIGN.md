@@ -214,7 +214,7 @@ Operations unlock in story order (1, 2, 3, 8, 4, 6, 9, 5, 7, 10); the numbers 1�
 - Campaign saves use localStorage key `broadside-campaign-v1` and a `version: 1` schema.
 - Save fields include: `ship`, `shipName`, `system`, `completed`, `flags`, `credits`, `hull`, `sub`, `torps`, `attempts`, `pendingResult`, `upgrades`, `officers`, `actBriefed`, `boardCycle`, `orders`, `contracts`, `sideDone`, `launch`, `interceptSeed`, `ambush`, `frontNews`, `broken`, `offensive`, `offSeq`, `jumpClock` and `transitNews`. Saves from before the grand campaign gain the new fields on load.
 - Torpedo capacity depends on hull class: Bastion 8, Halberd 6, Sabre 6, Warden 16.
-- Full-hull overhaul costs 6 requisition per lost hull percentage point, rounded up. Emergency repairs cost 100 requisition for up to 15% hull. Torpedoes can be restocked at 25 requisition each.
+- Full-hull overhaul costs 4 requisition per lost hull percentage point, rounded up. Emergency repairs cost 60 requisition for up to 15% hull. Torpedoes can be restocked at 15 requisition each.
 - Ship damage and remaining ordnance persist after victory; success or failure results enter a pending after-action state, shown when the player returns to the map.
 
 ## Officers
@@ -278,11 +278,11 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 ## Officer command implementation (October 2026)
 
 - Keys **5–9** or the on-screen bridge deck activate abilities during campaign operations only. Skirmish balance is unchanged.
-- Varro — Brace: instantly restores 16% of the ship class's baseline shield value to each bank, capped by the current bank capacity; cooldown 100s.
-- Okoye — Target Solution: +12% damage from the player for 14s; cooldown 110s.
-- Vale — Damage Control: +24 subsystem integrity to the most damaged subsystem and extinguishes one fire; cooldown 125s; refuses to expend when nothing needs repair.
-- Sato — Evasive Pattern: -22% incoming enemy damage for 12s; cooldown 105s.
-- Renn — Threat Scan: reports the enemy's weakest shield facing and least intact subsystem; cooldown 80s.
+- Varro — Brace: instantly restores 16% of the ship class's baseline shield value to each bank, capped by the current bank capacity; cooldown 70s.
+- Okoye — Target Solution: +20% damage from the player for 14s; cooldown 75s.
+- Vale — Damage Control: +24 subsystem integrity to the most damaged subsystem and extinguishes one fire; cooldown 85s; refuses to expend when nothing needs repair.
+- Sato — Evasive Pattern: -22% incoming enemy damage for 12s; cooldown 75s.
+- Renn — Threat Scan: reports the enemy's weakest shield facing and least intact subsystem; cooldown 60s.
 - All ability cooldowns are **battle-local**, reset at mission deployment, and do not alter campaign save format.
 - `crew/upgrades.js` holds the shipyard upgrade catalogue and `apply()`, shared by the campaign and battle pages.
 - `crew/personnel.js` holds character descriptions, mission lines, commander identities, and portrait positions. `crew/bridge-controller.js` is decoupled from Three.js and takes battle objects via dependency injection.

@@ -90,7 +90,7 @@ await suite('depth', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check
   const prize = st.ships.find(r => r.ship === 'scrapjaw');
   check(prize && prize.shipName === 'MNS Jackal' && prize.reserve && prize.hull === 0.35 && st.pendingResult.claimed === 'MNS Jackal', 'Vex’s Scrapjaw claimed as MNS Jackal, in reserve at 35%');
   check(st.credits === 6000 - 432 - 650, 'refit cost 650 (no discount at Kestrel)');
-  await page.locator('#modalactions button', { hasText: 'Recover civilian survivors' }).click();
+  await page.locator('#modalactions button', { hasText: 'See the Peregrine safe to Meridian' }).click();
   st = await read();
   check(st.completed.includes(1) && st.met.includes('scrapjaw') && st.rep.meridian === 5, 'operation complete, Scrapjaw met, Navy standing +5');
   // the codex

@@ -58,7 +58,7 @@
       text: 'A Directorate probe falls in beside you on the lane to {system}, matching every correction you make, transmitting on a band nobody can read.',
       choices: [
         { label: 'Let intelligence study it', hint: 'It may be listening back.', outcomes: [
-          { p: 0.7, text: 'Two hours of recordings, and your intelligence officer looks as though Midsummer came early.', fx: { xp: ['renn', 50] } },
+          { p: 0.7, text: 'Two hours of recordings, and your intelligence officer looks ten years younger.', fx: { xp: ['renn', 50] } },
           { p: 0.3, text: 'It was not listening. It was calling. A machine hunter answers.', fx: { battle: { name: 'Called in at {system}', brief: 'The probe was a beacon. A Directorate hunter answered its call.' } } }] },
         { label: 'Shoot it down', outcomes: [{ p: 1, text: 'One broadside, and the salvage is worth a little.', fx: { credits: 60 } }] },
         { label: 'Ignore it', outcomes: [{ p: 1, text: 'It follows you to the edge of the system and then is simply not there.', fx: {} }] }] },

@@ -73,8 +73,11 @@ assert.equal(C.interceptRisk(['peregrine', 'sable', 'scour'], 1, () => 0), 0, 'a
 const step = (f, k, o) => C.applyBattle(f, k, o);
 let r = step(C.startFronts(), 0, { kind: 'contract', win: true, system: 'scour', act: 1 });
 assert.equal(r.fronts['Red Narrows'], -4); assert.equal(r.changes[0].to.name, 'Enemy advantage'); assert.equal(r.clock, 1);
-r = step(r.fronts, r.clock, { kind: 'story', win: false, system: 'rednarrows', act: 1 });
+r = step(r.fronts, r.clock, { kind: 'contract', win: false, system: 'rednarrows', act: 1 });
 assert.equal(r.fronts['Red Narrows'], -6, 'a loss gives ground back');
+// Following the story is never neglect: a story operation away from the act front does not run the clock, and a lost finale costs no ground.
+{ const q = step(r.fronts, r.clock, { kind: 'story', win: true, system: 'rednarrows', act: 1 }); assert.equal(q.clock, r.clock, 'a story operation elsewhere does not tick the clock'); assert.ok(!q.raised);
+  const b = step(C.startFronts(), 0, { kind: 'story', win: false, system: 'grimhold', boss: true, act: 1 }); assert.equal(b.fronts['Ash Marches'], -6, 'a lost finale leaves the front where it was'); }
 r = step(r.fronts, r.clock, { kind: 'side', win: true, system: 'driftwall', act: 1 });
 assert.equal(r.clock, 0, 'third battle away from the act front'); assert.equal(r.fronts['Ash Marches'], -6, 'no ground is lost yet');
 assert.ok(r.raised, 'the Ash Fleet counter-attacks'); same(r.offensive, { region: 'Ash Marches', left: 2 });

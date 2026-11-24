@@ -103,7 +103,7 @@
     { id: 'g-fleet', cat: 'Guide', title: 'Commanding a fleet', sub: 'Captain’s guide', unlock: 'start',
       text: ['You can command up to three ships. You fly the flagship; escorts follow your standing order: U focus my target, I defend the flagship, O engage freely.', 'Bring escorts and the enemy may bring support of its own, but not every fight is matched.'] },
     { id: 'g-ambush', cat: 'Guide', title: 'Interceptions', sub: 'Captain’s guide', unlock: 'start',
-      text: ['Jumps are free, but hostile space can spring an ambush. Fight it for salvage or try to break away; the fleet escapes only as well as its slowest, most damaged ship.'] },
+      text: ['Jumps cost no requisition, but they take time (the act’s front counts every six as a battle fought elsewhere), and hostile space can spring an ambush. Fight it for salvage or try to break away; the fleet escapes only as well as its slowest, most damaged ship.'] },
     { id: 'g-capture', cat: 'Guide', title: 'Claiming wrecks', sub: 'Captain’s guide', unlock: { met: 'scrapjaw' },
       text: ['After a victory, salvage crews can tow a defeated Scrapjaw, Revenant or Seraph home and refit it for a Navy helm, if you have a berth free and can pay for the refit.', 'Claimed ships join the fleet damaged and fly like any other ship. Wraith and the act bosses cannot be claimed.'] },
     { id: 'g-bosses', cat: 'Guide', title: 'Act finales', sub: 'Captain’s guide', unlock: { open: 8 },

@@ -25,7 +25,7 @@ assert.equal(X.award(undefined,'loss',null).gains[0].gained,30);
 
 // Rank scales strength and cooldown, and the text matches.
 const varro=P.crew.find(c=>c.id==='varro');
-assert.equal(X.cooldown(varro,1),100);assert.equal(X.cooldown(varro,5),80);
+assert.equal(X.cooldown(varro,1),70);assert.equal(X.cooldown(varro,5),56);
 assert.equal(X.effect(varro,1),varro.effect,'Regular text matches the personnel file');
 assert.match(X.effect(varro,5),/Restore 21% of each/);
 
@@ -33,10 +33,10 @@ assert.match(X.effect(varro,5),/Restore 21% of each/);
 const ship=()=>({alive:true,sh:[0,0,0,0],cap:[1000,1000,1000,1000],C:{shield:1000},sub:{engines:50,shields:100},fires:[]});
 const plain=ctx.BroadsideBridge.create({player:ship(),enemy:ship(),showMsg:()=>{},facings:['F','A','P','S']});
 const player=ship(),ace=ctx.BroadsideBridge.create({player,enemy:ship(),showMsg:()=>{},facings:['F','A','P','S'],levels:{varro:5,okoye:5,vale:5,sato:5}});
-assert.equal(plain.activate('varro'),true);assert.equal(plain.cooldown.varro,100);
-assert.equal(ace.activate('varro'),true);assert.ok(Math.abs(player.sh[0]-1000*0.16*1.32)<1e-6,'Ace Brace restores 21.1%');assert.equal(ace.cooldown.varro,80);
+assert.equal(plain.activate('varro'),true);assert.equal(plain.cooldown.varro,70);
+assert.equal(ace.activate('varro'),true);assert.ok(Math.abs(player.sh[0]-1000*0.16*1.32)<1e-6,'Ace Brace restores 21.1%');assert.equal(ace.cooldown.varro,56);
 ace.activate('okoye');ace.activate('sato');
-assert.ok(Math.abs(ace.attackMultiplier()-(1+0.12*1.32))<1e-9);assert.ok(Math.abs(ace.defenseMultiplier()-(1-0.22*1.32))<1e-9);
+assert.ok(Math.abs(ace.attackMultiplier()-(1+0.2*1.32))<1e-9);assert.ok(Math.abs(ace.defenseMultiplier()-(1-0.22*1.32))<1e-9);
 assert.equal(ace.activate('vale'),true);assert.ok(Math.abs(player.sub.engines-(50+24*1.32))<1e-9);
 assert.equal(ace.activate('varro'),false,'cooldown still applies');
 assert.equal(ace.uses.varro,1);assert.equal(ace.uses.okoye,1);assert.equal(ace.uses.renn,0);

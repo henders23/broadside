@@ -68,7 +68,7 @@ function fixture(missionId,encounter,escortCount=0){
  // Two escorts: the enemy is reinforced to three ships, and escorts follow their orders.
  const f=fixture(4,null,2),foes=()=>f.ships.filter(s=>s.team==='e');
  assert.equal(foes().length,3,'ORACLE-9 gets two drones against a three-ship fleet');
- assert.ok(foes().slice(1).every(s=>s.name==='Directorate drone'&&s.hull===42));
+ assert.ok(foes().slice(1).every(s=>s.name==='Directorate drone'&&s.hull===34));
  const [a,b]=f.allies,[boss,d1,d2]=foes();
  assert.equal(a.dmgOut,.55,'AI escorts contribute at 55% weapon strength');
  assert.equal(b.dmgOut,.55,'second escort scales identically');

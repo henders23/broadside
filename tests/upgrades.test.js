@@ -22,7 +22,7 @@ assert.equal(U.forSlot('trophy').map(u=>u.trophy).join(),'pyre,arbiter,mother');
 assert.ok(U.forSlot('trophy').every(u=>u.cost===0&&u.effect));
 assert.equal(U.trophies(['heavy_shells','living_graft']).map(u=>u.id).join(),'living_graft');
 {const T=U.apply(base,['ablative_belt','pyre_plating','lattice_emitter','living_graft']);
- assert.ok(Math.abs(T.armour-0.9*0.92)<1e-9,'Pyre plate stacks with the ablative belt');
+ assert.ok(Math.abs(T.armour-0.9*0.88)<1e-9,'Pyre plate stacks with the ablative belt');
  assert.equal(T.shield,Math.round(base.shield*1.1));assert.ok(Math.abs(T.regen-base.regen*1.15)<1e-9);assert.equal(T.hullRegen,6);}
 
 assert.equal(U.apply(base,[]),base,'no upgrades returns the class unchanged');
@@ -35,10 +35,10 @@ assert.equal(all.hull,3450);assert.equal(all.shield,713);assert.equal(all.regen,
 assert.ok(Math.abs(all.vmax-47.04)<1e-9);assert.ok(Math.abs(all.turn-0.096*1.2)<1e-9);
 assert.equal(all.abBurn,10);assert.equal(all.armour,0.9);assert.equal(all.repairRate,1.5);assert.equal(all.power,14);
 assert.equal(all.reactorHardened,true);assert.equal(all.shieldHardened,true);
-assert.ok(Math.abs(w(all,'port').reload-7.5*0.94*0.85)<1e-9,'coolant loop and rapid loaders stack on broadsides');
+assert.ok(Math.abs(w(all,'port').reload-7.5*0.9*0.85)<1e-9,'coolant loop and rapid loaders stack on broadsides');
 assert.equal(w(all,'stbd').dmg,53);assert.equal(w(all,'port').range,3024);assert.equal(w(all,'port').speed,538);
-assert.equal(w(all,'dorsal').dmg,37);assert.equal(w(all,'dorsal').range,3360);assert.ok(Math.abs(w(all,'dorsal').reload-5.5*0.94*0.85)<1e-9);
-assert.equal(w(all,'torp').ammo,12);assert.equal(w(all,'torp').dmg,408);assert.ok(Math.abs(w(all,'torp').reload-12*0.94*0.8)<1e-9);
+assert.equal(w(all,'dorsal').dmg,37);assert.equal(w(all,'dorsal').range,3360);assert.ok(Math.abs(w(all,'dorsal').reload-5.5*0.9*0.85)<1e-9);
+assert.equal(w(all,'torp').ammo,12);assert.equal(w(all,'torp').dmg,408);assert.ok(Math.abs(w(all,'torp').reload-12*0.9*0.8)<1e-9);
 
 // Only the matching weapons change.
 const shells=U.apply(base,['heavy_shells']);

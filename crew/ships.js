@@ -32,7 +32,7 @@
       hullE: { c: [0, -10, 0], r: [30, 28, 128] }, shieldE: { c: [0, -4, 0], r: [50, 50, 154] },
       engines: [[-10, -10, 127], [10, -10, 127], [0, -24, 125]], glow: 13,
       weapons: [
-        { id: 'lance', label: 'Spinal lance', key: 'Space', type: 'lance', sub: 'fore', center: 0, half: 4, elevMin: -4, elev: 4, range: 3600, chargeT: 14, dps: 600, dur: 2.4,
+        { id: 'lance', label: 'Spinal lance', key: 'Space', type: 'lance', sub: 'fore', center: 0, half: 4, elevMin: -4, elev: 4, gimbal: 3, range: 3600, chargeT: 14, dps: 600, dur: 2.4,
           guns: [[0, -14, -133]] },
         { id: 'port', label: 'Port battery', key: 'Q', type: 'battery', sub: 'port', center: -90, half: 70, elevMin: -35, elev: 35, range: 2500, reload: 5, dmg: 44, speed: 500, shots: 4, snd: 'lasercannon',
           guns: [-60, -20, 20, 60].map(z => [-30, -4, z]) },

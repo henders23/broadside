@@ -147,7 +147,7 @@ await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   await page.evaluate(k => { const s = JSON.parse(localStorage.getItem(k)); s.pendingResult = { id: 1, outcome: 'win', tacticalOutcome: 'escort_saved' }; localStorage.setItem(k, JSON.stringify(s)); }, KEY);
   await page.reload();
   check(await page.locator('#veil').isVisible(), 'after-action report on return');
-  await page.locator('#modalactions button', { hasText: 'Recover civilian survivors' }).click();
+  await page.locator('#modalactions button', { hasText: 'See the Peregrine safe to Meridian' }).click();
   check((await page.textContent('#availlist')).includes('The Cinder Wake'), 'operation 2 now available');
   check(await page.locator('#availlist .opitem').count() === 1, 'completed operation removed from list');
   await shot('09-after-action');

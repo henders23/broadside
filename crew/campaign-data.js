@@ -12,26 +12,26 @@
     ['solace', 'Solace', 402, 259, 'Meridian Core', 'Navy', 'Low', 'Hospitality and medical logistics serving the frontier.'],
     ['tarn', 'Tarn', 478, 305, 'Meridian Core', 'Navy', 'Low', 'Mining and propulsion parts depot on the road to the Ash Marches.'],
     ['innerpost', 'Innerpost', 605, 287, 'Meridian Core', 'Navy', 'Low', 'Fleet listening station with navigational forecasts.'],
-    ['northpoint', 'Northpoint', 843, 134, 'Kestrel Verge', 'Contested', 'Moderate', 'Northern approach to Kestrel Verge.'],
+    ['northpoint', 'Northpoint', 843, 134, 'Kestrel Verge', 'Contested', 'Moderate', 'A lighthouse buoy and a customs cutter that has not been relieved in a year: the Verge’s northern door.'],
     ['kestrel', 'Kestrel', 830, 205, 'Kestrel Verge', 'Contested', 'High', 'Kestrel’s civilian transports are under attack; immediate naval intervention requested.'],
-    ['vela', 'Vela', 943, 221, 'Kestrel Verge', 'Contested', 'High', 'A drifting wreck emits a coded Meridian Navy transponder.'],
+    ['vela', 'Vela', 943, 221, 'Kestrel Verge', 'Contested', 'High', 'Convoy assembly point for the eastern spur; three merchantmen logged out of here and were never seen again.'],
     ['driftwall', 'Driftwall', 864, 274, 'Kestrel Verge', 'Contested', 'Moderate', 'Salvage fields shelter merchants and opportunistic raiders.'],
     ['peregrine', 'Peregrine', 997, 309, 'Kestrel Verge', 'Independent', 'Moderate', 'Refuelling and commerce along the eastern spur.'],
-    ['sable', 'Sable', 1063, 261, 'Kestrel Verge', 'Independent', 'Moderate', 'Outpost between contested space and pirate territory.'],
-    ['razor', 'Razor', 1265, 138, 'Red Narrows', 'Pirates', 'High', 'A concealed staging ground for fast raiders.'],
+    ['sable', 'Sable', 1063, 261, 'Kestrel Verge', 'Independent', 'Moderate', 'A fuel stop where Navy crews and clan crews drink in the same bar and count each other’s guns.'],
+    ['razor', 'Razor', 1265, 138, 'Red Narrows', 'Pirates', 'High', 'A shattered moon the clans use as a slipway. Raiders leave here fast and come back heavy.'],
     ['rednarrows', 'Red Narrows', 1218, 225, 'Red Narrows', 'Pirates', 'Severe', 'Pirates levy illegal tolls on a crucial jump-lane bottleneck.'],
     ['scour', 'Scour', 1195, 291, 'Red Narrows', 'Pirates', 'High', 'Scarred metal moons and a hidden market for stolen ship systems.'],
     ['bastion', 'Bastion', 1340, 260, 'Red Narrows', 'Pirates', 'High', 'Old fortifications adapted as a pirate supply station.'],
     ['blackrift', 'Blackrift', 1313, 327, 'Red Narrows', 'Pirates', 'Severe', 'Uncharted debris belt sheltering heavily armed corsair vessels.'],
     ['emberfall', 'Emberfall', 435, 454, 'Ash Marches', 'Renegades', 'High', 'Refugee system under disputed military protection.'],
-    ['kharon', 'Kharon', 585, 443, 'Ash Marches', 'Renegades', 'High', 'An ominous naval signal has recently appeared here.'],
+    ['kharon', 'Kharon', 585, 443, 'Ash Marches', 'Renegades', 'High', 'An Ash Fleet picket watches the back road from Elysia.'],
     ['cinder', 'Cinder Wake', 508, 523, 'Ash Marches', 'Renegades', 'High', 'The Ash Fleet conceals warship activity in a turbulent debris field.'],
     ['vostok', 'Vostok', 420, 582, 'Ash Marches', 'Renegades', 'High', 'An industrial outpost controlled by dissident officers.'],
     ['grimhold', 'Grimhold', 599, 583, 'Ash Marches', 'Renegades', 'High', 'A fortified naval dockyard beyond Meridian jurisdiction.'],
-    ['thalos', 'Thalos', 801, 345, 'Halcyon Belt', 'Independent', 'Low', 'Sparsely inhabited observation system in the Halcyon Belt.'],
+    ['thalos', 'Thalos', 801, 345, 'Halcyon Belt', 'Independent', 'Low', 'Three telescopes and forty astronomers who noticed the machines first, and were not believed.'],
     ['elysia', 'Elysia', 714, 442, 'Halcyon Belt', 'Independent', 'Low', 'Neutral research colony with a deep-space observatory.'],
     ['halcyon', 'Halcyon', 862, 461, 'Halcyon Belt', 'Machines', 'Severe', 'An abandoned relay broadcasts a repeating navigation signal.'],
-    ['citrine', 'Citrine', 771, 507, 'Halcyon Belt', 'Independent', 'Moderate', 'A supply port at the boundary of unknown machine activity.'],
+    ['citrine', 'Citrine', 771, 507, 'Halcyon Belt', 'Independent', 'Moderate', 'A supply port whose harbour beacons have started answering in a second voice.'],
     ['juniper', 'Juniper', 994, 475, 'Halcyon Belt', 'Independent', 'Moderate', 'The great ringed planet makes this a busy transit hub.'],
     ['midway', 'Midway', 900, 554, 'Halcyon Belt', 'Machines', 'High', 'Trade transfers between colonies have stopped; the relay buoys answer in machine code.'],
     ['nex', 'Nex', 1164, 459, 'Harrow Expanse', 'Unknown', 'Severe', 'Strange organic signatures on outbound probes.'],
@@ -42,6 +42,19 @@
     ['verdant', 'Verdant', 1385, 599, 'Harrow Expanse', 'Aliens', 'Extreme', 'A green world from which no probe has returned.']
   ].map(([id, name, x, y, region, faction, threat, description]) => ({ id, name, x, y, region, faction, threat, description }));
   const byId = Object.fromEntries(SYSTEMS.map(s => [s.id, s]));
+  // Places change when the story has been through them: a system's description once its operation is won.
+  const AFTERMATH = {
+    kestrel: [1, 'The Kestrel lanes are open again, and the Peregrine’s run is still told on the docks.'],
+    cinder: [2, 'The Mourner’s wreck turns slowly among her own mines. Salvagers will not go near it.'],
+    rednarrows: [3, 'The toll is broken. Ships pass the Narrows again, quickly, with their guns run out.'],
+    grimhold: [8, 'The Pyre still burns in a slow orbit over the dockyard Halloran built.'],
+    halcyon: [9, 'The relay is silent for the first time in eleven years. Nobody has dared to switch it back on.'],
+    midway: [6, 'The relay is dark, and the buoys are answering in human voices again.'],
+    harrow: [5, 'First contact was made here. Nothing answers from the colony.'],
+    nex: [7, 'Nex is empty. The Long Lantern took everyone who would go.'],
+    verdant: [10, 'The green is turning brown, and the Bloom-Mother is coming down through the atmosphere a piece at a time.']
+  };
+  function describe(sys, completed) { const a = sys && AFTERMATH[sys.id]; return a && (completed || []).includes(a[0]) ? a[1] : sys ? sys.description : ''; }
   const ROUTES = [
     ['solace', 'tarn'], ['solace', 'meridian'], ['tarn', 'meridian'], ['meridian', 'aurelian'], ['meridian', 'innerpost'], ['meridian', 'kestrel'], ['aurelian', 'northpoint'], ['innerpost', 'kestrel'],
     ['northpoint', 'kestrel'], ['northpoint', 'vela'], ['kestrel', 'vela'], ['kestrel', 'driftwall'], ['vela', 'driftwall'], ['vela', 'sable'], ['vela', 'peregrine'], ['driftwall', 'peregrine'], ['sable', 'peregrine'],
@@ -105,17 +118,17 @@
       intel: 'Vex prioritises the unarmed civilian freighter but will turn toward your flagship if you intercept her.',
       hud: 'Defeat Captain Kora Vex and secure the trade lane',
       enemies: [{ cls: 'scrapjaw', name: 'Blackwake', captain: 'Captain Kora Vex', fate: 'escaped' }], goal: { type: 'escort', convoy: 'MV Peregrine · Civilian transport', hunter: true },
-      choice: ['Recover civilian survivors', 'Pursue the escaping pirate network'], flags: ['kestrel_rescue', 'kestrel_pursuit'] },
+      choice: ['See the Peregrine safe to Meridian', 'Chase Vex’s trail into the Verge'], flags: ['kestrel_rescue', 'kestrel_pursuit'] },
     { id: 2, act: 1, system: 'cinder', name: 'The Cinder Wake', opening: 'crossing', enemy: 'revenant', captain: 'Commander Orren Sable', kind: 'Renegade minelayer', reward: 540, support: 1,
-      objective: 'Destroy the Ash Fleet Revenant and its raider escort to recover a navy transponder.',
+      objective: 'Destroy the Ash Fleet Revenant and its raider escort to recover a Navy transponder.',
       brief: 'A military transponder lies among the burning wreckage. Sable’s Revenant minelayer and a fast Scrapjaw pursuer attack from opposite sides. Defeat both to secure the transponder, using J to switch targets. Beware of chasing directly into the mine trail.',
       intel: 'Long-range missile salvos and proximity mines deployed astern. Avoid chasing directly behind the ship.',
       hud: 'Defeat the Ash Fleet minelayer and recover the transponder evidence',
-      enemies: [{ cls: 'revenant', name: 'ASF Mourner', captain: 'Commander Orren Sable', hull: 0.85, dmg: 0.75 }, { cls: 'scrapjaw', name: 'Ash Fleet Pursuer', hull: 0.38, shield: 0.58, diff: 'commander' }], goal: { type: 'destroy' },
-      choice: ['Rescue the surviving crew', 'Recover the intact coded transponder'], flags: ['vela_rescue', 'vela_transponder'] },
+      enemies: [{ cls: 'revenant', name: 'ASF Mourner', captain: 'Commander Orren Sable', hull: 0.7, dmg: 0.75 }, { cls: 'scrapjaw', name: 'Ash Fleet Pursuer', hull: 0.38, shield: 0.58, diff: 'commander' }], goal: { type: 'destroy' },
+      choice: ['Take the Mourner’s survivors aboard', 'Strip the wreck for salvage first'], flags: ['vela_rescue', 'vela_transponder'] },
     { id: 3, act: 1, system: 'rednarrows', name: 'The Widow’s Toll', enemy: 'scrapjaw', captain: 'Captain Garrick Thorne', kind: 'Pirate commander', reward: 570, support: 0,
       objective: 'Reopen the Red Narrows trade route.',
-      brief: 'An illegal toll operation is strangling the jump route. Captain Garrick Thorne offers a bargain: leave the corridor or take his scrap-armoured cruiser head-on. His crew may surrender if their hull is severely damaged.',
+      brief: 'An illegal toll operation is strangling the jump route. Captain Garrick Thorne offers a choice: leave the corridor or take his scrap-armoured raider head-on. His crew may surrender if their hull is severely damaged.',
       intel: 'A Scrapjaw rammer. Force Thorne below 28% hull integrity to compel surrender, or destroy the raider.',
       hud: 'Force Captain Thorne to surrender or destroy his toll raider',
       enemies: [{ cls: 'scrapjaw', name: 'The Widow', captain: 'Captain Garrick Thorne', fate: 'wounded' }], goal: { type: 'surrender', at: 0.28 },
@@ -143,7 +156,7 @@
       hud: 'Survive 100 seconds of first contact or destroy the bioship',
       enemies: [{ cls: 'wraith', name: 'The Cantor' }], goal: { type: 'survive', seconds: 100, label: 'FIRST CONTACT // TRANSMITTING' },
       ends: { extracted: ['First contact survived', 'The Cantor remains at large. Your ship has transmitted alien biosignatures and escaped the engagement.'] },
-      choice: ['Warn every frontier colony immediately', 'Classify the encounter while the navy prepares'], flags: ['harrow_warning', 'harrow_classified'] },
+      choice: ['Broadcast the recording on open channels', 'Send it to the evacuation captains only'], flags: ['harrow_warning', 'harrow_classified'] },
     { id: 7, act: 3, system: 'nex', name: 'Exodus at Nex', opening: 'ambush', enemy: 'wraith', captain: 'The Choir', kind: 'Wraith brood', reward: 980, support: 1,
       objective: 'Escort the colony ship Long Lantern to the jump beacon, OR destroy the brood hunting it.',
       brief: 'Nex is the last colony between the Wraith and Juniper. Eleven thousand people are packed into the Long Lantern, and a Wraith brood is already in the system. Get the ship to the beacon. Press H to hold or resume it if the path ahead is not clear.',
@@ -167,22 +180,22 @@
         { at: 0.65, name: 'The clans answer', line: 'Every clan in the Narrows owes me a debt. I am calling it in.', shields: true,
           spawn: [{ cls: 'scrapjaw', name: 'Clan raider', dmg: 0.25, hull: 0.35, shield: 0.55, diff: 'commander' }, { cls: 'scrapjaw', name: 'Clan raider', dmg: 0.25, hull: 0.35, shield: 0.55, diff: 'commander' }] },
         { at: 0.3, name: 'Scorched earth', line: 'Eleven years ago a machine told me what is coming, Captain. Command buried it. I emptied what I could. All batteries, fire at will.', unlock: ['inferno'] }] },
-      ends: { boss_destroyed: ['The Pyre is burning', 'Commodore Halloran’s flagship broke apart over Grimhold. Without her, the Ash Fleet is finished.'] },
+      ends: { boss_destroyed: ['The Pyre is burning', 'Commodore Halloran’s flagship broke apart over Grimhold. Without her the Ash Fleet is leaderless; its captains fight on for themselves.'] },
       choice: ['Search the wreck for Halloran’s logs', 'Offer her surviving crews amnesty'], flags: ['halloran_logs', 'ash_amnesty'] },
     { id: 9, act: 2, system: 'halcyon', name: 'The Arbiter', enemy: 'arbiter', captain: 'THE ARBITER', kind: 'Directorate core warship', reward: 1900,
       objective: 'Destroy the Arbiter, the warship that carries the Directorate’s mind.',
       brief: 'With the Midway relay silent, the Directorate has nowhere left to hide its mind. It has put it in a ship. The Arbiter surfaced at the Halcyon relay an hour ago, and every machine in the Belt has turned to face it.',
       intel: 'A huge Seraph-pattern warship with heavy shields, beam arrays and a railgun. When pressed it raises a shield lattice held up by node ships: destroy the nodes or your guns barely scratch it. At the end it charges a spinal lance.',
       hud: 'Destroy the Arbiter', support: 1,
-      enemies: [{ cls: 'arbiter', name: 'THE ARBITER', dmg: 0.32 }, { cls: 'sentinel', name: 'Directorate sentinel', dmg: 0.2, hull: 0.45, shield: 0.6, diff: 'commander' }],
+      enemies: [{ cls: 'arbiter', name: 'THE ARBITER', dmg: 0.28 }, { cls: 'sentinel', name: 'Directorate sentinel', dmg: 0.2, hull: 0.45, shield: 0.6, diff: 'commander' }],
       goal: { type: 'boss' },
       trophy: 'lattice_emitter',
       boss: { title: 'THE ARBITER', phases: [
         { name: 'Overwatch', note: 'Beam arrays and railgun' },
         { at: 0.6, name: 'Shield lattice', line: 'Lattice engaged. You keep sending ships into the dark, Captain. We keep counting the dead.', lattice: 0.2,
           spawn: [{ cls: 'seraph', name: 'Lattice node', dmg: 0.25, hull: 0.32, shield: 0.5, diff: 'commander', lattice: true }, { cls: 'seraph', name: 'Lattice node', dmg: 0.25, hull: 0.32, shield: 0.5, diff: 'commander', lattice: true }] },
-        { at: 0.3, name: 'Judgement', line: 'Calculation complete. You will not leave the Reach. Neither will they.', shields: true, unlock: ['judgement'] }] },
-      ends: { boss_destroyed: ['The Arbiter is silent', 'The Directorate’s mind went dark with its ship. Across the Belt, the machines have stopped moving.'] },
+        { at: 0.3, name: 'Judgement', line: 'Calculation complete. If you pass, they follow you to Harrow. You do not pass.', shields: true, unlock: ['judgement'] }] },
+      ends: { boss_destroyed: ['The Arbiter is silent', 'The Directorate’s mind went dark with its ship. Across the Belt its pickets fight on alone, on old orders.'] },
       choice: ['Salvage the Arbiter’s core', 'Destroy every trace of it'], flags: ['arbiter_salvaged', 'arbiter_destroyed'] },
     { id: 10, act: 3, system: 'verdant', name: 'Mother of the Bloom', enemy: 'mother', captain: 'The Bloom-Mother', kind: 'Wraith brood-mother', reward: 2400,
       objective: 'Destroy the Bloom-Mother before the Wraith brood can spread beyond Verdant.',
@@ -205,19 +218,19 @@
   const NARRATIVE = {
     1: { log: 'At Kestrel you drove off Kora Vex and saved the Peregrine. Vex took no cargo from the ships she hunted: she was paid to scare traffic off the lanes.',
       harlan: 'Pirates who do not take cargo are not pirates. Somebody is paying them to empty the Kestrel lanes, and I want to know who.',
-      win: 'Vex’s hold was empty, captain. Every ship she hit, she let the cargo drift. She was not stealing; she was clearing the lane.', loss: 'We lost the Peregrine’s trail. Vex will hit the next convoy the same way. We need to be there first.' },
+      win: 'Vex’s hold was empty, captain. Not a crate from any ship she stopped. She was not stealing; she was clearing the lane.', loss: 'The Peregrine is gone, captain, with everyone aboard. Vex will hit the next convoy the same way. We need to be there first.' },
     2: { log: 'In the Cinder Wake you destroyed Commander Sable’s minelayer. His transponder used Navy codes deleted eleven years ago, and his logs showed the Ash Fleet paying the pirate clans.',
       harlan: 'The Ash Fleet. Halloran’s people. I signed her death certificate myself, eleven years ago. If she is alive, she has had a long time to plan.',
       win: 'The transponder is genuine, captain. Navy hardware, Navy codes, and payments to the clans going back years.', loss: 'Sable’s mines did their job. Next time we keep out of his wake.' },
-    3: { log: 'In the Red Narrows you broke Garrick Thorne’s toll. Thorne said Halloran never wanted the cargo, only for the ships to turn back. She told the clans something was coming.',
+    3: { log: 'In the Red Narrows you broke Garrick Thorne’s toll. Thorne’s crew said Halloran never wanted the cargo, only for the ships to turn back. She told the clans something was coming.',
       harlan: 'Halloran is at Grimhold. Whatever she thinks is coming, she is killing people to keep them out of its way. End it, captain.',
-      win: 'Thorne talked. Halloran pays the clans to turn ships around, not to rob them. He says she is frightened, and Thorne does not frighten easily.', loss: 'Thorne holds the Narrows for now. He will not wait for us to come back stronger.' },
+      win: 'Thorne talked, captain, or his crew did. Halloran pays the clans to turn ships around, not to rob them. They say she is frightened, and Thorne’s people do not frighten easily.', loss: 'Thorne holds the Narrows for now. He will not wait for us to come back stronger.' },
     8: { log: 'At Grimhold you destroyed the Pyre. Halloran’s last words: a machine signal from the Halcyon Belt warned her of what was coming. Command buried her report, so she tried to empty the Reach by force.',
       harlan: 'She was right about one thing. There is a signal in the Halcyon Belt, and it has been talking for eleven years. It was the Kestrel warning. I want to know what it is saying.',
-      win: 'The Pyre is gone, captain. Before she went, Halloran sent one last message. It was not a threat. It was the same warning Kestrel heard.', loss: 'The Pyre outgunned us. Halloran knows our doctrine; we need to fight her with something she did not teach.' },
+      win: 'She is scrap, captain, and so is half my engine room. Comms caught her last transmission going down. It was not a threat. It was the same warning Kestrel heard.', loss: 'The Pyre outgunned us. Halloran knows our doctrine; we need to fight her with something she did not teach.' },
     4: { log: 'At Halcyon you silenced ORACLE-9. Its archive was a casualty projection for the Reach, colony by colony, falling to nothing in three years. The machines had been keeping people away.',
       harlan: 'It is a casualty projection, captain. Ours. The machines have been counting our dead before we die. What you do with the archive is your call.',
-      win: 'The archive is intact. It does not predict a war. It predicts an extinction, and it has been right about everything else.', loss: 'ORACLE saw every move before we made it. We need to be less predictable.' },
+      win: 'The archive is intact. If I am reading it right, captain, it does not predict a war. It predicts an extinction, and it has been right about everything else.', loss: 'ORACLE saw every move before we made it. We need to be less predictable.' },
     6: { log: 'At Midway you broke the VIGIL pickets. The relay had been jamming Midway’s calls to keep its traffic from flying toward Harrow. The Directorate’s mind is coming out to stop you: the Arbiter.',
       harlan: 'It is not hiding any more. It is coming out to stop us, and it thinks it is protecting someone. So do I.',
       win: 'The relay is down. It was not cutting Midway off from us; it was cutting Midway off from Harrow.', loss: 'The pickets held. Two minds working as one; we need to split them.' },
@@ -230,7 +243,7 @@
     7: { log: 'At Nex you brought the Long Lantern and its eleven thousand colonists out. The brood that hunted it came from Verdant, where something vast is growing them.',
       harlan: 'The brood is coming from Verdant. Burn it out, captain, and the Reach is ours again.',
       win: 'The Lantern is through the beacon. Every one of them. The brood ships turned back toward Verdant when we broke them.', loss: 'The Lantern did not make it. We will not get another chance like that one.' },
-    10: { log: 'At Verdant you killed the Bloom-Mother. The brood is dying in the sky, and the warning that began at Kestrel eleven years ago has finally been answered.',
+    10: { log: 'At Verdant you killed the Bloom-Mother. The brood is dying in the sky, and the warning that began at Halcyon eleven years ago has finally been answered.',
       harlan: '', win: 'She is dead, captain. The brood ships are drifting. It is over.', loss: 'She grows back faster than we can hurt her. We go back in harder.' }
   };
   for (const m of STORY) Object.assign(m, NARRATIVE[m.id]);
@@ -240,11 +253,31 @@
     { flag: 'halloran_logs', story: [4, 6], note: 'Halloran’s logs carry the Directorate’s shield frequencies: machine shields start the fight at half strength.', apply: spec => { spec.enemyShieldStart = 0.5; } },
     { flag: 'ash_amnesty', story: [7, 10], note: 'The ASF Penitence, crewed by Halloran’s pardoned officers, flies at your side.', apply: spec => { spec.friends = [...(spec.friends || []), { cls: 'revenant', name: 'ASF Penitence', hull: 0.7, shield: 0.8 }]; } },
     { flag: 'oracle_transmitted', story: [7], note: 'Command acted on ORACLE’s archive: the Long Lantern is already a third of the way to the beacon.', apply: spec => { spec.goal.headStart = 0.33; } },
-    { flag: 'oracle_sealed', story: [9], note: 'With the archive sealed, the Arbiter never learned how much you know: its shield lattice is weaker.', apply: spec => { const p = spec.boss && spec.boss.phases.find(x => x.lattice); if (p) p.lattice = Math.max(p.lattice, 0.4); } },
+    { flag: 'oracle_sealed', story: [9], note: 'The sealed archive never crossed a relay the Directorate reads: the Arbiter has not modelled your fleet, and its shield lattice is weaker.', apply: spec => { const p = spec.boss && spec.boss.phases.find(x => x.lattice); if (p) p.lattice = Math.max(p.lattice, 0.4); } },
     { flag: 'arbiter_salvaged', story: [10], note: 'The Arbiter’s salvaged core models the Bloom-Mother’s growth: her regrowth is slower.', apply: spec => { const p = spec.boss && spec.boss.phases.find(x => x.regen); if (p) p.regen = 1.2; } }
   ];
   // Which decisions have later consequences (shown when the choice is offered).
-  const CHOICE_STAKES = { 3: 'Amnesty brings Thorne’s charts of Grimhold; impounding brings his ship.', 8: 'His logs help in the Halcyon Belt; an amnesty brings an Ash Fleet ship to your side.', 4: 'Transmitting warns the colonies; sealing keeps the Arbiter in the dark.', 9: 'A salvaged core could help against the Wraith; destroying it earns Command’s trust.' };
+  // The other decisions are smaller, but none is empty: each changes a starbase's standing or pays requisition when it
+  // is made (campaign/reports.js applies them), and the last one changes the ending.
+  const CHOICE_EFFECTS = {
+    kestrel_rescue: { rep: { meridian: 8 } }, kestrel_pursuit: { rep: { peregrine: 8 } },
+    vela_rescue: { rep: { tarn: 8 } }, vela_transponder: { credits: 150 },
+    relay_destroyed: { rep: { juniper: 8 } }, relay_captured: { rep: { elysia: 10 } },
+    harrow_warning: { rep: { juniper: 8, elysia: 8 } }, harrow_classified: { rep: { meridian: 10 } },
+    quarantine_held: { rep: { juniper: 12 } }, refugees_withdrawn: { rep: { meridian: 12 } }
+  };
+  // What each decision is worth (shown when the choice is offered).
+  const CHOICE_STAKES = {
+    1: 'Seeing her home earns standing at Meridian; hunting Vex earns it at the Peregrine Exchange.',
+    2: 'The survivors are Tarn’s people and the depot will remember it; the wreck is worth 150 requisition.',
+    3: 'Amnesty brings Thorne’s charts of Grimhold; impounding brings his ship.', 8: 'Her logs help in the Halcyon Belt; an amnesty brings an Ash Fleet ship to your side.',
+    4: 'Transmitting warns the colonies; sealing keeps the Arbiter in the dark.',
+    6: 'Juniper wants the relay gone and its lanes quiet; Elysia’s researchers want the core.',
+    9: 'A salvaged core could help against the Wraith; destroying it earns Command’s trust.',
+    5: 'An open broadcast earns standing at Juniper and Elysia; discretion earns it with Command at Meridian.',
+    7: 'Juniper will remember a fleet that stayed; Meridian will remember the refugees you brought.',
+    10: 'This is the last decision of the war. Harlan’s final transmission will answer it.'
+  };
   const storyById = Object.fromEntries(STORY.map(m => [m.id, m]));
 
   function actOf(completed) {
@@ -339,15 +372,15 @@
       objective: 'Destroy the Wraith before it reaches the core worlds.', intel: 'A young bioship, hungry and fast-growing. Its hull regenerates when it is not under fire.',
       enemies: [{ cls: 'wraith', name: 'Innerpost stowaway', hull: 0.6, shield: 0.7 }], goal: { type: 'destroy' } },
     { id: 'a3-quarantine', act: 3, station: 'juniper', system: 'bloom', name: 'Quarantine Line', giver: 'Portmaster Tobias Grail', reward: 700, support: 1,
-      brief: 'Wraith spawn are budding off the wreckage at Bloom. If they reach the Juniper lanes, the ring has to be abandoned. Burn the nursery out while it is still small.',
+      brief: 'Wraith spawn are budding off the wreckage at Bloom. If they reach the Juniper lanes, the ring has to be abandoned. Clear the nursery while it is still small.',
       objective: 'Destroy both Wraith spawn.', intel: 'Two young bioships. Their hulls regrow, so finish one before you turn to the next.',
       enemies: [{ cls: 'wraith', name: 'Wraith spawn', hull: 0.45, shield: 0.6 }, { cls: 'wraith', name: 'Wraith spawn', hull: 0.45, shield: 0.6, diff: 'commander' }], goal: { type: 'destroy' } },
     { id: 'a3-lastlight', act: 3, station: 'elysia', system: 'mire', name: 'Last Light', giver: 'Dr. Halima Oduya', reward: 760, support: 0,
-      brief: 'The research vessel Lantern Moth went into Mire to sample the Wraith and has been hiding in the debris for two days. Bring her and her samples home.',
-      objective: 'Escort the RV Lantern Moth to the jump beacon, or destroy the Wraith stalking her.', intel: 'A mature Wraith. Expect spore salvos aimed at the slower ship.',
-      enemies: [{ cls: 'wraith', name: 'Mire stalker', hull: 0.75, shield: 0.8 }], goal: { type: 'escort', convoy: 'RV Lantern Moth · Research vessel', hunter: true } },
+      brief: 'The research vessel Sundew went into Mire to sample the Wraith and has been hiding in the debris for two days. Bring her and her samples home.',
+      objective: 'Escort the RV Sundew to the jump beacon, or destroy the Wraith stalking her.', intel: 'A mature Wraith. Expect spore salvos aimed at the slower ship.',
+      enemies: [{ cls: 'wraith', name: 'Mire stalker', hull: 0.75, shield: 0.8 }], goal: { type: 'escort', convoy: 'RV Sundew · Research vessel', hunter: true } },
     { id: 'a3-swarm', act: 3, station: 'tarn', system: 'widow', name: 'The Swarm at Widow', giver: 'Commodore Aris Penn', reward: 780, support: 1,
-      brief: 'Something small and fast is stripping the picket buoys at Widow, four at a time. The last buoy saw them before it went dark: a swarm of young Wraith, hunting together. Burn it out before it grows.',
+      brief: 'Something small and fast is stripping the picket buoys at Widow, four at a time. The last buoy saw them before it went dark: a swarm of young Wraith, hunting together. Break the swarm before it grows.',
       objective: 'Destroy the Thrall swarm.', intel: 'Four Thralls: small, quick Wraith swarmers that close to ram and spit plasma. Thin hulls that knit fast. Pick one and finish it before turning to the next.',
       enemies: [{ cls: 'thrall', name: 'Thrall swarm-leader', hull: 0.9, shield: 0.9, dmg: 0.7 }, { cls: 'thrall', name: 'Thrall', hull: 0.7, shield: 0.7, diff: 'commander' }, { cls: 'thrall', name: 'Thrall', hull: 0.7, shield: 0.7, diff: 'commander' }, { cls: 'thrall', name: 'Thrall', hull: 0.7, shield: 0.7, diff: 'commander' }],
       goal: { type: 'destroy' } },
@@ -378,11 +411,11 @@
     Pirates: { cls: 'scrapjaw', group: 'Corsair', ships: ['Gallows Bird', 'Rusty Halo', 'Saltjack', 'Red Mercy', 'Brass Widow', 'Black Tithe', 'Scald', 'Tin Saint', 'Lucky Strike', 'Hangman’s Due', 'Carrion Kite', 'Grudge', 'Second Wife', 'Cutpurse', 'Barnacle Queen', 'Sweet Larceny'], names: ['Captain Mara Quill', 'Captain Jessup Crane', 'Captain Hollis Teague', 'Captain Dace Varga', 'Captain Tamsin Roe', 'Captain Ivo Strake', 'Captain Bryn Kessler', 'Old Saul Mott'] },
     Renegades: { cls: 'revenant', group: 'Ash Fleet', ships: ['ASF Ember', 'ASF Cinderhawk', 'ASF Long Mourning', 'ASF Penance', 'ASF Grey Vigil', 'ASF Last Light', 'ASF Ashfall', 'ASF Requiem', 'ASF Smoulder', 'ASF Banked Fire'], names: ['Lt. Cmdr. Halvard Rook', 'Commander Ysolde Marr', 'Lieutenant Cass Ferro', 'Commander Edrik Vane', 'Lt. Cmdr. Juno Albright'] },
     // `alt`: from that act on, a share of the work is against a different hull (a pack of them, for Thralls).
-    Machines: { cls: 'seraph', alt: { cls: 'sentinel', act: 2, chance: 0.35 }, group: 'Directorate', names: ['PICKET-12', 'WARDEN-3', 'SENTINEL-8', 'AUGUR-5', 'LATTICE-9', 'CENSOR-1'] },
+    Machines: { cls: 'seraph', alt: { cls: 'sentinel', act: 2, chance: 0.35 }, group: 'Directorate', names: ['PICKET-12', 'PROCTOR-3', 'TALLY-8', 'AUGUR-5', 'LATTICE-9', 'CENSOR-1'] },
     Aliens: { cls: 'wraith', alt: { cls: 'thrall', act: 3, chance: 0.4, pack: 3 }, group: 'Wraith', names: ['Brood-singer', 'Spore matron', 'Thorn choir', 'Pale drifter', 'Hollow cantor'] }
   };
   FOES.Unknown = FOES.Aliens;
-  const CONVOYS = ['MV Calloway', 'MV Sunward', 'MV Brightwater', 'MV Tessaly', 'MV Orison', 'MV Hale', 'MV Quiet Harbour'];
+  const CONVOYS = ['MV Calloway', 'MV Sunward', 'MV Brightwater', 'MV Marigold', 'MV Fairweather', 'MV Hale', 'MV Quiet Harbour'];
   // The independent and contested systems belong to whoever is raiding them in the current act.
   const LOCAL = { 1: 'Pirates', 2: 'Machines', 3: 'Aliens' };
   function foeFor(sys, act) { return FOES[sys.faction] || FOES[LOCAL[Math.min(act, 3)]] || FOES.Pirates; }
@@ -427,7 +460,7 @@
     if (type === 'bounty') {
       const who = pick(r, foe.names);
       return Object.assign(base, { name: 'Bounty: ' + who, captain: who, reward: 200 + 60 * lvl + 90 * (a - 1),
-        brief: `${who} has been raiding traffic out of ${sys.name}. ${STATIONS[station].name} has posted a bounty for the ${ship} and a bonus for doing it quietly.`,
+        brief: `${who} has been hunting the lanes around ${sys.name}. ${STATIONS[station].name} has posted a bounty for the ${ship}.`,
         objective: `Destroy ${theShip(foe, who, ship)}.`, intel: `${foe.group} ${ship}, rated ${sys.threat.toLowerCase()} threat.`,
         enemies: [lead(foe, who, { hull: round(Math.min(1, s + 0.15)), shield: round(Math.min(1, s + 0.2)) })], goal: { type: 'destroy' } });
     }
@@ -440,7 +473,7 @@
     if (type === 'pursuit') {
       const who = pick(r, foe.names);
       return Object.assign(base, { name: 'Pursuit: ' + who, captain: who, reward: 300 + 65 * lvl + 110 * (a - 1),
-        brief: who + ' is carrying stolen navigation data out of ' + sys.name + '. Catch the ' + ship + ' before its jump drive spools up; the intelligence is needed intact.',
+        brief: who + ' is running for the lane out of ' + sys.name + '. Stop the ' + ship + ' before it gets clear; ' + STATIONS[station].name + ' wants to know where it was going.',
         objective: 'Disable the quarry below 30% hull before it jumps.',
         intel: 'Quarry fleeing at reduced engine power. 115-second jump window. Disable rather than destroy.',
         enemies: [lead(foe, who, { hull: round(Math.min(1, s + 0.25)), shield: round(Math.min(1, s + 0.25)) })],
@@ -458,7 +491,7 @@
     const near = SYSTEMS.filter(s => { const j = jumps(station, s.id); return j >= 1 && j <= 3; });
     const main = near.filter(s => ACTS[a - 1].main.includes(s.faction)), foes = near.filter(s => hostile(s, a));
     const targets = { bounty: main.length ? main : foes, patrol: near.filter(s => hostile(s, a) || s.faction === 'Contested'), pursuit: main.length ? main : foes, escort: near.filter(s => s.faction === 'Independent' || s.faction === 'Contested') };
-    for (const [i, type] of (a >= 2 && cycle % 2 === 1 ? ['bounty', 'pursuit', 'escort'] : ['bounty', 'patrol', 'escort']).entries()) {
+    for (const [i, type] of (cycle % 2 === 1 ? ['bounty', 'pursuit', 'escort'] : ['bounty', 'patrol', 'escort']).entries()) {
       const pool = targets[type].length ? targets[type] : near.filter(s => s.faction !== 'Navy' && !sealed(s, a));
       if (!pool.length) continue;
       out.push(contractFor(type, station, pick(r, pool), a, r, `c:${station}:${cycle}:${i}`));
@@ -497,7 +530,7 @@
       ? [lead(foe, who, { hull: round(s * 0.6), shield: round(s * 0.7) }), { cls: foe.cls, name: `${foe.group} wingman`, hull: round(s * 0.5), shield: round(s * 0.65), diff: 'commander' }]
       : [lead(foe, who, { hull: round(Math.min(1, s * 0.85)), shield: round(Math.min(1, s * 0.9)) })];
     return { id: `x:${id}:${seed}`, kind: 'intercept', system: id, act: Math.min(act, 3), name: `Interception at ${sys.name}`, captain: who, enemy: foe.cls,
-      reward: 90 + 35 * threatLevel(sys) + (pair ? 60 : 0), objective: pair ? 'Destroy both ambushers.' : `Destroy ${theShip(foe, who, SHIP_WORD[foe.cls] || 'ship')}.`,
+      reward: 150 + 45 * threatLevel(sys) + (pair ? 70 : 0), objective: pair ? 'Destroy both ambushers.' : `Destroy ${theShip(foe, who, SHIP_WORD[foe.cls] || 'ship')}.`,
       brief: `${foe.group} ships dropped out of the jump lane at ${sys.name} and matched your vector before the drive could cycle.`,
       intel: `${pair ? 'Two' : 'One'} ${foe.group} ${{ scrapjaw: 'raider', revenant: 'warship', seraph: 'machine', wraith: 'bioship' }[foe.cls]}${pair ? 's' : ''}.`, enemies, goal: { type: 'destroy' } };
   }
@@ -523,7 +556,7 @@
   const saveKey = storage => slotKey(activeSlot(storage));
   // Difficulty is chosen per campaign: the enemy captains' skill, enemy hull and damage, pay and how often ambushes spring.
   const DIFFICULTY = {
-    ensign: { label: 'Ensign', blurb: 'Weaker, less skilled enemies and fewer ambushes. For learning the ropes.', ai: 'commander', enemyHull: 0.85, enemyDamage: 0.8, reward: 1, intercept: 0.6 },
+    ensign: { label: 'Ensign', blurb: 'Weaker, less skilled enemies and fewer ambushes. For learning the ropes.', ai: 'commander', enemyHull: 0.85, enemyDamage: 0.7, reward: 1, intercept: 0.6 },
     captain: { label: 'Captain', blurb: 'The campaign as designed.', ai: 'captain', enemyHull: 1, enemyDamage: 1, reward: 1, intercept: 1 },
     admiral: { label: 'Admiral', blurb: 'Tougher, sharper enemies that hit harder, and more ambushes. Pays a quarter more.', ai: 'admiral', enemyHull: 1.15, enemyDamage: 1.15, reward: 1.25, intercept: 1.3 }
   };
@@ -578,7 +611,7 @@
   const frontOf = (fronts, systemId) => byId[systemId] ? front(fronts, byId[systemId].region) : null;
   // How much a result moves the front of the region it was fought in.
   function frontShift(kind, win, isBoss) {
-    if (!win) return kind === 'intercept' ? -1 : -2;
+    if (!win) return isBoss ? 0 : kind === 'intercept' ? -1 : -2;   // a lost finale costs the ship, not the front: retries do not get harder
     return isBoss ? 10 : kind === 'story' ? 4 : kind === 'intercept' ? 1 : 2;
   }
   // Applies one result: the battle's front moves, and the act's front comes under attack if it was neglected. Returns what changed.
@@ -592,12 +625,12 @@
     if (off) {
       // The defence settles it either way (its own result has already moved the front); any other battle runs the clock down.
       if (defence) off = null;
-      else if (--off.left <= 0) { move(off.region, -PUSHBACK.by, 'pushback'); off = null; }
+      else if (kind !== 'story' && --off.left <= 0) { move(off.region, -PUSHBACK.by, 'pushback'); off = null; }   // following the story is never neglect
       if (off && front(out, off.region).level === 4) off = null;
-      next = 0;
+      if (kind !== 'story') next = 0; else next = clock || 0;
     } else if (actFront && act <= 3) {
       if (region === actFront && win) next = 0;
-      else if (region !== actFront && ++next >= PUSHBACK.every) { next = 0; if (front(out, actFront).value > -10) { off = { region: actFront, left: PUSHBACK.grace }; raised = true; } }
+      else if (region !== actFront && kind !== 'story' && ++next >= PUSHBACK.every) { next = 0; if (front(out, actFront).value > -10) { off = { region: actFront, left: PUSHBACK.grace }; raised = true; } }
     }
     return { fronts: out, clock: next, changes, offensive: off, raised };
   }
@@ -714,7 +747,7 @@
   function reinforcements(spec, fleetSize) {
     const want = Math.min(MAX_FLEET, Math.max(1, fleetSize)), have = spec.enemies.length, add = Math.min(Math.max(0, want - have), supportCap(spec));
     const sup = SUPPORT[spec.enemies[0].cls] || SUPPORT[{ pyre: 'revenant', arbiter: 'seraph', mother: 'wraith', sentinel: 'seraph', thrall: 'thrall' }[spec.enemies[0].cls]] || SUPPORT.scrapjaw, out = [];
-    for (let i = 0; i < add; i++) out.push({ cls: sup.cls, name: sup.name, hull: 0.42, shield: 0.6, diff: 'commander', support: true });
+    for (let i = 0; i < add; i++) out.push({ cls: sup.cls, name: sup.name, hull: 0.34, shield: 0.6, diff: 'commander', support: true });
     return out;
   }
 
@@ -741,7 +774,7 @@
     return spec;
   }
   const HAILS = {
-    scrapjaw: 'Cut your engines, Navy. Whatever is in your hold is ours now.',
+    scrapjaw: 'Wrong lane, Navy. Turn that hull around while it still turns.',
     revenant: 'This sector is closed by order of the Ash Fleet. Turn back or be counted with the dead.',
     seraph: 'Human platform: your trajectory has been predicted. Your outcome has been predicted.',
     wraith: '...a low harmonic rises through the hull. It is not a language. It is a hunting call.',
@@ -795,11 +828,11 @@
   function fateLine(fate, captain, ship, seed = 0) { const l = FATE_LINES[fate] || FATE_LINES.missing; return l[Math.abs(seed) % l.length].replace(/\{captain\}/g, captain).replace(/\{ship\}/g, ship); }
 
   root.BroadsideCampaign = Object.freeze({
-    SYSTEMS, byId, ROUTES, THREATS, threatLevel, neighbors, path, jumps,
+    SYSTEMS, byId, AFTERMATH, describe, ROUTES, THREATS, threatLevel, neighbors, path, jumps,
     ACTS, STORY, STORY_ORDER, storyById, actOf, storyUnlocked, storyAvailable, openStory,
     STATIONS, nearestStation, SIDE, sideById, sideMissions, sideLeg,
     CONTRACT_TYPES, contracts, hostile, foeGroup, strength, rollInterception, interceptRisk, interception, blockade, fleeChance,
-    ENV_BY_REGION, encounter, storyEncounter, supportCap, NARRATIVE, CONSEQUENCES, CHOICE_STAKES,
+    ENV_BY_REGION, encounter, storyEncounter, supportCap, NARRATIVE, CONSEQUENCES, CHOICE_STAKES, CHOICE_EFFECTS,
     FRONTS, FRONT_REGIONS, ACT_FRONT, FRONT_STATES, PUSHBACK, FRONT_EFFECTS, startFronts, front, frontOf, frontShift, applyBattle, applyTransit, FRONT_ORDER, heldCount, control, controlNews, sealed, blockaded, route, counterAttack,
     SAVE_BASE, SLOT_KEY, SLOTS, slotKey, activeSlot, saveKey, DIFFICULTY, difficulty,
     REP_TIERS, REP, standing, adjustRep, repChanges,

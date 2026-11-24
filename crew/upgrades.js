@@ -11,7 +11,7 @@
     { id: 'damage_control', slot: 'hull', name: 'Damage-control teams', cost: 280, effect: 'Subsystems repair 50% faster in battle.' },
     { id: 'overcharged_core', slot: 'reactor', name: 'Overcharged core', cost: 450, effect: '14 power pips to share instead of 12.' },
     { id: 'hardened_conduits', slot: 'reactor', name: 'Hardened conduits', cost: 260, effect: 'Reactor damage costs half as much power.' },
-    { id: 'coolant_loop', slot: 'reactor', name: 'Coolant loop', cost: 340, effect: 'Every weapon reloads or charges 6% faster.' },
+    { id: 'coolant_loop', slot: 'reactor', name: 'Coolant loop', cost: 340, effect: 'Every weapon reloads or charges 10% faster.' },
     { id: 'rapid_loaders', slot: 'broadside', name: 'Rapid loaders', cost: 400, effect: 'Broadsides reload 15% faster.' },
     { id: 'heavy_shells', slot: 'broadside', name: 'Heavy shells', cost: 380, effect: '15% more damage per broadside shell.' },
     { id: 'extended_barrels', slot: 'broadside', name: 'Extended barrels', cost: 300, effect: '12% more broadside range and shell speed.' },
@@ -25,7 +25,7 @@
     { id: 'fast_reload_tubes', slot: 'torp', name: 'Fast-reload tubes', cost: 320, effect: 'Torpedo tubes reload 20% faster.' },
     { id: 'heavy_warheads', slot: 'torp', name: 'Heavy warheads', cost: 380, effect: '20% more damage per torpedo.' },
     // Trophies: never for sale, fitted to the flagship when it brings down an act's boss (STORY[].trophy in campaign-data.js).
-    { id: 'pyre_plating', slot: 'trophy', name: 'Pyre armour plate', cost: 0, trophy: 'pyre', effect: 'Plate cut from the Pyre: 8% less hull damage from every hit, on top of any ablative belt.' },
+    { id: 'pyre_plating', slot: 'trophy', name: 'Pyre armour plate', cost: 0, trophy: 'pyre', effect: 'Plate cut from the Pyre: 12% less hull damage from every hit, on top of any ablative belt.' },
     { id: 'lattice_emitter', slot: 'trophy', name: 'Lattice emitter', cost: 0, trophy: 'arbiter', effect: 'The Arbiter’s shield emitter: shields 10% stronger and recovering 15% faster.' },
     { id: 'living_graft', slot: 'trophy', name: 'Living graft', cost: 0, trophy: 'mother', effect: 'Bloom-Mother tissue grown into the hull: it knits 6 points a second when not under fire.' }
   ];
@@ -55,7 +55,7 @@
     if (has.has('damage_control')) C.repairRate = 1.5;
     if (has.has('overcharged_core')) C.power = 14;
     if (has.has('hardened_conduits')) C.reactorHardened = true;
-    if (has.has('coolant_loop')) C.weapons.forEach(w => faster(w, 0.94));
+    if (has.has('coolant_loop')) C.weapons.forEach(w => faster(w, 0.9));
     if (has.has('rapid_loaders')) broad.forEach(w => faster(w, 0.85));
     if (has.has('heavy_shells')) broad.forEach(w => harder(w, 1.15));
     if (has.has('extended_barrels')) broad.forEach(w => longer(w, 1.12));
@@ -68,7 +68,7 @@
     if (has.has('expanded_magazine')) torps.forEach(w => { w.ammo = torpedoCap(w.ammo, ['expanded_magazine']); });
     if (has.has('fast_reload_tubes')) torps.forEach(w => faster(w, 0.8));
     if (has.has('heavy_warheads')) torps.forEach(w => harder(w, 1.2));
-    if (has.has('pyre_plating')) C.armour = (C.armour || 1) * 0.92;
+    if (has.has('pyre_plating')) C.armour = (C.armour || 1) * 0.88;
     if (has.has('lattice_emitter')) { C.shield = Math.round(C.shield * 1.1); C.regen *= 1.15; }
     if (has.has('living_graft')) C.hullRegen = Math.max(C.hullRegen || 0, 6);
     return C;

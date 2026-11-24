@@ -32,7 +32,7 @@ const levels = officers => Object.fromEntries([...new Set([...IDS, ...Object.key
     const s = scale(level).strength * k, r = v => Math.round(v * s);
     switch (officer.cmd || officer.id) {
       case 'varro': return `Restore ${r(16)}% of each directional shield bank immediately.`;
-      case 'okoye': return `Weapons deal ${r(12)}% more damage for ${officer.duration} seconds.`;
+      case 'okoye': return `Weapons deal ${r(20)}% more damage for ${officer.duration} seconds.`;
       case 'vale': return `Restore ${r(24)} integrity to the worst damaged subsystem and suppress one onboard fire.`;
       case 'sato': return `Reduce incoming damage by ${r(22)}% for ${officer.duration} seconds.`;
       case 'adeyemi': return `Restore ${r(6)}% of the hull and ${r(10)} integrity to every subsystem.`;

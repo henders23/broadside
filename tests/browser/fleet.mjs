@@ -40,7 +40,7 @@ await suite('fleet', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check
   await page.reload(); await page.click('#tabShip');
   await page.locator('#fleetlist .fship', { hasText: 'Harrier' }).click();
   const over = page.locator('#svclist button', { hasText: 'Overhaul' });
-  check((await over.textContent()).includes('300'), 'overhaul priced for the Harrier’s damage: ' + await over.textContent());
+  check((await over.textContent()).includes('200'), 'overhaul priced for the Harrier’s damage: ' + await over.textContent());
   await over.click();
   st = await read();
   check(st.ships[1].hull === 1 && st.ships[0].hull === 1, 'the Harrier is repaired');
@@ -71,7 +71,7 @@ await suite('fleet', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check
   await page.locator('#shipacts button', { hasText: 'Sell' }).click();
   await page.locator('#modalactions .primary').click();
   st = await read();
-  check(st.ships.length === 2 && st.credits === 5000 - 1100 - 320 - 300 - 1250 + 625, 'Valiant sold for half her hull price: ' + st.credits);
+  check(st.ships.length === 2 && st.credits === 5000 - 1100 - 320 - 200 - 1250 + 625, 'Valiant sold for half her hull price: ' + st.credits);
   await page.locator('#fleetlist .fship', { hasText: 'Harrier' }).click();
   check(await page.locator('#shipacts button', { hasText: 'Sell' }).count() === 0, 'the flagship cannot be sold');
 

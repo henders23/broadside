@@ -42,6 +42,7 @@
     ['verdant', 'Verdant', 1385, 599, 'Harrow Expanse', 'Aliens', 'Extreme', 'A green world from which no probe has returned.']
   ].map(([id, name, x, y, region, faction, threat, description]) => ({ id, name, x, y, region, faction, threat, description }));
   const byId = Object.fromEntries(SYSTEMS.map(s => [s.id, s]));
+  const an = s => (/^[aeiou]/i.test(s) ? 'An ' : 'A ') + s;
   // Places change when the story has been through them: a system's description once its operation is won.
   const AFTERMATH = {
     kestrel: [1, 'The Kestrel lanes are open again, and the Peregrine’s run is still told on the docks.'],
@@ -116,7 +117,7 @@
       objective: 'Keep the MV Peregrine alive until it reaches the jump beacon, OR destroy Vex’s raider first.',
       brief: 'MV Peregrine is carrying evacuees toward the illuminated Kestrel jump beacon. You can win by protecting it until extraction OR by destroying Kora Vex first. Press H or use the on-screen command to hold or resume the convoy. If Peregrine is lost, the operation fails.',
       intel: 'Vex prioritises the unarmed civilian freighter but will turn toward your flagship if you intercept her.',
-      hud: 'Defeat Captain Kora Vex and secure the trade lane',
+      hud: 'Protect the MV Peregrine to the beacon, or destroy the Blackwake',
       enemies: [{ cls: 'scrapjaw', name: 'Blackwake', captain: 'Captain Kora Vex', fate: 'escaped' }], goal: { type: 'escort', convoy: 'MV Peregrine · Civilian transport', hunter: true },
       choice: ['See the Peregrine safe to Meridian', 'Chase Vex’s trail into the Verge'], flags: ['kestrel_rescue', 'kestrel_pursuit'] },
     { id: 2, act: 1, system: 'cinder', name: 'The Cinder Wake', opening: 'crossing', enemy: 'revenant', captain: 'Commander Orren Sable', kind: 'Renegade minelayer', reward: 540, support: 1,
@@ -466,7 +467,7 @@
     }
     if (type === 'patrol') {
       return Object.assign(base, { name: `Patrol: ${sys.name} lanes`, captain: `${foe.group} wing`, reward: 230 + 70 * lvl + 90 * (a - 1),
-        brief: `A ${foe.group} wing has been stopping ships in ${sys.name}. Sweep the lanes and break it up so traffic can move again.`,
+        brief: `${an(foe.group)} wing has been stopping ships in ${sys.name}. Sweep the lanes and break it up so traffic can move again.`,
         objective: 'Destroy both hostile ships.', intel: `Two light ${foe.group} ${ship}s working as a pair.`,
         enemies: [{ cls: foe.cls, name: `${foe.group} lead`, hull: round(s * 0.62), shield: round(s * 0.75) }, { cls: foe.cls, name: `${foe.group} wingman`, hull: round(s * 0.55), shield: round(s * 0.7), diff: 'commander' }], goal: { type: 'destroy' } });
     }
@@ -482,7 +483,7 @@
     const convoy = pick(r, CONVOYS);
     return Object.assign(base, { name: `Escort: ${convoy}`, captain: `${foe.group} ${ship}`, reward: 240 + 65 * lvl + 90 * (a - 1),
       brief: `The ${convoy} is waiting in ${sys.name} for a jump window, and a ${foe.group} ${ship} is waiting for it. See her through to the beacon.`,
-      objective: `Escort the ${convoy} to the jump beacon, or destroy the attacker.`, intel: `A ${foe.group} ${ship} that will go for the freighter first. Press H to hold or resume the convoy.`,
+      objective: `Escort the ${convoy} to the jump beacon, or destroy the attacker.`, intel: `${an(foe.group)} ${ship} that will go for the freighter first. Press H to hold or resume the convoy.`,
       enemies: [{ cls: foe.cls, name: `${foe.group} ${ship}`, hull: round(s), shield: round(Math.min(1, s + 0.1)) }], goal: { type: 'escort', convoy: `${convoy} · Freighter`, hunter: true } });
   }
   // Three contracts per starbase. The board changes whenever `cycle` does (the campaign bumps it after each victory).

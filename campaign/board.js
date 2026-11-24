@@ -3,7 +3,7 @@
 'use strict';
 // A locked modal (an interception) can only be left through its buttons.
 let modalLocked=false;
-function openModal(title,header,html,actions,opts){modalLocked=!!(opts&&opts.locked);$('modal').classList.remove('personnel');$('modal').classList.toggle('wide',!!(opts&&opts.wide));$('modaltitle').textContent=title;$('modalheader').textContent=header;$('modalbody').innerHTML=html;const d=$('modalactions');d.replaceChildren();for(const action of actions){const b=document.createElement('button');b.textContent=action.label;b.className=action.primary?'primary':'';b.disabled=!!action.disabled;b.addEventListener('click',action.run);d.append(b)}$('veil').hidden=false;}
+function openModal(title,header,html,actions,opts){modalLocked=!!(opts&&opts.locked);$('modal').classList.remove('personnel');$('modal').classList.toggle('wide',!!(opts&&opts.wide));$('modaltitle').textContent=title;$('modalheader').textContent=header;$('modalbody').innerHTML=html;const d=$('modalactions');d.replaceChildren();for(const action of actions){const b=document.createElement('button');b.textContent=action.label;b.className=action.primary?'primary':'';b.disabled=!!action.disabled;b.addEventListener('click',action.run);d.append(b)}$('veil').hidden=false;$('modal').scrollTop=0;const first=d.querySelector('button.primary:not(:disabled)')||d.querySelector('button:not(:disabled)');if(first)first.focus({preventScroll:true});}
 function close(){if(!modalLocked)closeModal();}
 function closeModal(){modalLocked=false;$('veil').hidden=true;harlanQuiet();}
 // A finale's briefing lists the boss's phases, so the captain knows what each stage of the fight brings.

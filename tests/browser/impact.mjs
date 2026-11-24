@@ -30,7 +30,7 @@ await suite('impact', {}, async ({ page, base, check, shot }) => {
   check(/destroyed$/.test(k.word), 'the kill cam names the wreck: ' + k.word);
   check(k.slow < 0.5, 'the kill drops into slow motion: ' + k.slow);
   await page.waitForFunction(() => getComputedStyle(document.getElementById('own')).opacity === '0', null, { timeout: 30000 }).catch(() => {});
-  check(await S(() => getComputedStyle(document.getElementById('own')).opacity === '0' && getComputedStyle(document.getElementById('msg')).opacity === '0'), 'the instruments fade out for the kill cam');
+  check(await S(() => getComputedStyle(document.getElementById('own')).opacity === '0' && getComputedStyle(document.getElementById('topstack')).opacity === '0'), 'the instruments fade out for the kill cam');
   await shot('2-killcam-close');
   await S(() => { window.__sim.step(50); window.__sim.killCam.t = 3; }); await page.waitForTimeout(500); await shot('3-killcam-witness');
   await S(() => { window.__sim.killCam.t = 5.2; window.__sim.enemy.dying = 0.01; }); await page.waitForTimeout(500); await shot('4-killcam-blast'); await page.waitForTimeout(1200); await shot('5-killcam-after');

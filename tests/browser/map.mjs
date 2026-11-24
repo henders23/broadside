@@ -109,10 +109,10 @@ await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   check(await over.isEnabled(), 'overhaul offered: ' + await over.textContent());
   await over.click();
   let st = await page.evaluate(k => JSON.parse(localStorage.getItem(k)), KEY);
-  check(st.ships[0].hull === 1 && st.ships[0].sub === null && st.credits === 850 - 240, 'overhaul restores hull and subsystems, costs 240');
+  check(st.ships[0].hull === 1 && st.ships[0].sub === null && st.credits === 850 - 160, 'overhaul restores hull and subsystems, costs 160');
   await page.locator('#svclist button', { hasText: 'Resupply' }).click();
   st = await page.evaluate(k => JSON.parse(localStorage.getItem(k)), KEY);
-  check(st.ships[0].torps === 8 && st.credits === 610 - 125, 'torpedo resupply fills 5 torpedoes for 125');
+  check(st.ships[0].torps === 8 && st.credits === 690 - 75, 'torpedo resupply fills 5 torpedoes for 75');
   await shot('08-yard-after-services');
 
   // buying an upgrade
@@ -123,7 +123,7 @@ await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   check(await page.locator('#veil').isVisible() && (await page.textContent('#modaltitle')).includes('Rapid loaders'), 'purchase asks for confirmation');
   await page.locator('#modalactions .primary').click();
   st = await page.evaluate(k => JSON.parse(localStorage.getItem(k)), KEY);
-  check(st.credits === 85 && st.ships[0].upgrades.includes('rapid_loaders'), 'upgrade bought: 400 spent and saved');
+  check(st.credits === 215 && st.ships[0].upgrades.includes('rapid_loaders'), 'upgrade bought: 400 spent and saved');
   check((await page.textContent('#markspec')).includes('6.4 s reload'), 'broadside spec shows the faster reload: ' + await page.textContent('#markspec'));
   check((await page.locator('#slots .slot', { hasText: 'Broadsides' }).textContent()).includes('1/3 FITTED'), 'slot shows the fitted upgrade');
   check(await page.locator('#markcards .upcard.got').count() === 1, 'card marked installed');

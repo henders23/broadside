@@ -92,7 +92,7 @@ await suite('depth', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check
   check(st.credits === 6000 - 432 - 650, 'refit cost 650 (no discount at Kestrel)');
   await page.locator('#modalactions button', { hasText: 'See the Peregrine safe to Meridian' }).click();
   st = await read();
-  check(st.completed.includes(1) && st.met.includes('scrapjaw') && st.rep.meridian === 5, 'operation complete, Scrapjaw met, Navy standing +5');
+  check(st.completed.includes(1) && st.met.includes('scrapjaw') && st.rep.meridian === 13, 'operation complete, Scrapjaw met, Navy standing +5 and +8 for seeing the Peregrine home');
   // the codex
   await page.click('#tabCodex');
   check(await page.locator('#codexview').isVisible() && (await page.textContent('#cxcount')).startsWith('Codex ·'), 'codex opens: ' + await page.textContent('#cxcount'));

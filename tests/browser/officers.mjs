@@ -26,7 +26,7 @@ await suite('officers', { random: 0.99 }, async ({ page, ctx, base, out, KEY, ch
   await p.click('#tabCrew'); await p.waitForTimeout(300);
   await p.locator('#crewlist .officer', { hasText: 'Okoye' }).click();
   check((await p.textContent('#dosrank')).startsWith('Lieutenant · rank 2 of 5'), 'Okoye shows her new rank: ' + await p.textContent('#dosrank'));
-  check((await p.textContent('#doseffect')).includes('13% more damage') && (await p.textContent('#doscool')).includes('105 s (base 110 s)'), 'command reflects the rank: ' + await p.textContent('#doseffect') + ' / ' + await p.textContent('#doscool'));
+  check((await p.textContent('#doseffect')).includes('21% more damage') && (await p.textContent('#doscool')).includes('71 s (base 75 s)'), 'command reflects the rank: ' + await p.textContent('#doseffect') + ' / ' + await p.textContent('#doscool'));
   check((await p.textContent('#crewlist')).includes('Lieutenant Imani Okoye') && (await p.textContent('#crewlist')).includes('Tactical Officer · 70 XP to Lt. Commander'), 'officer list shows rank in the name and progress below');
   await p.screenshot({ path: `${out}/xp-officers.png` });
   await p.locator('#crewlist .officer', { hasText: 'Varro' }).click();

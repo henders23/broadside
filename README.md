@@ -92,6 +92,7 @@ python3 -m http.server 8000
 | Space | Forward weapon: dorsal turrets (Bastion), spinal lance (Halberd), bow battery (Sabre) or siege cannons (Warden) |
 | T | Torpedo |
 | B | Batteries free: guns fire automatically when loaded and in arc |
+| V | Repair priority: the next damaged system first (or click it on the systems list) |
 | J | Cycle enemy targets (campaign battles) |
 | U / I / O | Escort orders: focus my target / defend the flagship / engage freely (campaign battles with escorts) |
 | H | Hold / resume an escorted convoy (escort missions; also an on-screen button) |

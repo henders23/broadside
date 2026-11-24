@@ -6,7 +6,7 @@ const Personnel=window.BroadsidePersonnel;
 const Campaign=window.BroadsideCampaign;
 const MISSIONS=Campaign.STORY,SYSTEMS=Campaign.SYSTEMS,byId=Campaign.byId,ROUTES=Campaign.ROUTES,STATIONS=Campaign.STATIONS;
 // The active save slot's key (slot 1 is the original 'broadside-campaign-v1').
-const KEY=Campaign.saveKey(localStorage);
+const KEY=(()=>{try{return Campaign.saveKey(localStorage);}catch(e){return Campaign.SAVE_BASE;}})();   // storage can be blocked: the campaign still opens, unsaved
 const $=id=>document.getElementById(id);
 const shipChoices=['bastion','halberd','sabre','warden'];
 // Hulls a fleet can hold: the four Navy classes and the three that can be claimed from wrecks.
@@ -26,7 +26,7 @@ function leadFor(m){const duty=onDuty();return duty.find(c=>c.slot===Personnel.l
 function commanderByMission(n){return Personnel.commanders[n]}
 function newShip(id,ship,shipName){return {id,ship,shipName,hull:1,sub:null,torps:null,upgrades:[],reserve:false};}
 function initial(){let pick='bastion';try{const v=JSON.parse(localStorage.getItem('broadside')||'{}');if(shipChoices.includes(v.ship))pick=v.ship;}catch(e){}return {version:1,ships:[newShip('s1',pick,'MNS Resolute')],flag:'s1',shipSeq:1,system:'meridian',completed:[],flags:{},credits:850,attempts:0,pendingResult:null,introSeen:false,officers:{},actBriefed:0,boardCycle:0,orders:[],contracts:[],sideDone:[],launch:null,interceptSeed:0,ambush:null,difficulty:'captain',rep:{},updated:0,met:[],visited:['meridian'],codexRead:[],crew:{},hired:[],fronts:Campaign.startFronts(),frontClock:0,wounds:{},fallen:[],replacements:{},rivals:[],medals:{},laneEvent:null,lastLoss:false};}
-function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&v.version===1&&Array.isArray(v.completed)&&(Array.isArray(v.ships)&&v.ships.some(r=>FLEET_CLASSES.includes(r.ship))||shipChoices.includes(v.ship)))return migrate(v);}catch(e){}return initial();}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&!Campaign.byId[v.system])v.system='meridian';if(v&&!Number.isFinite(v.credits))v.credits=Number(v.credits)||0;if(v&&v.version===1&&Array.isArray(v.completed)&&(Array.isArray(v.ships)&&v.ships.some(r=>FLEET_CLASSES.includes(r.ship))||shipChoices.includes(v.ship)))return migrate(v);}catch(e){}return initial();}
 // Saves from before the grand campaign gain its fields; an Act I briefing already read counts as briefed.
 // Single-ship saves become a one-ship fleet.
 function migrate(v){const d=initial();if(!v.legs||typeof v.legs!=='object')v.legs={};for(const k of ['orders','contracts','sideDone'])if(!Array.isArray(v[k]))v[k]=[];for(const k of ['boardCycle','interceptSeed'])if(!Number.isFinite(v[k]))v[k]=0;if(!Number.isFinite(v.actBriefed))v.actBriefed=v.introSeen||v.completed.length?1:0;if(!v.officers)v.officers={};if(!('launch' in v))v.launch=d.launch;if(!Campaign.DIFFICULTY[v.difficulty])v.difficulty='captain';if(!v.rep||typeof v.rep!=='object')v.rep={};for(const k of ['met','visited','codexRead','hired','fallen','rivals'])if(!Array.isArray(v[k]))v[k]=[];for(const k of ['wounds','replacements','medals'])if(!v[k]||typeof v[k]!=='object')v[k]={};if(!('laneEvent' in v))v.laneEvent=null;if(!v.crew||typeof v.crew!=='object')v.crew={};if(!v.fronts||typeof v.fronts!=='object'){v.fronts=Campaign.startFronts();for(const id of v.completed){const m=Campaign.storyById[id],r=m&&Campaign.byId[m.system].region;if(r in v.fronts)v.fronts[r]=Math.min(10,v.fronts[r]+(m.boss?10:4));}}if(!Number.isFinite(v.frontClock))v.frontClock=0;if(!v.met.length)for(const id of v.completed){const m=Campaign.storyById[id];if(m)for(const e of m.enemies)if(!v.met.includes(e.cls))v.met.push(e.cls);}for(const id of [v.system,...v.completed.map(id=>Campaign.storyById[id]&&Campaign.storyById[id].system)])if(id&&Campaign.byId[id]&&!v.visited.includes(id))v.visited.push(id);
@@ -35,7 +35,8 @@ function migrate(v){const d=initial();if(!v.legs||typeof v.legs!=='object')v.leg
  v.ships=v.ships.filter(r=>FLEET_CLASSES.includes(r.ship));for(const r of v.ships){if(!Array.isArray(r.upgrades))r.upgrades=[];if(typeof r.hull!=='number')r.hull=1;r.reserve=!!r.reserve;}
  if(!v.ships.some(r=>r.id===v.flag))v.flag=v.ships[0].id;if(!Number.isFinite(v.shipSeq))v.shipSeq=v.ships.length;return v;}
 let state=load(),selected='kestrel';
-function persist(){state.updated=Date.now();localStorage.setItem(KEY,JSON.stringify(state));}
+let saveWarned=false;
+function persist(){state.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){if(!saveWarned){saveWarned=true;setTimeout(()=>{try{toast('Progress cannot be saved in this browser. Check that site storage is allowed.');}catch(x){}},600);}}}
 // The fleet: every ship keeps its own hull, damage, torpedoes, upgrades and name. The flagship is the one the captain flies.
 function flag(){return state.ships.find(s=>s.id===state.flag)||state.ships[0];}
 function deployedShips(){return Campaign.deployed(state.ships,state.flag);}

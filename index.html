@@ -40,9 +40,9 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 /* ---------- HUD ---------- */
 #hud{position:absolute;inset:0;pointer-events:none;color:var(--hud);font-size:12px;letter-spacing:.05em}
 .panel{position:absolute;background:var(--panel);border:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:8px;backdrop-filter:blur(3px)}
-.ptitle{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.ptitle b{font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:.08em;text-transform:uppercase;color:var(--hud-hi);line-height:1}
-.ptitle small{font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;text-align:right}
+.ptitle{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.ptitle b{font-family:var(--f-display);font-weight:600;font-size:18px;letter-spacing:.06em;text-transform:uppercase;color:var(--hud-hi);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ptitle small{font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
 .sec{font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
 .bar{height:7px;background:rgba(255,183,77,.13);position:relative;overflow:hidden}
 .bar i{position:absolute;inset:0;background:var(--hud);transform-origin:left;will-change:transform}
@@ -53,13 +53,14 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #foe{right:max(14px,env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:230px}
 #coach{position:absolute;right:calc(20px + env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);width:min(330px,36vw);z-index:6;padding:14px 16px;border:1px solid #9fd8ff66;border-right:3px solid #9fd8ff;border-radius:10px;background:linear-gradient(120deg,rgba(8,24,38,.92),rgba(4,10,18,.85));box-shadow:0 10px 30px #0009;animation:coachin .4s ease}#coach[hidden]{display:none}#coach small{display:block;font-size:10px;letter-spacing:.22em;color:#9fd8ff;text-transform:uppercase}#coach b{display:block;margin:4px 0 6px;font-size:17px;color:#f4e6cc}#coach p{margin:0 0 10px;font-size:12.5px;line-height:1.55;color:#c9d8e4}#coach .ck{display:flex;justify-content:space-between;align-items:center;gap:8px}#coach kbd:empty{visibility:hidden}#coach button{pointer-events:auto;background:none;border:1px solid #ffffff33;color:#c9d8e4;border-radius:999px;padding:4px 10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}@keyframes coachin{from{opacity:0;transform:translate(12px,-50%)}}
 #bosscard{position:absolute;inset:0;z-index:7;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:16vh;gap:6px;text-align:center;background:linear-gradient(#000 0 9vh,transparent 9vh calc(100% - 9vh),#000 calc(100% - 9vh));opacity:0}#bosscard[hidden]{display:none}#bosscard small{font-size:12px;letter-spacing:.42em;color:#ffb36b;text-transform:uppercase}#bosscard b{font-size:clamp(34px,6vw,72px);letter-spacing:.18em;color:#ffe3c4;text-shadow:0 0 28px #ff5b4f99;font-weight:800}#bosscard span{font-size:14px;letter-spacing:.2em;color:#e9d2bd;text-transform:uppercase}#bosscard em{margin-top:10px;font-style:normal;font-size:10px;letter-spacing:.3em;color:#ffffff66;text-transform:uppercase}#bossbar.warn .bt span{color:#ff6b5f;animation:bosswarn .5s steps(2) infinite}@keyframes bosswarn{50%{opacity:.35}}
-#bossbar{position:absolute;top:calc(188px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(560px,60vw);z-index:5;pointer-events:none}#bossbar .bt{display:flex;justify-content:space-between;gap:12px;font-size:11px;letter-spacing:.16em;color:#ffd0a0;text-transform:uppercase;margin-bottom:5px}#bossbar .bt b{font-weight:700}#bossbar .bb{position:relative;height:10px;background:rgba(255,91,79,.15);border:1px solid rgba(255,140,110,.5)}#bossbar .bb i{position:absolute;inset:0;background:linear-gradient(90deg,#ff5b4f,#ffb36b);transform-origin:left}#bossbar .bb .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:#ffe3c4}#bossbar.lattice .bb i{background:linear-gradient(90deg,#6fd0ff,#cfefff)}#bossbar.lattice .bt span{color:#9fd8ff}
+#bossbar{width:min(560px,100%);pointer-events:none;margin:2px 0}#bossbar .bt{display:flex;justify-content:space-between;gap:12px;font-size:11px;letter-spacing:.16em;color:#ffd0a0;text-transform:uppercase;margin-bottom:5px}#bossbar .bt b{font-weight:700}#bossbar .bb{position:relative;height:10px;background:rgba(255,91,79,.15);border:1px solid rgba(255,140,110,.5)}#bossbar .bb i{position:absolute;inset:0;background:linear-gradient(90deg,#ff5b4f,#ffb36b);transform-origin:left}#bossbar .bb .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:#ffe3c4}#bossbar.lattice .bb i{background:linear-gradient(90deg,#6fd0ff,#cfefff)}#bossbar.lattice .bt span{color:#9fd8ff}
 #escorts{right:max(14px,env(safe-area-inset-right,0px));top:calc(var(--esc-top,408px) + env(safe-area-inset-top,0px));width:230px;pointer-events:auto}#esc-list{display:flex;flex-direction:column;gap:7px}.esc{display:flex;flex-direction:column;gap:3px}.esc .en{display:flex;justify-content:space-between;gap:8px;font-size:11px}.esc .en b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.esc .en span{color:var(--dim,#9ab)}.esc.lost{opacity:.45}.esc small{font-size:10px;opacity:.82;white-space:normal;line-height:1.3;overflow:visible}.escbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.escbtns button{font:inherit;font-size:10px;letter-spacing:.06em;padding:5px 2px;background:#0a1b2a;border:1px solid #2f485c;color:#e1eaf2;cursor:pointer}.escbtns button.on{border-color:#f0c27c;color:#f0d3a4;background:#173044}
 .shieldbox{display:grid;grid-template-columns:118px 1fr;gap:10px;align-items:center}
 .shieldbox canvas{width:118px;height:118px;display:block}
 .shlist{display:flex;flex-direction:column;gap:3px;font-size:11px}
 .shlist div{display:flex;justify-content:space-between;gap:6px;color:var(--muted)}
 .shlist div.f{color:var(--ice)}
+.shlist span{white-space:nowrap}
 .shlist div.down{color:var(--hostile)}
 .shlist span:last-child{font-variant-numeric:tabular-nums;color:var(--text)}
 .pips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -80,8 +81,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .sub span:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
 #tacwrap{position:absolute;left:max(14px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));width:270px;height:270px;border:1px solid var(--line);background:rgba(4,7,12,.82)}
 #tac{width:100%;height:100%;display:block}
-#tacwrap .sec{position:absolute;left:8px;top:6px}
-#tacfull{position:absolute;z-index:6;inset:7% 8%;border:1px solid var(--line);background:rgba(4,7,12,.93)}
+#tacwrap .sec{position:absolute;left:8px;bottom:6px}
+#tacfull{position:absolute;z-index:9;inset:7% 8%;border:1px solid var(--line);background:#04070c}
 #tacfull canvas{width:100%;height:100%;display:block}
 #tacfull .sec{position:absolute;left:12px;top:10px}
 #helm{left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(430px,calc(100% - 640px));min-width:300px}
@@ -119,6 +120,21 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .auto{font-size:10px;letter-spacing:.12em;color:var(--muted)}
 .auto b{color:var(--hud-hi);font-weight:400}
 #pd:empty{display:none}
+/* Bridge commands (crew/personnel.css draws the tiles): a strip of five above the helm, clear of the plot and the helm. */
+@media (min-width:901px){
+#hud #bridge-orders{left:50%;right:auto;transform:translateX(-50%);bottom:calc(186px + env(safe-area-inset-bottom,0px));width:min(430px,calc(100% - 640px));min-width:300px;display:flex;gap:4px;padding:4px;box-sizing:border-box}
+#hud #bridge-orders[hidden]{display:none}
+#hud #bridge-orders .order-title{display:none}
+#hud #bridge-orders .order{flex:1 1 0;min-width:0;height:auto;margin:0;padding:4px;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:2px 5px;align-items:center}
+#hud #bridge-orders .order .crew-portrait{width:26px;height:30px;grid-row:1 / 3}
+#hud #bridge-orders .order .order-text{display:contents}
+#hud #bridge-orders .order b{grid-column:1 / 3;grid-row:3;font-size:9px;font-weight:400;letter-spacing:.02em}
+#hud #bridge-orders .order small{margin:0;font-size:9px;grid-column:2;grid-row:2}
+#hud #bridge-orders .order kbd{grid-column:2;grid-row:1;justify-self:start}
+#hud #bridge-comms{left:max(14px,env(safe-area-inset-left,0px));bottom:calc(296px + env(safe-area-inset-bottom,0px));width:270px;box-sizing:border-box}
+#hud.withbridge #tip{bottom:calc(262px + env(safe-area-inset-bottom,0px))}
+}
+@media (min-width:901px) and (max-width:1280px){#hud #bridge-comms{bottom:calc(236px + env(safe-area-inset-bottom,0px));width:210px}}
 #gcam{position:absolute;top:100%;left:-1px;right:-1px;margin-top:7px;height:100px;border:1px solid var(--line);pointer-events:none;overflow:hidden}
 #gcam.off{background:rgba(4,7,12,.82)}
 #gcam small{position:absolute;left:7px;top:5px;font-size:9px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;text-shadow:0 0 4px #000}
@@ -143,10 +159,12 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #offarrow{position:absolute;left:0;top:0;width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-bottom:18px solid var(--hostile);margin:-9px 0 0 -11px;will-change:transform}
 .tmk{position:absolute;left:0;top:0;width:10px;height:10px;margin:-5px 0 0 -5px;border:1.5px solid var(--hostile);will-change:transform}
 .tmk.own{border-color:var(--ice)}
-#msg{position:absolute;left:50%;top:15%;transform:translateX(-50%);font-family:var(--f-display);font-size:26px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--hud-hi);opacity:0;transition:opacity .6s;text-align:center;text-shadow:0 0 12px #000;width:max-content;max-width:calc(100% - 32px)}
+#topstack{position:absolute;left:50%;top:calc(70px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;gap:6px;width:calc(100% - 560px);max-width:780px;pointer-events:none}
+#topstack>*{max-width:100%;box-sizing:border-box}#topstack>[hidden]{display:none}
+#msg{font-family:var(--f-display);font-size:24px;font-weight:600;letter-spacing:.12em;line-height:1.15;text-transform:uppercase;color:var(--hud-hi);opacity:0;transition:opacity .6s;text-align:center;text-shadow:0 0 12px #000,0 0 3px #000;min-height:28px}
 #msg.on{opacity:1;transition:none}
 #msg.bad{color:var(--hostile)}
-#warn{position:absolute;left:50%;top:calc(15% + 40px);transform:translateX(-50%);font-family:var(--f-display);font-size:20px;font-weight:800;letter-spacing:.18em;color:var(--hostile);white-space:nowrap;text-shadow:0 0 12px rgba(255,91,79,.6)}
+#warn{font-family:var(--f-display);font-size:20px;font-weight:800;letter-spacing:.18em;color:var(--hostile);white-space:nowrap;text-shadow:0 0 12px rgba(255,91,79,.6)}
 #warn.blink{animation:blink .5s steps(2) infinite}
 @keyframes blink{50%{opacity:.25}}
 #rangeline{position:absolute;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);text-align:center;display:flex;flex-direction:column;gap:2px;align-items:center;max-width:calc(100% - 540px)}
@@ -211,6 +229,10 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .mbtn{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:50px;padding:0 18px;background:rgba(0,0,0,.84);border:1px solid var(--line);color:var(--text);font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-align:left}
 .mbtn small{font-family:var(--f-mono);font-size:11px;font-weight:400;letter-spacing:.14em;color:var(--hud)}
 .mbtn:hover,.mbtn:focus-visible{border-color:var(--hud);background:rgba(30,23,10,.92);outline:none}
+.mbtn:focus-visible,.back:focus-visible,.opt:focus-visible,.ship:focus-visible,.btn:focus-visible,.sub:focus-visible,.diff button:focus-visible,#bridge-orders .order:focus-visible,.escbtns button:focus-visible{outline:2px solid var(--hud-hi);outline-offset:2px}
+#pausekeys{display:grid;grid-template-columns:repeat(3,auto);width:max-content;max-width:100%;gap:5px 26px;margin:0 0 22px;font-size:12px;color:var(--muted);letter-spacing:.06em;text-align:left}
+#pausekeys kbd{color:var(--hud-hi)}
+@media (max-width:900px){#pausekeys{grid-template-columns:repeat(2,auto)}}
 .mbtn.primary{justify-content:center;border-color:var(--hud);color:var(--hud-hi);background:rgba(44,31,9,.92)}
 .mpanel{background:rgba(0,0,0,.86);border:1px solid var(--line);padding:18px 22px 22px;display:flex;flex-direction:column;gap:16px;width:min(840px,100%);text-align:left}
 .mhead{display:flex;align-items:center;gap:16px}
@@ -298,13 +320,17 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <div id="tmarks"></div>
     <div id="dmgnums"></div>
     <div id="rangeline"><b id="rl-range">—</b><small id="rl-sub"></small></div>
-    <div id="msg"></div>
-    <div id="warn" hidden></div>
     <div id="tip"></div>
-    <button type="button" id="escort-hold" hidden style="position:absolute;top:176px;left:50%;transform:translateX(-50%);z-index:7;background:#071825;color:#b4e9ff;border:1px solid #6ab6d7;padding:7px 16px;letter-spacing:.13em;font-size:11px;cursor:pointer;pointer-events:auto">HOLD CONVOY [H]</button>
-    <div id="fleet-objective" hidden aria-live="polite" style="position:absolute;top:143px;left:50%;transform:translateX(-50%);z-index:5;background:#041320dc;border:1px solid #5b8ba3;padding:6px 13px;text-align:center;font-size:10px;letter-spacing:.12em;color:#b1e8ee;max-width:55%;pointer-events:none"></div>
-    <div id="twist-line" hidden aria-live="polite" style="position:absolute;top:178px;left:50%;transform:translateX(-50%);z-index:5;background:#1a0b08dc;border:1px solid #d9774f;padding:5px 13px;text-align:center;font-size:10px;letter-spacing:.14em;color:#ffc7a8;max-width:55%;pointer-events:none"></div>
-    <div id="campaign-objective" hidden style="position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:5;background:#061523e8;border:1px solid #d4a269;padding:8px 15px;text-align:center;font-size:11px;letter-spacing:.1em;color:#ffda9e;max-width:55%;pointer-events:none"></div>
+    <!-- Everything at the top centre sits in one column, in this order, so no line can print over another. -->
+    <div id="topstack">
+      <div id="campaign-objective" hidden style="background:#061523e8;border:1px solid #d4a269;padding:6px 13px;text-align:center;font-size:11px;letter-spacing:.1em;color:#ffda9e"></div>
+      <div id="bossbar" hidden aria-live="polite"><div class="bt"><b id="boss-name"></b><span id="boss-phase"></span></div><div class="bb" id="boss-track"><i id="boss-fill"></i></div></div>
+      <div id="fleet-objective" hidden aria-live="polite" style="background:#041320dc;border:1px solid #5b8ba3;padding:5px 13px;text-align:center;font-size:10px;letter-spacing:.12em;color:#b1e8ee"></div>
+      <div id="twist-line" hidden aria-live="polite" style="background:#1a0b08dc;border:1px solid #d9774f;padding:5px 13px;text-align:center;font-size:10px;letter-spacing:.14em;color:#ffc7a8"></div>
+      <button type="button" id="escort-hold" hidden style="background:#071825;color:#b4e9ff;border:1px solid #6ab6d7;padding:6px 16px;letter-spacing:.13em;font-size:11px;cursor:pointer;pointer-events:auto">HOLD CONVOY [H]</button>
+      <div id="msg"></div>
+      <div id="warn" hidden></div>
+    </div>
 
     <div class="panel" id="own">
       <div class="ptitle"><b id="own-name">—</b><small id="own-cls"></small></div>
@@ -329,7 +355,6 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 
     <div id="coach" hidden aria-live="polite"><small id="coach-k"></small><b id="coach-t"></b><p id="coach-p"></p><div class="ck"><kbd id="coach-keys"></kbd><button type="button" id="coach-skip">Skip tutorial</button></div></div>
     <div id="bosscard" hidden aria-live="assertive"><small id="bosscard-cls"></small><b id="bosscard-title"></b><span id="bosscard-who"></span><em>Press any key</em></div>
-    <div id="bossbar" hidden aria-live="polite"><div class="bt"><b id="boss-name"></b><span id="boss-phase"></span></div><div class="bb" id="boss-track"><i id="boss-fill"></i></div></div>
     <div class="panel" id="escorts" hidden aria-label="Escort orders">
       <div class="ptitle"><b>Escorts</b><small id="esc-order">—</small></div>
       <div id="esc-list"></div>
@@ -433,6 +458,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
           <div><kbd>T</kbd> torpedo · <kbd>B</kbd> batteries free</div>
           <div><kbd>Drag</kbd> orbit · <kbd>Wheel</kbd> zoom</div>
           <div><kbd>C</kbd> look at enemy · <kbd>Tab</kbd> plot</div>
+          <div><kbd>V</kbd> repair priority: next damaged system</div>
           <div><kbd>P</kbd> pause · <kbd>G</kbd> graphics</div>
           <div><kbd>M</kbd> sound effects on/off · <kbd>N</kbd> music on/off</div>
         </div>
@@ -443,6 +469,12 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 
   <section class="screen" id="pause" hidden>
     <h2 class="bigword win">Paused</h2>
+    <div id="pausekeys" aria-label="Controls">
+      <span><kbd>W S</kbd> engines</span><span><kbd>A D</kbd> rudder · <kbd>X</kbd> centre</span><span><kbd>Shift</kbd> afterburner</span>
+      <span><kbd>Q E</kbd> broadsides</span><span><kbd>Space</kbd> forward weapon</span><span><kbd>T</kbd> torpedo · <kbd>B</kbd> guns free</span>
+      <span><kbd>Arrows</kbd> reinforce a shield</span><span><kbd>1 2 3</kbd> power · <kbd>4</kbd> even</span><span><kbd>V</kbd> repair priority</span>
+      <span><kbd>J</kbd> next target</span><span><kbd>5–9</kbd> officers · <kbd>U I O</kbd> escorts</span><span><kbd>Tab</kbd> plot · <kbd>C</kbd> look at enemy</span>
+    </div>
     <div class="btnrow">
       <button class="btn" type="button" id="resume">Resume</button>
       <button class="btn ghost" type="button" id="quit">Leave the bridge</button>
@@ -536,7 +568,7 @@ const DIFF = {
 const choice = { ship: 'bastion', diff: 'captain' };
 // Campaign battles are staged from an encounter spec (crew/campaign-data.js): campaign.html stores it in the save
 // under `launch` and opens index.html?encounter=1. index.html?campaign=N still opens story operation N.
-const CAMPAIGN_KEY = window.BroadsideCampaign ? window.BroadsideCampaign.saveKey(localStorage) : 'broadside-campaign-v1';   // the active save slot
+const CAMPAIGN_KEY = (() => { try { return window.BroadsideCampaign.saveKey(localStorage); } catch (e) { return 'broadside-campaign-v1'; } })();   // storage can be blocked: the battle still runs   // the active save slot
 const campaignParams = new URLSearchParams(location.search);
 const campaignMissionId = Number(campaignParams.get('campaign')) || 0;
 let campaignMission = (() => {   // `let` so the balance tool can stage encounters in place (see __sim.fight)
@@ -600,8 +632,8 @@ const QUALITY = {
   medium: { pr: 1.25, bloom: 1, sky: 1024 },
   high: { pr: 1.75, bloom: 1, sky: 1024 }
 };
-const gfx = { q: 'medium', fps: false, auto: true, cine: true, nums: true };
-try { const g = JSON.parse(localStorage.getItem('broadside-gfx') || '{}'); if (QUALITY[g.q]) gfx.q = g.q; gfx.fps = !!g.fps; for (const k of ['auto', 'cine', 'nums']) if (g[k] === false) gfx[k] = false; } catch (e) {}
+const gfx = { q: 'medium', fps: false, auto: true, cine: !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches), nums: true };   // slow motion, hit pauses and the kill cam start off for anyone who asks their system for less motion
+try { const g = JSON.parse(localStorage.getItem('broadside-gfx') || '{}'); if (QUALITY[g.q]) gfx.q = g.q; gfx.fps = !!g.fps; for (const k of ['auto', 'cine', 'nums']) if (typeof g[k] === 'boolean') gfx[k] = g[k]; } catch (e) {}
 function saveGfx() { try { localStorage.setItem('broadside-gfx', JSON.stringify(gfx)); } catch (e) {} }
 let renderScale = 1;   // lowered automatically when frames run long
 let tacT = 0;
@@ -1732,6 +1764,7 @@ function showOver() {
   rows.push(['Hull left', Math.max(0, Math.round(player.hull))]);
   $('over-stats').innerHTML = rows.map(r => `<div><small>${r[0]}</small><b>${r[1]}</b></div>`).join('');
   $('hud').hidden = true; $('escort-hold').hidden=true; $('over').hidden = false; Sfx.engine(0, false); Bed.sync();
+  setTimeout(() => { const b = $('again').hidden ? $('tomenu') : $('again'); if (state === 'over') b.focus(); }, 0);
   if (campaignMission && win) {
     const code = game.campaignOutcome, convoy = (fleet?.convoy?.name || 'The convoy').split(' · ')[0], custom = campaignMission.ends && campaignMission.ends[code];
     const ends = {
@@ -1804,15 +1837,15 @@ function showOver() {
 }
 function toMenu(page = 'main') {
   attractStop();
-  state = 'menu'; game = null; fleet = null; bridge = null; clearWorld(); battleEnvironment.configure(0); player = enemy = null; Music.play('title'); Bed.sync(); placeCard(false);
+  state = 'menu'; $('hud').style.visibility = ''; game = null; fleet = null; bridge = null; clearWorld(); battleEnvironment.configure(0); player = enemy = null; Music.play('title'); Bed.sync(); placeCard(false);
   display.visible = true; updateDisplay();
   $('hud').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('menu').hidden = false;
   showPage(page);
   Sfx.engine(0, false);
 }
 function pause(on) {
-  if (on && state === 'playing') { state = 'paused'; $('pause').hidden = false; Sfx.engine(0, false); Sfx.burn(false); }
-  else if (!on && state === 'paused') { state = 'playing'; $('pause').hidden = true; if (player) player.burn = false; }   // a burn still held relights, with its sound
+  if (on && state === 'playing') { state = 'paused'; $('pause').hidden = false; Sfx.engine(0, false); Sfx.burn(false); $('hud').style.visibility = 'hidden'; $('resume').focus(); }
+  else if (!on && state === 'paused') { state = 'playing'; $('pause').hidden = true; $('hud').style.visibility = ''; if (player) player.burn = false; }   // a burn still held relights, with its sound
   Bed.sync();
 }
 
@@ -2753,6 +2786,10 @@ window.addEventListener('keydown', e => {
   if (kc && game.ending) { if (kc.real > 0.9) game.endT = Math.min(game.endT, 0); return; }   // skip the kill cam (not on a key still held from the fight)
   if (bridge && bridge.activateByKey(k)) return;
   if (k === 'KeyC') cam.mode = cam.mode === 'chase' ? 'target' : 'chase';
+  if (k === 'KeyV' && player) {   // repair priority from the keyboard: the next damaged system, then none
+    const hurt = SUBS.filter(s => player.sub[s] < 99.5), i = hurt.indexOf(player.repair);
+    player.repair = hurt.length ? (i + 1 < hurt.length ? hurt[i + 1] : i < 0 ? hurt[0] : null) : null;
+  }
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
   if(k==='KeyH'&&fleet?.toggleHold()){$('escort-hold').textContent=fleet.held?'RESUME CONVOY [H]':'HOLD CONVOY [H]';return;}
   if(k==='KeyJ'&&fleet){fleet.cycle();return;}
@@ -2816,7 +2853,12 @@ document.querySelectorAll('[data-d]').forEach(x => x.setAttribute('aria-pressed'
 document.querySelectorAll('.go').forEach(b => b.addEventListener('click', startGame));
 $('campaign-menu').addEventListener('click', () => { location.href = 'campaign.html'; });
 $('resume').addEventListener('click', () => pause(false));
-$('quit').addEventListener('click', () => campaignMission ? location.assign('campaign.html') : toMenu());
+// Leaving a campaign battle abandons it, so the button asks once: the second press goes.
+$('quit').addEventListener('click', e => {
+  if (!campaignMission) { toMenu(); return; }
+  const b = e.currentTarget; if (b.dataset.sure) { location.assign('campaign.html'); return; }
+  b.dataset.sure = '1'; b.textContent = 'Abandon this battle? Press again'; setTimeout(() => { delete b.dataset.sure; b.textContent = 'Leave the bridge'; }, 4000);
+});
 $('again').addEventListener('click', startGame);
 $('tomenu').addEventListener('click', () => campaignMission ? location.assign('campaign.html') : toMenu('ship'));
 let menuPage = 'main';
@@ -3019,7 +3061,12 @@ function buildHud() {
     'Torpedoes (<b>T</b>) are slow and weak against shields. Wait until a facing is down, then launch at that side.'
   ];
   if (enemy.C.intel) game.tips.unshift(`<b>${enemy.name}</b> · ${enemy.C.intel}`);
-  game.tipIdx = 0; game.tipT = 0; $('tip').style.opacity = 1; $('tip').innerHTML = game.tips[0];
+  // The general tips are for new captains: not while the coach is teaching, and not once a campaign has a victory in it.
+  // After that only the note on this enemy is shown, once.
+  const veteran = campaignMission && ((readCampaignSave() || {}).completed || []).length > 0;
+  if (tutorial) game.tips = []; else if (veteran) game.tips = game.tips.slice(0, enemy.C.intel ? 1 : 0);
+  game.tipIdx = 0; game.tipT = 0; $('tip').style.opacity = game.tips.length ? 1 : 0; $('tip').innerHTML = game.tips[0] || '';
+  $('hud').classList.toggle('withbridge', !!bridge);
 }
 function flashRow(id) { const o = wEls[id]; if (!o) return; const base = (o.r._c || 'wrow').replace(' off', ''); setC(o.r, base + ' off'); setTimeout(() => { if (o.r._c === base + ' off') setC(o.r, base); }, 300); }
 function sizeCanvases() {
@@ -3099,7 +3146,7 @@ function drawTac(cv, full) {
     const q=toMap(ship.pos,_mp);
     const friendly=ship.team===P.team;
     drawShip2D(g,q.x,q.y,-(ship.yaw-P.yaw),ship,Math.max(sc,5*pr/ship.C.hullE.r[2]),friendly?'#81e7ab':'#ff836b',friendly?'rgba(90,230,164,.22)':'rgba(255,90,70,.22)');
-    g.fillStyle=friendly?'#9fe9c5':'#ffb39d';g.fillText(ship.name.slice(0,22),q.x+8*pr,q.y-8*pr);
+    if(full||!friendly){g.fillStyle=friendly?'#9fe9c5':'#ffb39d';g.fillText(ship.name.split(' · ')[0].slice(0,22),q.x+8*pr,q.y-8*pr);}   // the small plot names hostiles only; the enlarged one names everyone
   }
   // Clearly identified extraction gate on the radar; it is not a hostile target.
   if(fleet?.convoy?.alive && fleet.gate){
@@ -3200,14 +3247,14 @@ function updateHud(dt) {
   setT($c('rl-sub'), !seen ? (E.away ? 'Jump signature · no bearing yet' : 'Contact lost in the rocks · keep your eyes open') : E.alive ? `Enemy ${Math.abs(brE.b) < 8 ? 'dead ahead' : Math.abs(brE.b) > 172 ? 'astern' : Math.abs(Math.round(brE.b)) + '° ' + side} · it shows you its ${FACINGS[theirF].toLowerCase()} side` : 'Enemy disabled');
   const hf = P.hull / P.C.hull; setX($c('own-hullbar').firstChild, hf); $c('own-hullbar').classList.toggle('crit', hf < 0.3); setT($c('own-hull'), Math.max(0, Math.round(P.hull)));
   drawShieldDiamond($c('own-sh'), P, seen ? ourF : -1);
-  for (let i = 0; i < 4; i++) { const r = ownRows[i]; setC(r.d, P.sh[i] <= 0 ? 'down' : P.focus === i ? 'f' : ''); setT(r.a, FACINGS[i] + (seen && ourF === i ? ' ◂ enemy' : '')); setT(r.b, Math.round(P.sh[i])); }
+  for (let i = 0; i < 4; i++) { const r = ownRows[i]; setC(r.d, P.sh[i] <= 0 ? 'down' : P.focus === i ? 'f' : ''); setT(r.a, FACINGS[i] + (seen && ourF === i ? ' ◂ foe' : '')); setT(r.b, Math.round(P.sh[i])); }
   setT(ownRows[4].b, P.focus < 0 ? 'none' : FACINGS[P.focus]);
   setT($c('own-pw'), P.avail);
   for (const k of ['eng', 'shd', 'wpn']) { const pp = pipEls[k]; for (let i = 0; i < 8; i++) setC(pp[i], i < P.pips[k] ? 'on' : ''); }
   // A system is listed only once it is damaged (or being repaired): a healthy ship shows one quiet line.
   let hurtSubs = 0;
   for (const k of SUBS) { const o = subEls[k], v = P.sub[k], ok = v >= 99.5 && P.repair !== k; if (!ok) hurtSubs++; setX(o.bar, v / 100); setT(o.v, Math.round(v)); setC(o.r, 'sub' + (ok ? ' ok' : '') + (v < 50 ? ' dmg' : '') + (P.repair === k ? ' rep' : '')); }
-  setT($c('own-subs-h'), hurtSubs ? 'Systems · click one to repair it first' : 'Systems · all nominal');
+  setT($c('own-subs-h'), hurtSubs ? 'Systems · V or click: repair first' : 'Systems · all nominal');
   const ef = E.hull / E.C.hull; setX($c('foe-hullbar').firstChild, ef); $c('foe-hullbar').classList.toggle('crit', ef < 0.3); setT($c('foe-hull'), Math.max(0, Math.round(E.hull)));
   drawShieldDiamond($c('foe-sh'), E, seen ? theirF : -1);
   for (let i = 0; i < 4; i++) { const r = foeRows[i]; setC(r.d, E.sh[i] <= 0 ? 'down' : ''); setT(r.a, FACINGS[i] + (seen && theirF === i ? ' ◂ you' : '')); setT(r.b, Math.round(E.sh[i] / E.C.shield * 100) + '%'); }
@@ -3228,7 +3275,7 @@ function updateHud(dt) {
     if (g.type === 'torpedo') {
       let loaded = 0, minT = 1e9; for (const t of g.tubesT) { if (t <= 0) loaded++; if (t < minT) minT = t; }
       frac = g.ammo ? (loaded ? 1 : 1 - minT / g.reload) : 0;
-      st = off ? 'OFFLINE' : g.ammo <= 0 ? 'EMPTY' : `${g.ammo} LEFT · ${loaded}/${g.tubesT.length}` + (inA ? '' : ' · NO ARC'); ready = !off && loaded > 0 && g.ammo > 0 && inA;
+      st = off ? 'OFFLINE' : g.ammo <= 0 ? 'EMPTY' : `${g.ammo} LEFT · ${loaded}/${g.tubesT.length}` + (inA ? '' : seen && dist > g.range ? ' · FAR' : ' · NO ARC'); ready = !off && loaded > 0 && g.ammo > 0 && inA;
     } else if (g.type === 'lance') {
       frac = g.beamT > 0 ? g.beamT / g.dur : g.charge; firing = g.beamT > 0;
       // Firing arc and actual beam intersection differ at long range: never promise a hit on angle alone.
@@ -3240,7 +3287,7 @@ function updateHud(dt) {
       ready = !off && g.charge >= 1 && clearShot;
     } else {
       frac = g.charge;
-      st = off ? 'OFFLINE' : g.charge < 1 ? '' : inA ? 'IN ARC' : 'NO ARC';
+      st = off ? 'OFFLINE' : g.charge < 1 ? '' : inA ? 'IN ARC' : seen && dist > g.range ? 'OUT OF RANGE' : 'NO ARC';
       ready = !off && g.charge >= 1 && inA;
     }
     setX(o.bar, frac); setT(o.st, st);
@@ -3385,7 +3432,7 @@ gcam.rt = new THREE.WebGLRenderTarget(gcam.W, gcam.H, { type: THREE.HalfFloatTyp
 gcam.scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: gcam.rt.texture, depthTest: false, depthWrite: false })));
 function gunCamera(rdt) {
   const el = $c('gcam'), E = enemy;
-  const want = (state === 'playing' || state === 'paused') && player && E && !intro && !kc && !unseen(E) && E.obj.visible && !$c('hud').classList.contains('cine');
+  const want = state === 'playing' && player && E && !intro && !kc && !unseen(E) && E.obj.visible && !$c('hud').classList.contains('cine');
   gcam.rectT -= rdt;
   if (want && gcam.rectT <= 0) { gcam.rectT = 0.5; const r = el.getBoundingClientRect(); gcam.rect = r.width > 8 && r.height > 8 ? r : null; }
   const live = !!(want && gcam.rect);

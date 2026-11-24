@@ -20,7 +20,7 @@
       text: () => '1, 2 and 3 move reactor power to engines, shields or weapons, one pip at a time; 4 splits it evenly. Give the guns a pip with 3.',
       until: s => !!s.pips0 && ['eng', 'shd', 'wpn'].some(k => s.pips[k] !== s.pips0[k]) },
     { id: 'broadside', title: 'Fire a broadside', keys: 'Q · E · B',
-      text: n => `Your heaviest guns fire from the sides. Turn until ${n.enemy} sits off your port or starboard beam, then fire with Q (port) or E (starboard). B lets the batteries fire on their own.`,
+      text: n => `Your heaviest guns fire from the sides. Close to within 2.7 km (the range is at the top of the screen), turn until ${n.enemy} sits off your port or starboard beam, then fire with Q (port) or E (starboard). A gun’s bar turns green when it will hit. B lets the batteries fire on their own.`,
       until: s => s.broadside },
     { id: 'officers', title: 'Call on your officers', keys: '5 – 9',
       text: () => 'Your bridge officers each have a command on 5 to 9: brace for impact, a firing solution, damage control, evasive manoeuvres and a threat scan. Each one needs time to recover. Try one now.',
@@ -31,7 +31,7 @@
       until: () => true, hold: 9 }
   ];
   const FIRE_STEP = STEPS.findIndex(s => s.id === 'broadside');   // hostiles open fire once this step is done
-  const HOLD_MAX = 50;
+  const HOLD_MAX = 90;
 
   function create(names = {}) {
     let i = 0, acc = 0, t = 0, skipped = false;

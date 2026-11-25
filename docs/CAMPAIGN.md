@@ -42,7 +42,7 @@ The opening briefing promises two things: the last signal out of Kestrel “was 
 
 ## Decisions and consequences
 
-Four aftermath decisions change later battles. The after-action report says which decisions have stakes; the briefing of the battle they change lists the effect under **What has changed** (`CONSEQUENCES`).
+Every aftermath decision but the last changes a later battle. The after-action report says which decisions have stakes; the briefing of the battle they change lists the effect under **What has changed** (`CONSEQUENCES`).
 
 | Decision | Choice | Effect |
 | --- | --- | --- |
@@ -52,6 +52,17 @@ Four aftermath decisions change later battles. The after-action report says whic
 | | Amnesty | The ASF Penitence fights at your side at Nex and Verdant. |
 | Op 4, ORACLE's archive | Transmit | The Long Lantern starts a third of the way to the beacon. |
 | | Seal | The Arbiter's lattice is weaker (takes 40% instead of 20%). |
+| Op 1, Kestrel | See the Peregrine home | Meridian +8 standing; Sable's ships start the Cinder Wake at 70% shields. |
+| | Chase Vex's trail | Peregrine Exchange +8 standing; Thorne surrenders at 36% hull instead of 28%. |
+| Op 2, the Mourner | Take the survivors aboard | Tarn +8 standing; the Pyre begins her fight without her escort. |
+| | Strip the wreck | 150 requisition; the Pyre starts at 70% shields. |
+| Op 6, the Midway relay | Destroy it | Juniper +8 standing; the Arbiter's lattice nodes have 30% thinner hulls. |
+| | Capture the core | Elysia +10 standing; the Arbiter starts at 75% shields. |
+| Op 5, the recording | Broadcast it | Juniper and Elysia +8 standing; the militia cutter Second Dawn flies with you at Nex. |
+| | Evacuation captains only | Meridian +10 standing; the Bloom-Mother starts at 75% shields. |
+| Op 7, after Nex | Hold the Juniper line | Juniper +12 standing; the guardship JRS Ringwarden flies with you at Verdant. |
+| | Fall back with the refugees | Meridian +12 standing; the Bloom-Mother begins without her brood guardian. |
+| Op 10, Verdant | Burn or quarantine | Changes Harlan's final transmission. |
 | Op 9, the Arbiter | Salvage the core | The Bloom-Mother regrows at 1.2× instead of 1.8× in her last phase. |
 | | Destroy it | +10 standing with both Navy yards. |
 

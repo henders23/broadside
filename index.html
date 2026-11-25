@@ -1234,7 +1234,7 @@ function fx(s) {
   o.eng = (0.55 + 0.1125 * p.eng) * (0.45 + 0.55 * sub.engines / 100);
   o.turn = (0.7 + 0.075 * p.eng) * (0.5 + 0.5 * sub.engines / 100);
   o.shd = (p.shd / 4) * (s.C.shieldHardened ? 0.575 + 0.425 * sub.shields / 100 : 0.15 + 0.85 * sub.shields / 100);
-  o.wpn = 0.5 + 0.125 * p.wpn;   // 4 pips is 1.0; all eight is 1.5
+  o.wpn = 0.6 + 0.1 * p.wpn;   // 4 pips is 1.0; all eight is 1.4
   return o;
 }
 const WEIGHTS = [[0.25, 0.25, 0.25, 0.25], ...[0, 1, 2, 3].map(f => [0, 1, 2, 3].map(i => i === f ? 0.55 : 0.15))];
@@ -2294,7 +2294,7 @@ function shieldsUpdate(s, dt) {
       const ex = Math.min(s.sh[i] - s.cap[i], 60 * dt); s.sh[i] -= ex;
       if (s.focus >= 0 && s.focus !== i) s.sh[s.focus] = Math.min(s.cap[s.focus], s.sh[s.focus] + ex * 0.85);
     }
-    const pause = t - s.hitT[i] < 1.5 ? 0.55 : 1;   // a facing under fire still recharges at a little over half rate, so shield power is worth having
+    const pause = t - s.hitT[i] < 1.5 ? 0.75 : 1;   // a facing under fire still recharges at three-quarter rate, so shield power is worth having
     s.sh[i] = Math.min(s.cap[i], s.sh[i] + C.regen * e.shd * w[i] * pause * storm * (s.burn ? 0.5 : 1) * dt);
   }
   u.uStr.value.set(s.sh[0] / C.shield, s.sh[1] / C.shield, s.sh[2] / C.shield, s.sh[3] / C.shield); u.uFocus.value = s.focus; u.uT.value = t;

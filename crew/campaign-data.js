@@ -126,7 +126,7 @@
       brief: 'A military transponder lies among the burning wreckage. Sable’s Revenant minelayer and a fast Scrapjaw pursuer attack from opposite sides. Defeat both to secure the transponder, using J to switch targets. Beware of chasing directly into the mine trail.',
       intel: 'Long-range missile salvos and proximity mines deployed astern. Avoid chasing directly behind the ship.',
       hud: 'Defeat the Ash Fleet minelayer and recover the transponder evidence',
-      enemies: [{ cls: 'revenant', name: 'ASF Mourner', captain: 'Commander Orren Sable', hull: 0.7, dmg: 0.75 }, { cls: 'scrapjaw', name: 'Ash Fleet Pursuer', hull: 0.38, shield: 0.58, diff: 'commander' }], goal: { type: 'destroy' },
+      enemies: [{ cls: 'revenant', name: 'ASF Mourner', captain: 'Commander Orren Sable', hull: 0.62, dmg: 0.75 }, { cls: 'scrapjaw', name: 'Ash Fleet Pursuer', hull: 0.38, shield: 0.58, diff: 'commander' }], goal: { type: 'destroy' },
       mid: 'These are Navy codes, Captain. Ask your admiral why they still open doors.',
       choice: ['Take the Mourner’s survivors aboard', 'Strip the wreck for salvage first'], flags: ['vela_rescue', 'vela_transponder'] },
     { id: 3, act: 1, system: 'rednarrows', name: 'The Widow’s Toll', enemy: 'scrapjaw', captain: 'Captain Garrick Thorne', kind: 'Pirate commander', reward: 570, support: 0,
@@ -180,13 +180,13 @@
       brief: 'Every stolen transponder, every mine field and every bribed pirate leads back to Grimhold and the dreadnought Pyre. Commodore Ingrid Halloran was a Navy officer once; she taught half the frontier fleet. She will not surrender, and she will not fight alone.',
       intel: 'A Warden-class dreadnought rebuilt as a fortress: siege cannons, flak, missiles and mines. Expect the pirate clans to answer her call, and a final firestorm when she is desperate.',
       hud: 'Destroy the dreadnought Pyre', support: 1,
-      enemies: [{ cls: 'pyre', name: 'ASF Pyre', captain: 'Commodore Halloran', fate: 'killed', dmg: 0.38 }, { cls: 'scrapjaw', name: 'Ash Fleet escort', dmg: 0.25, hull: 0.45, shield: 0.6, diff: 'commander' }],
+      enemies: [{ cls: 'pyre', name: 'ASF Pyre', captain: 'Commodore Halloran', fate: 'killed', dmg: 0.38 }, { cls: 'scrapjaw', name: 'Ash Fleet escort', dmg: 0.2, hull: 0.45, shield: 0.6, diff: 'commander' }],
       goal: { type: 'boss' },
       trophy: 'pyre_plating',
       boss: { title: 'ASF PYRE', phases: [
         { name: 'Fortress', note: 'Siege cannons and minefields' },
         { at: 0.65, name: 'The clans answer', line: 'Every clan in the Narrows owes me a debt. I am calling it in.', shields: true,
-          spawn: [{ cls: 'scrapjaw', name: 'Clan raider', dmg: 0.25, hull: 0.35, shield: 0.55, diff: 'commander' }, { cls: 'scrapjaw', name: 'Clan raider', dmg: 0.25, hull: 0.35, shield: 0.55, diff: 'commander' }] },
+          spawn: [{ cls: 'scrapjaw', name: 'Clan raider', dmg: 0.2, hull: 0.35, shield: 0.55, diff: 'commander' }, { cls: 'scrapjaw', name: 'Clan raider', dmg: 0.2, hull: 0.35, shield: 0.55, diff: 'commander' }] },
         { at: 0.3, name: 'Scorched earth', line: 'Eleven years ago a machine told me what is coming, Captain. Command buried it. I emptied what I could. All batteries, fire at will.', unlock: ['inferno'] }] },
       ends: { boss_destroyed: ['The Pyre is burning', 'Commodore Halloran’s flagship broke apart over Grimhold. Without her the Ash Fleet is leaderless; its captains fight on for themselves.'] },
       choice: ['Search the wreck for Halloran’s logs', 'Offer her surviving crews amnesty'], flags: ['halloran_logs', 'ash_amnesty'] },
@@ -482,12 +482,12 @@
     }
     if (type === 'pursuit') {
       const who = pick(r, foe.names);
-      return Object.assign(base, { name: 'Pursuit: ' + who, captain: who, reward: 300 + 65 * lvl + 110 * (a - 1),
+      return Object.assign(base, { name: 'Pursuit: ' + who, captain: who, reward: 220 + 55 * lvl + 110 * (a - 1),
         brief: who + ' is running for the lane out of ' + sys.name + '. Stop the ' + ship + ' before it gets clear; ' + STATIONS[station].name + ' wants to know where it was going.',
         objective: 'Disable the quarry below 30% hull before it jumps.',
         intel: 'Quarry fleeing at reduced engine power. 115-second jump window. Disable rather than destroy.',
         enemies: [lead(foe, who, { hull: round(Math.min(1, s + 0.25)), shield: round(Math.min(1, s + 0.25)) })],
-        goal: { type: 'pursuit', seconds: 115, at: 0.3, speed: 0.8 }, support: 0 });
+        goal: { type: 'pursuit', seconds: 115, at: 0.3, speed: foe.cls === 'revenant' ? 1 : foe.cls === 'scrapjaw' ? 0.7 : 0.8 }, support: 0 });   // a slow Revenant runs flat out; a fast Scrapjaw is held back so heavy hulls can catch it
     }
     const convoy = pick(r, CONVOYS);
     return Object.assign(base, { name: `Escort: ${convoy}`, captain: `${foe.group} ${ship}`, reward: 240 + 65 * lvl + 90 * (a - 1),
@@ -635,9 +635,9 @@
     if (off) {
       // The defence settles it either way (its own result has already moved the front); any other battle runs the clock down.
       if (defence) off = null;
-      else if (kind !== 'story' && --off.left <= 0) { move(off.region, -PUSHBACK.by, 'pushback'); off = null; }   // following the story is never neglect
+      else if (kind !== 'story' && kind !== 'intercept' && --off.left <= 0) { move(off.region, -PUSHBACK.by, 'pushback'); off = null; }   // following the story is never neglect
       if (off && front(out, off.region).level === 4) off = null;
-      if (kind !== 'story') next = 0; else next = clock || 0;
+      if (kind !== 'story' && kind !== 'intercept') next = 0; else next = clock || 0;   // nor is a fight forced on the fleet in a lane
     } else if (actFront && act <= 3) {
       if (region === actFront && win) next = 0;
       else if (region !== actFront && kind !== 'story' && ++next >= PUSHBACK.every) { next = 0; if (front(out, actFront).value > -10) { off = { region: actFront, left: PUSHBACK.grace }; raised = true; } }

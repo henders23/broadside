@@ -282,7 +282,7 @@ Every milestone should preserve the intentional slow, dangerous, naval feel of B
 - Okoye — Target Solution: +20% damage from the player for 14s; cooldown 75s.
 - Vale — Damage Control: +24 subsystem integrity to the most damaged subsystem and extinguishes one fire; cooldown 85s; refuses to expend when nothing needs repair.
 - Sato — Evasive Pattern: -22% incoming enemy damage for 12s; cooldown 75s.
-- Renn — Threat Scan: reports the enemy's weakest shield facing and least intact subsystem; cooldown 60s.
+- Renn — Threat Scan: reports the enemy's weakest shield facing and least intact subsystem; cooldown 40s.
 - All ability cooldowns are **battle-local**, reset at mission deployment, and do not alter campaign save format.
 - `crew/upgrades.js` holds the shipyard upgrade catalogue and `apply()`, shared by the campaign and battle pages.
 - `crew/personnel.js` holds character descriptions, mission lines, commander identities, and portrait positions. `crew/bridge-controller.js` is decoupled from Three.js and takes battle objects via dependency injection.

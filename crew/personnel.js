@@ -25,7 +25,7 @@
       voice:'Evasive pattern running. Hold onto something.'},
     {id:'renn',name:'Ensign Idris Renn',given:'Idris Renn',short:'Renn',rank:'Ensign',post:'Intelligence Officer',portrait:4,
       bio:'Renn recognised the repeating transponder signatures on the frontier. His analytical instincts are stronger than his confidence.',
-      ability:'Threat Scan',key:'9',cooldown:60,duration:0,
+      ability:'Threat Scan',key:'9',cooldown:40,duration:0,
       effect:'Identify the weakest enemy shield facing and most damaged subsystem.',
       voice:'I have a partial target profile. Transmitting vulnerabilities.'}
   ];

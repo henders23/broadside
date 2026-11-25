@@ -9,8 +9,8 @@ await suite('impact', {}, async ({ page, base, check, shot }) => {
   await page.waitForTimeout(1500);
   await S(() => { window.__sim.start(); window.__sim.step(60); });
   // a heavy hit on the enemy's shields: a blue number and a hit pause
-  await S(() => { const s = window.__sim; s.enemy.sh[0] = 5000; s.damage(s.enemy, 220, 'shell', s.enemy.pos.clone().set(0, 0, -40), s.player); });
-  const stop = await S(() => window.__sim.timeFx.stop);
+  // (read in the same call: the pause lasts a few hundredths of a second and is gone by the next one)
+  const stop = await S(() => { const s = window.__sim; s.enemy.sh[0] = 5000; s.timeFx.lastStop = -9; s.damage(s.enemy, 220, 'shell', s.enemy.pos.clone().set(0, 0, -40), s.player); return s.timeFx.stop; });
   check(stop > 0, 'a heavy hit pauses the battle for a moment: ' + stop.toFixed(3) + ' s');
   await page.waitForFunction(() => document.querySelector('#dmgnums .dn'), null, { timeout: 30000 }).catch(() => {});   // the first battle frame can be slow on software WebGL
   const n1 = await S(() => [...document.querySelectorAll('#dmgnums .dn')].filter(e => e.style.display !== 'none').map(e => ({ t: e.textContent, c: e.className })));

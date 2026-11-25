@@ -67,8 +67,8 @@ same(C.controlNews({ 'Kestrel Verge': 0 }, { 'Kestrel Verge': -2 }), { driftwall
 same(C.controlNews({ 'Ash Marches': -6 }, { 'Ash Marches': -8 }), {}, 'a front that moves without a system changing hands is no news');
 // Route risk matches the interception roll
 assert.equal(C.interceptRisk(['meridian', 'kestrel', 'vela'], 1), 0, 'no risk in contested Kestrel during act I');
-assert.ok(Math.abs(C.interceptRisk(['peregrine', 'sable', 'scour'], 1) - 0.18) < 1e-9, 'one High system: 18%');
-assert.ok(Math.abs(C.interceptRisk(['sable', 'rednarrows', 'razor'], 1, 0.5) - (1 - 0.88 * 0.91)) < 1e-9, 'risks compound along the route and follow the scale');
+assert.ok(Math.abs(C.interceptRisk(['peregrine', 'sable', 'scour'], 1) - 0.15) < 1e-9, 'one High system: 15%');
+assert.ok(Math.abs(C.interceptRisk(['sable', 'rednarrows', 'razor'], 1, 0.5) - (1 - 0.9 * 0.925)) < 1e-9, 'risks compound along the route and follow the scale');
 assert.equal(C.interceptRisk(['peregrine', 'sable', 'scour'], 1, () => 0), 0, 'a secured front has clear lanes');
 const step = (f, k, o) => C.applyBattle(f, k, o);
 let r = step(C.startFronts(), 0, { kind: 'contract', win: true, system: 'scour', act: 1 });

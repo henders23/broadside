@@ -124,7 +124,7 @@ await suite('map', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   await page.locator('#modalactions .primary').click();
   st = await page.evaluate(k => JSON.parse(localStorage.getItem(k)), KEY);
   check(st.credits === 215 && st.ships[0].upgrades.includes('rapid_loaders'), 'upgrade bought: 400 spent and saved');
-  check((await page.textContent('#markspec')).includes('6.4 s reload'), 'broadside spec shows the faster reload: ' + await page.textContent('#markspec'));
+  check((await page.textContent('#markspec')).includes('6 s reload'), 'broadside spec shows the faster reload: ' + await page.textContent('#markspec'));
   check((await page.locator('#slots .slot', { hasText: 'Broadsides' }).textContent()).includes('1/3 FITTED'), 'slot shows the fitted upgrade');
   check(await page.locator('#markcards .upcard.got').count() === 1, 'card marked installed');
   check(await page.locator('#markcards button:disabled').count() === 3, 'unaffordable upgrades are disabled');

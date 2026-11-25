@@ -12,11 +12,11 @@
     { id: 'overcharged_core', slot: 'reactor', name: 'Overcharged core', cost: 450, effect: '14 power pips to share instead of 12.' },
     { id: 'hardened_conduits', slot: 'reactor', name: 'Hardened conduits', cost: 260, effect: 'Reactor damage costs half as much power.' },
     { id: 'coolant_loop', slot: 'reactor', name: 'Coolant loop', cost: 340, effect: 'Every weapon reloads or charges 10% faster.' },
-    { id: 'rapid_loaders', slot: 'broadside', name: 'Rapid loaders', cost: 400, effect: 'Broadsides reload 15% faster.' },
-    { id: 'heavy_shells', slot: 'broadside', name: 'Heavy shells', cost: 380, effect: '15% more damage per broadside shell.' },
+    { id: 'rapid_loaders', slot: 'broadside', name: 'Rapid loaders', cost: 400, effect: 'Broadsides reload 20% faster.' },
+    { id: 'heavy_shells', slot: 'broadside', name: 'Heavy shells', cost: 380, effect: '20% more damage per broadside shell.' },
     { id: 'extended_barrels', slot: 'broadside', name: 'Extended barrels', cost: 300, effect: '12% more broadside range and shell speed.' },
     { id: 'fire_control', slot: 'fore', name: 'Fire-control computer', cost: 300, effect: '12% more range (and shell speed) for the forward weapon.' },
-    { id: 'heavier_ordnance', slot: 'fore', name: 'Heavier ordnance', cost: 400, effect: '15% more damage from the forward weapon.' },
+    { id: 'heavier_ordnance', slot: 'fore', name: 'Heavier ordnance', cost: 400, effect: '20% more damage from the forward weapon.' },
     { id: 'faster_cycling', slot: 'fore', name: 'Faster cycling', cost: 360, effect: 'The forward weapon reloads or charges 15% faster.' },
     { id: 'capacitor_array', slot: 'shields', name: 'Capacitor array', cost: 420, effect: '15% stronger shields.' },
     { id: 'regeneration_coils', slot: 'shields', name: 'Regeneration coils', cost: 340, effect: 'Shields recover 25% faster.' },
@@ -56,11 +56,11 @@
     if (has.has('overcharged_core')) C.power = 14;
     if (has.has('hardened_conduits')) C.reactorHardened = true;
     if (has.has('coolant_loop')) C.weapons.forEach(w => faster(w, 0.9));
-    if (has.has('rapid_loaders')) broad.forEach(w => faster(w, 0.85));
-    if (has.has('heavy_shells')) broad.forEach(w => harder(w, 1.15));
+    if (has.has('rapid_loaders')) broad.forEach(w => faster(w, 0.8));
+    if (has.has('heavy_shells')) broad.forEach(w => harder(w, 1.2));
     if (has.has('extended_barrels')) broad.forEach(w => longer(w, 1.12));
     if (has.has('fire_control')) fore.forEach(w => longer(w, 1.12));
-    if (has.has('heavier_ordnance')) fore.forEach(w => harder(w, 1.15));
+    if (has.has('heavier_ordnance')) fore.forEach(w => harder(w, 1.2));
     if (has.has('faster_cycling')) fore.forEach(w => faster(w, 0.85));
     if (has.has('capacitor_array')) C.shield = Math.round(C.shield * 1.15);
     if (has.has('regeneration_coils')) C.regen *= 1.25;

@@ -39,7 +39,7 @@ await suite('war', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
 
   // Push back: three battles away from the Ash Marches
   for (const [i, sys] of ['kestrel', 'driftwall', 'vela', 'northpoint'].entries()) {
-    await patch({ pendingResult: { id: 'x:' + i, kind: 'intercept', ref: 'x:' + i, system: sys, outcome: 'win', tacticalOutcome: 'enemy_destroyed' }, launch: null });
+    await patch({ pendingResult: { id: 'x:' + i, kind: 'contract', ref: 'x:' + i, system: sys, outcome: 'win', tacticalOutcome: 'enemy_destroyed' }, launch: null });
     await page.reload();
     if (i === 2) { check((await page.textContent('#modalbody')).includes('counter-attacking at Emberfall') && (await page.textContent('#modalbody')).includes('Fleet orders: hold the post'), 'the third battle away brings a counter-attack (Thorne, a story operation, did not count)'); await shot('w03-counter-attack'); }
     await page.locator('#modalactions .primary').click();

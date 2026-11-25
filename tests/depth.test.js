@@ -20,7 +20,7 @@ assert.equal(C.difficulty('nope').label, 'Captain');
 assert.ok(C.difficulty('ensign').enemyHull < 1 && C.difficulty('ensign').enemyDamage < 1 && C.difficulty('ensign').ai === 'commander');
 assert.ok(C.difficulty('admiral').enemyHull > 1 && C.difficulty('admiral').reward > 1 && C.difficulty('admiral').ai === 'admiral');
 const route = ['peregrine', 'sable', 'scour'];
-assert.equal(C.rollInterception(route, 1, () => 0.15, 1), 'scour', 'High threat: 18% at normal');
+assert.equal(C.rollInterception(route, 1, () => 0.14, 1), 'scour', 'High threat: 15% at normal');
 assert.equal(C.rollInterception(route, 1, () => 0.15, 0.6), null, 'Ensign makes it 10.8%');
 
 // Reputation

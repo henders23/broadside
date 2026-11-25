@@ -118,7 +118,7 @@ function create({THREE,scene,sky,planet,rockMat,rebakeSky}){
     rebakeSky();return preset.name;
   }
   // The thing each story setting is about, where it stands on the field, for the tactical plot and the opening.
-  const LANDMARKS={1:['KESTREL STATION',-3400,-2850],2:['TRANSPONDER WRECK',3700,-3700],3:['TOLL STATION',-3300,-3700],4:['RELAY',3300,-3300],5:['THE FIRST BLOOM',3000,-2800]};
+  const LANDMARKS={1:['KESTREL STATION',-3400,-2850],2:['TRANSPONDER WRECK',3700,-3700],3:['TOLL STATION',-3300,-3700],4:['RELAY',3300,-3300],5:['HARROW COLONY',3000,-2800]};
   function landmark(id){const m=LANDMARKS[id];return m?{label:m[0],x:m[1],z:m[2]}:null;}
   return {configure,clear,buildFreighter,landmark};
 }

@@ -43,7 +43,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .ptitle{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
 .ptitle b{font-family:var(--f-display);font-weight:600;font-size:18px;letter-spacing:.06em;text-transform:uppercase;color:var(--hud-hi);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .ptitle small{font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
-.sec{font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.sec{font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
 .bar{height:7px;background:rgba(255,183,77,.13);position:relative;overflow:hidden}
 .bar i{position:absolute;inset:0;background:var(--hud);transform-origin:left;will-change:transform}
 .bar.crit i{background:var(--hostile)}
@@ -51,7 +51,7 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .num{font-variant-numeric:tabular-nums;color:var(--text)}
 #own{left:max(14px,env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));width:250px}
 #foe{right:max(14px,env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:230px}
-#coach{position:absolute;right:calc(20px + env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);width:min(330px,36vw);z-index:6;padding:14px 16px;border:1px solid #9fd8ff66;border-right:3px solid #9fd8ff;border-radius:10px;background:linear-gradient(120deg,rgba(8,24,38,.92),rgba(4,10,18,.85));box-shadow:0 10px 30px #0009;animation:coachin .4s ease}#coach[hidden]{display:none}#coach small{display:block;font-size:10px;letter-spacing:.22em;color:#9fd8ff;text-transform:uppercase}#coach b{display:block;margin:4px 0 6px;font-size:17px;color:#f4e6cc}#coach p{margin:0 0 10px;font-size:12.5px;line-height:1.55;color:#c9d8e4}#coach .ck{display:flex;justify-content:space-between;align-items:center;gap:8px}#coach kbd:empty{visibility:hidden}#coach button{pointer-events:auto;background:none;border:1px solid #ffffff33;color:#c9d8e4;border-radius:999px;padding:4px 10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}@keyframes coachin{from{opacity:0;transform:translate(12px,-50%)}}
+#coach{position:absolute;right:calc(20px + env(safe-area-inset-right,0px));top:62%;transform:translateY(-50%);width:min(330px,36vw);z-index:6;padding:14px 16px;border:1px solid #9fd8ff66;border-right:3px solid #9fd8ff;border-radius:10px;background:linear-gradient(120deg,rgba(8,24,38,.92),rgba(4,10,18,.85));box-shadow:0 10px 30px #0009;animation:coachin .4s ease}#coach[hidden]{display:none}#coach small{display:block;font-size:10px;letter-spacing:.22em;color:#9fd8ff;text-transform:uppercase}#coach b{display:block;margin:4px 0 6px;font-size:17px;color:#f4e6cc}#coach p{margin:0 0 10px;font-size:12.5px;line-height:1.55;color:#c9d8e4}#coach .ck{display:flex;justify-content:space-between;align-items:center;gap:8px}#coach kbd:empty{visibility:hidden}#coach button{pointer-events:auto;background:none;border:1px solid #ffffff33;color:#c9d8e4;border-radius:999px;padding:4px 10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}@keyframes coachin{from{opacity:0;transform:translate(12px,-50%)}}
 #bosscard{position:absolute;inset:0;z-index:7;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:16vh;gap:6px;text-align:center;background:linear-gradient(#000 0 9vh,transparent 9vh calc(100% - 9vh),#000 calc(100% - 9vh));opacity:0}#bosscard[hidden]{display:none}#bosscard small{font-size:12px;letter-spacing:.42em;color:#ffb36b;text-transform:uppercase}#bosscard b{font-size:clamp(34px,6vw,72px);letter-spacing:.18em;color:#ffe3c4;text-shadow:0 0 28px #ff5b4f99;font-weight:800}#bosscard span{font-size:14px;letter-spacing:.2em;color:#e9d2bd;text-transform:uppercase}#bosscard em{margin-top:10px;font-style:normal;font-size:10px;letter-spacing:.3em;color:#ffffff66;text-transform:uppercase}#bossbar.warn .bt span{color:#ff6b5f;animation:bosswarn .5s steps(2) infinite}@keyframes bosswarn{50%{opacity:.35}}
 #bossbar{width:min(560px,100%);pointer-events:none;margin:2px 0}#bossbar .bt{display:flex;justify-content:space-between;gap:12px;font-size:11px;letter-spacing:.16em;color:#ffd0a0;text-transform:uppercase;margin-bottom:5px}#bossbar .bt b{font-weight:700}#bossbar .bb{position:relative;height:10px;background:rgba(255,91,79,.15);border:1px solid rgba(255,140,110,.5)}#bossbar .bb i{position:absolute;inset:0;background:linear-gradient(90deg,#ff5b4f,#ffb36b);transform-origin:left}#bossbar .bb .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:#ffe3c4}#bossbar.lattice .bb i{background:linear-gradient(90deg,#6fd0ff,#cfefff)}#bossbar.lattice .bt span{color:#9fd8ff}
 #escorts{right:max(14px,env(safe-area-inset-right,0px));top:calc(var(--esc-top,408px) + env(safe-area-inset-top,0px));width:230px;pointer-events:auto}#esc-list{display:flex;flex-direction:column;gap:7px}.esc{display:flex;flex-direction:column;gap:3px}.esc .en{display:flex;justify-content:space-between;gap:8px;font-size:11px}.esc .en b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.esc .en span{color:var(--dim,#9ab)}.esc.lost{opacity:.45}.esc small{font-size:10px;opacity:.82;white-space:normal;line-height:1.3;overflow:visible}.escbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.escbtns button{font:inherit;font-size:10px;letter-spacing:.06em;padding:5px 2px;background:#0a1b2a;border:1px solid #2f485c;color:#e1eaf2;cursor:pointer}.escbtns button.on{border-color:#f0c27c;color:#f0d3a4;background:#173044}
@@ -128,13 +128,16 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #hud #bridge-orders .order{flex:1 1 0;min-width:0;height:auto;margin:0;padding:4px;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:2px 5px;align-items:center}
 #hud #bridge-orders .order .crew-portrait{width:26px;height:30px;grid-row:1 / 3}
 #hud #bridge-orders .order .order-text{display:contents}
-#hud #bridge-orders .order b{grid-column:1 / 3;grid-row:3;font-size:9px;font-weight:400;letter-spacing:.02em}
+#hud #bridge-orders .order b{grid-column:1 / 3;grid-row:3;font-size:9px;font-weight:400;letter-spacing:0;white-space:normal;line-height:1.15;min-height:21px}
 #hud #bridge-orders .order small{margin:0;font-size:9px;grid-column:2;grid-row:2}
 #hud #bridge-orders .order kbd{grid-column:2;grid-row:1;justify-self:start}
 #hud #bridge-comms{left:max(14px,env(safe-area-inset-left,0px));bottom:calc(296px + env(safe-area-inset-bottom,0px));width:270px;box-sizing:border-box}
 #hud.withbridge #tip{bottom:calc(262px + env(safe-area-inset-bottom,0px))}
 }
 @media (min-width:901px) and (max-width:1280px){#hud #bridge-comms{bottom:calc(236px + env(safe-area-inset-bottom,0px));width:210px}}
+/* On a short window the officer's transmission goes beside the plot, clear of the systems list. */
+@media (min-width:1181px) and (max-height:800px){#hud #bridge-comms{left:calc(max(14px,env(safe-area-inset-left,0px)) + 280px);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:calc(50% - 215px - 304px);min-width:150px;flex-direction:column;align-items:flex-start;gap:4px;padding:7px}#hud #bridge-comms .crew-portrait{display:none}}
+#hud.coaching #escort-hold,#hud.coaching #gcam{display:none}
 #gcam{position:absolute;top:100%;left:-1px;right:-1px;margin-top:7px;height:100px;border:1px solid var(--line);pointer-events:none;overflow:hidden}
 #gcam.off{background:rgba(4,7,12,.82)}
 #gcam small{position:absolute;left:7px;top:5px;font-size:9px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;text-shadow:0 0 4px #000}
@@ -229,7 +232,6 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 .mbtn{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:50px;padding:0 18px;background:rgba(0,0,0,.84);border:1px solid var(--line);color:var(--text);font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-align:left}
 .mbtn small{font-family:var(--f-mono);font-size:11px;font-weight:400;letter-spacing:.14em;color:var(--hud)}
 .mbtn:hover,.mbtn:focus-visible{border-color:var(--hud);background:rgba(30,23,10,.92);outline:none}
-.mbtn:focus-visible,.back:focus-visible,.opt:focus-visible,.ship:focus-visible,.btn:focus-visible,.sub:focus-visible,.diff button:focus-visible,#bridge-orders .order:focus-visible,.escbtns button:focus-visible{outline:2px solid var(--hud-hi);outline-offset:2px}
 #pausekeys{display:grid;grid-template-columns:repeat(3,auto);width:max-content;max-width:100%;gap:5px 26px;margin:0 0 22px;font-size:12px;color:var(--muted);letter-spacing:.06em;text-align:left}
 #pausekeys kbd{color:var(--hud-hi)}
 @media (max-width:900px){#pausekeys{grid-template-columns:repeat(2,auto)}}
@@ -302,6 +304,8 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
   #rangeline{display:none}
 }
 @media (prefers-reduced-motion:reduce){#warn.blink{animation:none}}
+/* Keyboard focus: after every per-control rule above, so nothing cancels it. */
+.mbtn:focus-visible,.back:focus-visible,.opt:focus-visible,.ship:focus-visible,.btn:focus-visible,.sub:focus-visible,.diff button:focus-visible,#bridge-orders .order:focus-visible,.escbtns button:focus-visible{outline:2px solid var(--hud-hi)!important;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -1479,6 +1483,7 @@ function startGame() {
   tutorial = tutorialWanted
     ? window.BroadsideTutorial.create({ ship: player.name, enemy: enemy.name, convoy: fleet?.convoy ? fleet.convoy.name.split(' · ')[0] : '' }) : null;
   tutorialPips = player.pips ? { ...player.pips } : null; drawCoach();
+  if (tutorial) { game.tips = []; $('tip').style.opacity = 0; }   // one teacher at a time: no tip box in the coached battle
   $('escorts').hidden = !allies.length; escortHudT = 0;
   $('escort-hold').hidden = !fleet?.convoy;
   $('escort-hold').textContent='HOLD CONVOY [H]';
@@ -2764,7 +2769,7 @@ function tutorialTick(dt) {
   if (tutorial.update(snap, dt)) { drawCoach(); Sfx.beep(880, 0.06, 0.05); }
 }
 function drawCoach() {
-  const st = tutorial && tutorial.step; $('coach').hidden = !st; if (!st) return;
+  const st = tutorial && tutorial.step; $('coach').hidden = !st; $('hud').classList.toggle('coaching', !!st && st.n < st.of); if (!st) return;   // the last step hands the convoy button and the gun camera back
   $('coach-k').textContent = `Tutorial · ${st.n} of ${st.of}`; $('coach-t').textContent = st.title; $('coach-p').textContent = st.text; $('coach-keys').textContent = st.keys;
   const c = $('coach'); c.style.animation = 'none'; void c.offsetWidth; c.style.animation = '';
 }
@@ -2815,7 +2820,7 @@ window.addEventListener('keydown', e => {
   if (k === 'Digit1') addPip(P, 'eng'); if (k === 'Digit2') addPip(P, 'shd'); if (k === 'Digit3') addPip(P, 'wpn');
   if (k === 'Digit4') setPips(P, 1, 1, 1);
   const wk = { KeyQ: 'Q', KeyE: 'E', Space: 'Space', KeyT: 'T' }[k];
-  if (wk) { const g = P.groups.find(g => g.key === wk); if (g && !fireGroup(P, g)) { Sfx.beep(220, 0.08, 0.05, 'sawtooth'); flashRow(g.id); } }
+  if (wk) { const g = P.groups.find(g => g.key === wk); if (g && !fireGroup(P, g)) { Sfx.beep(220, 0.08, 0.05, 'sawtooth'); flashRow(g.id); const why = wEls[g.id] && wEls[g.id].st.textContent; if (why && !/^\d/.test(why)) showMsg(g.label + ': ' + why.replace(/^.*· /, ''), 1.2); else if (!why || /^\d/.test(why)) showMsg(g.label + ': not ready', 1.2); } }
   if (k === 'KeyB') { P.autofire = !P.autofire; $('autofire').textContent = P.autofire ? 'ON' : 'OFF'; showMsg(P.autofire ? 'Batteries free: guns fire when ready' : 'Batteries on manual', 1.6); }
 });
 $('escort-hold').addEventListener('click',()=>{
@@ -3174,7 +3179,7 @@ function drawTac(cv, full) {
     const m = toMap(game.landmark.pos, _mp), mx = clamp(m.x, 14 * pr, w - 14 * pr), my = clamp(m.y, 14 * pr, h - 22 * pr), off = mx !== m.x || my !== m.y;
     g.strokeStyle = g.fillStyle = off ? 'rgba(240,194,124,.55)' : '#f0c27c'; g.lineWidth = 1.2 * pr;
     g.beginPath(); g.moveTo(mx, my - 5 * pr); g.lineTo(mx + 5 * pr, my); g.lineTo(mx, my + 5 * pr); g.lineTo(mx - 5 * pr, my); g.closePath(); g.stroke();
-    if (full || !off) { const tw = g.measureText(game.landmark.label).width; g.fillText(game.landmark.label, clamp(mx + 9 * pr, 4 * pr, w - tw - 4 * pr), my + 4 * pr); }
+    if (full) { const tw = g.measureText(game.landmark.label).width; g.fillText(game.landmark.label, clamp(mx + 9 * pr, 4 * pr, w - tw - 4 * pr), my + 4 * pr); }
   }
   g.fillStyle = 'rgba(147,160,179,.35)';
   for (const a of asteroids) { const m = toMap(a.pos, _mp); if (m.x < -60 || m.y < -60 || m.x > w + 60 || m.y > h + 60) continue; g.beginPath(); g.arc(m.x, m.y, Math.max(1.5 * pr, a.r * sc), 0, 7); g.fill(); }
@@ -3269,10 +3274,10 @@ function updateHud(dt) {
   // A system is listed only once it is damaged (or being repaired): a healthy ship shows one quiet line.
   let hurtSubs = 0;
   for (const k of SUBS) { const o = subEls[k], v = P.sub[k], ok = v >= 99.5 && P.repair !== k; if (!ok) hurtSubs++; setX(o.bar, v / 100); setT(o.v, Math.round(v)); setC(o.r, 'sub' + (ok ? ' ok' : '') + (v < 50 ? ' dmg' : '') + (P.repair === k ? ' rep' : '')); }
-  setT($c('own-subs-h'), hurtSubs ? 'Systems · V or click: repair first' : 'Systems · all nominal');
+  setT($c('own-subs-h'), hurtSubs ? 'Systems · V: repair first' : 'Systems · all nominal');
   const ef = E.hull / E.C.hull; setX($c('foe-hullbar').firstChild, ef); $c('foe-hullbar').classList.toggle('crit', ef < 0.3); setT($c('foe-hull'), Math.max(0, Math.round(E.hull)));
   drawShieldDiamond($c('foe-sh'), E, seen ? theirF : -1);
-  for (let i = 0; i < 4; i++) { const r = foeRows[i]; setC(r.d, E.sh[i] <= 0 ? 'down' : ''); setT(r.a, FACINGS[i] + (seen && theirF === i ? ' ◂ you' : '')); setT(r.b, Math.round(E.sh[i] / E.C.shield * 100) + '%'); }
+  for (let i = 0; i < 4; i++) { const r = foeRows[i]; setC(r.d, E.sh[i] <= 0 ? 'down' : ''); setT(r.a, FACINGS[i] + (seen && theirF === i ? ' ◂' : '')); setT(r.b, Math.round(E.sh[i] / E.C.shield * 100) + '%'); }
   setT($c('foe-aspect'), !seen ? 'No contact' : E.alive ? `Toward you: ${FACINGS[theirF].toLowerCase()} · ${E.sh[theirF] <= 0 ? 'shield down, hull exposed' : Math.round(E.sh[theirF]) + ' shield'}` : 'Wrecked');
   const tele = $c('tele').children; for (let i = 0; i < 5; i++) setC(tele[i], i === P.step ? 'on' : '');
   const rl = (50 + P.rudder * 46).toFixed(1) + '%'; const rud = $c('rud'); if (rud._l !== rl) { rud.style.left = rl; rud._l = rl; }
@@ -3329,7 +3334,7 @@ function hudFast(dt) {
   if (msgT > 0) { msgT -= dt; if (msgT <= 0) $('msg').classList.remove('on'); }
   if (state === 'playing') {
     game.tipT += dt;
-    if (game.tipT > 11 && game.tipIdx < game.tips.length) { game.tipT = 0; game.tipIdx++; const tip = $('tip'); if (game.tipIdx < game.tips.length) tip.innerHTML = game.tips[game.tipIdx]; else tip.style.opacity = 0; }
+    if (game.tipT > (bridge ? 7 : 11) && game.tipIdx < game.tips.length) { game.tipT = 0; game.tipIdx++; const tip = $('tip'); if (game.tipIdx < game.tips.length) tip.innerHTML = game.tips[game.tipIdx]; else tip.style.opacity = 0; }
   }
   tacT -= dt;
   if (tacT <= 0 || state === 'paused') { tacT = 0.08; if (tacFull) drawTac($c('tacF'), true); else drawTac($c('tac'), false); }

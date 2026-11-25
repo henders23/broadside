@@ -255,13 +255,24 @@
       harlan: '', win: 'She is dead, captain. The brood ships are drifting, no hand on any helm. It is over.', loss: 'She grows back faster than we can hurt her. We go back in harder.' }
   };
   for (const m of STORY) Object.assign(m, NARRATIVE[m.id]);
-  // Four decisions change later battles. Each consequence notes itself in the briefing of the battle it changes.
+  // Every decision but the last changes a later battle. Each consequence notes itself in the briefing of the battle it changes.
   const CONSEQUENCES = [
     { flag: 'thorne_amnesty', story: [8], note: 'Thorne’s charts of Grimhold: the Pyre’s minefields are mapped and its mine layer is out of the fight.', apply: spec => { spec.disable = [...(spec.disable || []), 'mines']; } },
     { flag: 'halloran_logs', story: [4, 6], note: 'Halloran’s logs carry the Directorate’s shield frequencies: machine shields start the fight at half strength.', apply: spec => { spec.enemyShieldStart = 0.5; } },
     { flag: 'ash_amnesty', story: [7, 10], note: 'The ASF Penitence, crewed by Halloran’s pardoned officers, flies at your side.', apply: spec => { spec.friends = [...(spec.friends || []), { cls: 'revenant', name: 'ASF Penitence', hull: 0.7, shield: 0.8 }]; } },
     { flag: 'oracle_transmitted', story: [7], note: 'Command acted on ORACLE’s archive: the Long Lantern is already a third of the way to the beacon.', apply: spec => { spec.goal.headStart = 0.33; } },
     { flag: 'oracle_sealed', story: [9], note: 'The sealed archive never crossed a relay the Directorate reads: the Arbiter has not modelled your fleet, and its shield lattice is weaker.', apply: spec => { const p = spec.boss && spec.boss.phases.find(x => x.lattice); if (p) p.lattice = Math.max(p.lattice, 0.4); } },
+    // The smaller decisions reach a later battle too.
+    { flag: 'kestrel_rescue', story: [2], note: 'The Peregrine’s master logged where Vex met her paymasters: you reach the Cinder Wake before Sable’s ships have their shields fully up.', apply: spec => { spec.enemyShieldStart = Math.min(spec.enemyShieldStart || 1, 0.7); } },
+    { flag: 'kestrel_pursuit', story: [3], note: 'Word of how you ran Vex down has reached the Narrows: Thorne’s crew will strike their colours sooner.', apply: spec => { if (spec.goal && spec.goal.type === 'surrender') spec.goal.at = 0.36; } },
+    { flag: 'vela_rescue', story: [8], note: 'The Mourner’s survivors named the captain of the Pyre’s escort, and he has not sailed: Halloran begins the fight alone.', apply: spec => { spec.enemies = spec.enemies.slice(0, 1); } },
+    { flag: 'vela_transponder', story: [8], note: 'The code wheel stripped from the Mourner still opens Ash Fleet shield frequencies: the Pyre and her escort start with weakened shields.', apply: spec => { spec.enemyShieldStart = Math.min(spec.enemyShieldStart || 1, 0.7); } },
+    { flag: 'relay_destroyed', story: [9], note: 'With the Midway relay gone the Arbiter’s lattice nodes arrive under-built: thinner hulls.', apply: spec => { for (const p of (spec.boss && spec.boss.phases) || []) for (const n of p.spawn || []) if (n.lattice) n.hull = Math.round(n.hull * 70) / 100; } },
+    { flag: 'relay_captured', story: [9], note: 'The captured relay core gives your gunners the Arbiter’s shield timing: its shields start the fight weakened.', apply: spec => { spec.enemyShieldStart = Math.min(spec.enemyShieldStart || 1, 0.75); } },
+    { flag: 'harrow_warning', story: [7], note: 'Nex heard your broadcast and armed what it had: the militia cutter Second Dawn flies with you.', apply: spec => { spec.friends = [...(spec.friends || []), { cls: 'sabre', name: 'Second Dawn', hull: 0.5, shield: 0.6 }]; } },
+    { flag: 'harrow_classified', story: [10], note: 'Command’s weapons staff had quiet weeks with your recording: the Bloom-Mother’s shields start the fight weakened.', apply: spec => { spec.enemyShieldStart = Math.min(spec.enemyShieldStart || 1, 0.75); } },
+    { flag: 'quarantine_held', story: [10], note: 'Juniper has not forgotten who held the line: the ringport’s guardship Ringwarden flies with you.', apply: spec => { spec.friends = [...(spec.friends || []), { cls: 'bastion', name: 'JRS Ringwarden', hull: 0.6, shield: 0.7 }]; } },
+    { flag: 'refugees_withdrawn', story: [10], note: 'With Juniper’s lanes left empty the brood guardian went hunting there: the Bloom-Mother begins the fight without it.', apply: spec => { spec.enemies = spec.enemies.slice(0, 1); } },
     { flag: 'arbiter_salvaged', story: [10], note: 'The Arbiter’s salvaged core models the Bloom-Mother’s growth: her regrowth is slower.', apply: spec => { const p = spec.boss && spec.boss.phases.find(x => x.regen); if (p) p.regen = 1.2; } }
   ];
   // Which decisions have later consequences (shown when the choice is offered).
@@ -276,14 +287,14 @@
   };
   // What each decision is worth (shown when the choice is offered).
   const CHOICE_STAKES = {
-    1: 'Seeing her home earns standing at Meridian; hunting Vex earns it at the Peregrine Exchange.',
-    2: 'Tarn’s yard hands trained half that crew, and the depot will remember it; the wreck is worth 150 requisition.',
+    1: 'Seeing her home earns standing at Meridian, and her master’s log will help in the Cinder Wake; hunting Vex earns standing at the Peregrine Exchange, and the Narrows will hear of it.',
+    2: 'Tarn’s yard hands trained half that crew, and what the survivors know will matter at Grimhold; the wreck is worth 150 requisition and her code wheel.',
     3: 'Amnesty brings Thorne’s charts of Grimhold; impounding brings his ship.', 8: 'Her logs help in the Halcyon Belt; an amnesty brings an Ash Fleet ship to your side.',
     4: 'Transmitting warns the colonies; sealing keeps the Arbiter in the dark.',
-    6: 'Juniper wants the relay gone and its lanes quiet; Elysia’s researchers want the core.',
+    6: 'Juniper wants the relay gone, and without it the Directorate builds thinner; Elysia’s researchers want the core, and so will your gunners.',
     9: 'A salvaged core could help against the Wraith; destroying it earns Command’s trust.',
-    5: 'An open broadcast earns standing at Juniper and Elysia; discretion earns it with Command at Meridian.',
-    7: 'Juniper will remember a fleet that stayed; Meridian will remember the refugees you brought.',
+    5: 'An open broadcast earns standing at Juniper and Elysia, and Nex will arm itself; discretion earns it with Command, whose weapons staff get quiet weeks with the recording.',
+    7: 'Juniper will remember a fleet that stayed, and send a ship to Verdant; fall back, and the brood follows the empty lanes away from its mother.',
     10: 'This is the last decision of the war. Harlan’s final transmission will answer it.'
   };
   const storyById = Object.fromEntries(STORY.map(m => [m.id, m]));
@@ -487,7 +498,7 @@
         objective: 'Disable the quarry below 30% hull before it jumps.',
         intel: 'Quarry fleeing at reduced engine power. 115-second jump window. Disable rather than destroy.',
         enemies: [lead(foe, who, { hull: round(Math.min(1, s + 0.25)), shield: round(Math.min(1, s + 0.25)) })],
-        goal: { type: 'pursuit', seconds: 115, at: 0.3, speed: foe.cls === 'revenant' ? 1 : foe.cls === 'scrapjaw' ? 0.7 : 0.8 }, support: 0 });   // a slow Revenant runs flat out; a fast Scrapjaw is held back so heavy hulls can catch it
+        goal: { type: 'pursuit', seconds: 115, at: 0.3, speed: foe.cls === 'revenant' ? 0.9 : foe.cls === 'scrapjaw' ? 0.7 : 0.8 }, support: 0 });   // a slow Revenant runs nearly flat out; a fast Scrapjaw is held back so heavy hulls can catch it
     }
     const convoy = pick(r, CONVOYS);
     return Object.assign(base, { name: `Escort: ${convoy}`, captain: `${foe.group} ${ship}`, reward: 240 + 65 * lvl + 90 * (a - 1),
@@ -521,7 +532,7 @@
   }
 
   // ---------------- interceptions ----------------
-  const INTERCEPT_CHANCE = [0, 0.06, 0.12, 0.18, 0.24, 0.3];   // by threat level
+  const INTERCEPT_CHANCE = [0, 0.05, 0.1, 0.15, 0.2, 0.25];   // by threat level
   // Returns the first system on the way (not counting the start) where hostiles drop out of the lane, or null.
   // scale: a multiplier, or a function of the system id (difficulty and the state of its front).
   function rollInterception(route, act, random, scale = 1) {
@@ -640,7 +651,7 @@
       if (kind !== 'story' && kind !== 'intercept') next = 0; else next = clock || 0;   // nor is a fight forced on the fleet in a lane
     } else if (actFront && act <= 3) {
       if (region === actFront && win) next = 0;
-      else if (region !== actFront && kind !== 'story' && ++next >= PUSHBACK.every) { next = 0; if (front(out, actFront).value > -10) { off = { region: actFront, left: PUSHBACK.grace }; raised = true; } }
+      else if (region !== actFront && kind !== 'story' && kind !== 'intercept' && ++next >= PUSHBACK.every) { next = 0; if (front(out, actFront).value > -10) { off = { region: actFront, left: PUSHBACK.grace }; raised = true; } }
     }
     return { fronts: out, clock: next, changes, offensive: off, raised };
   }

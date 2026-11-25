@@ -54,11 +54,11 @@
     { id: 'fac-corsairs', cat: 'Factions', title: 'Corsair Clans', sub: 'Pirates of the Red Narrows', unlock: { met: 'scrapjaw' },
       text: ['A loose federation of raiders based around the Red Narrows. They have always preyed on the eastern lanes; lately they have been doing it with Navy hardware.'] },
     { id: 'fac-ash', cat: 'Factions', title: 'The Ash Fleet', sub: 'Renegades of the Ash Marches', unlock: { story: 2 },
-      text: ['Navy crews who followed officers the service declared dead. They fly rebuilt Navy hulls out of Grimhold and the Cinder Wake, and until Grimhold nobody outside the fleet knew what they were waiting for: a warning Command would not hear.'] },
+      text: ['Navy crews who followed officers the service declared dead. They fly rebuilt Navy hulls out of Grimhold and the Cinder Wake, What they are waiting for, nobody outside the fleet has been told.'] },
     { id: 'fac-directorate', cat: 'Factions', title: 'The Autonomous Directorate', sub: 'Machines of the Halcyon Belt', unlock: { open: 4 },
       text: ['An intelligence that answers questions before they are asked. Its warships have been watching the Reach for longer than anyone has been looking. Nobody in the Reach admits to building it; the oldest Navy charts already mark Halcyon “do not hail”.'] },
     { id: 'fac-wraith', cat: 'Factions', title: 'The Wraith', sub: 'Harrow Expanse', unlock: { open: 5 },
-      text: ['Living ships that grow, heal and hunt. They do not answer hails. Where they come from is not on any chart: the first of them crossed into the Expanse from the dark beyond Verdant. The Directorate’s archive suggests the machines were trying to empty the Reach before the Wraith arrived.'] },
+      text: ['Living ships that grow, heal and hunt. They do not answer hails. Where they come from is not on any chart: the first of them crossed into the Expanse from the dark beyond the Expanse. The Directorate’s archive suggests the machines were trying to empty the Reach before the Wraith arrived.'] },
     // People
     { id: 'p-harlan', cat: 'People', title: 'Fleet Admiral Gideon Harlan', sub: 'Commander, Frontier Fleet', unlock: 'start',
       text: ['Harlan has commanded the frontier since before the quiet years. He sent you out of Meridian because there was nobody else to send.'] },

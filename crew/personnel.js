@@ -90,7 +90,7 @@
     7:'Eleven thousand people on one ship. I have watched two evacuations fail, captain. Not this one.',
     8:'The Pyre is twice our tonnage and she knows every trick we do. Keep the damage-control teams close, captain.',
     9:'I think its shields lean on those node ships, captain. If I am right, kill the nodes and the numbers stop working for it.',
-    10:'She heals faster than we can come about. So we do not break off: one long pass, guns hot, and I will keep us inside her arc.'
+    10:'She heals faster than we can come about. So we do not break off: one long pass, guns hot, and I will keep our guns on her.'
   };
   // Fleet Admiral Harlan, who briefs each act and sends a transmission after every story operation.
   const harlan = {id:'harlan',name:'Fleet Admiral Gideon Harlan',title:'Commander, Frontier Fleet',image:'img/admiral-harlan.webp'};

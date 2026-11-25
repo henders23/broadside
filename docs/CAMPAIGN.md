@@ -58,9 +58,9 @@ Every aftermath decision but the last changes a later battle. The after-action r
 | | Strip the wreck | 150 requisition; the Pyre starts at 70% shields. |
 | Op 6, the Midway relay | Destroy it | Juniper +8 standing; the Arbiter's lattice nodes have 30% thinner hulls. |
 | | Capture the core | Elysia +10 standing; the Arbiter starts at 75% shields. |
-| Op 5, the recording | Broadcast it | Juniper and Elysia +8 standing; the militia cutter Second Dawn flies with you at Nex. |
+| Op 5, the recording | Broadcast it | Juniper and Elysia +8 standing; the militia cruiser Second Dawn flies with you at Nex. |
 | | Evacuation captains only | Meridian +10 standing; the Bloom-Mother starts at 75% shields. |
-| Op 7, after Nex | Hold the Juniper line | Juniper +12 standing; the guardship JRS Ringwarden flies with you at Verdant. |
+| Op 7, after Nex | Hold the Juniper line | Juniper +12 standing; the guardship JRS Ringkeeper flies with you at Verdant. |
 | | Fall back with the refugees | Meridian +12 standing; the Bloom-Mother begins without her brood guardian. |
 | Op 10, Verdant | Burn or quarantine | Changes Harlan's final transmission. |
 | Op 9, the Arbiter | Salvage the core | The Bloom-Mother regrows at 1.2× instead of 1.8× in her last phase. |

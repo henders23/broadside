@@ -1438,6 +1438,8 @@ function startGame() {
   game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [], bridgeHits: { time: 0, last: -99, count: 0 }, opening, storm: 0, twist: null };
   // Where this is being fought: the system and its region (campaign), and the scenery laid for it.
   const sysHere = campaignMission && window.BroadsideCampaign ? window.BroadsideCampaign.byId[campaignMission.system] : null;
+  game.landmark = campaignMission && [1, 2, 3, 4, 5, 6].includes(campaignMission.story) ? battleEnvironment.landmark(campaignMission.env) : null;   // the six operations staged round a place
+  if (game.landmark) { if (game.landmark.label === 'RELAY' && sysHere) game.landmark.label = sysHere.name.toUpperCase() + ' RELAY'; game.landmark.pos = new V3(game.landmark.x, 0, game.landmark.z); }
   game.place = sysHere ? { name: sysHere.name, region: sysHere.region, scenery: sceneryName, line: window.BroadsideCampaign.describe(sysHere, campaignSave && campaignSave.completed) } : null;
   fleet = campaignMission && window.BroadsideFleet ? window.BroadsideFleet.create({
     encounter:campaignMission,allies,makeShip,placeShip,ships,player,primaryEnemy:enemy,
@@ -3167,6 +3169,12 @@ function drawTac(cv, full) {
     const n = predictPath(P, 50, 0.5); g.strokeStyle = 'rgba(255,215,150,.75)'; g.setLineDash([4 * pr, 4 * pr]); g.beginPath();
     for (let i = 0; i < n; i++) { const m = toMap(PATH[i], _mp); if (i) g.lineTo(m.x, m.y); else g.moveTo(m.x, m.y); } g.stroke(); g.setLineDash([]);
     g.fillStyle = '#ffd796'; for (let i = 20; i < n; i += 20) { const m = toMap(PATH[i], _mp); g.fillRect(m.x - 2 * pr, m.y - 2 * pr, 4 * pr, 4 * pr); }
+  }
+  if (game.landmark) {   // what this place is about: the relay, the wreck, the station (drawn at the plot's edge when out of range)
+    const m = toMap(game.landmark.pos, _mp), mx = clamp(m.x, 14 * pr, w - 14 * pr), my = clamp(m.y, 14 * pr, h - 22 * pr), off = mx !== m.x || my !== m.y;
+    g.strokeStyle = g.fillStyle = off ? 'rgba(240,194,124,.55)' : '#f0c27c'; g.lineWidth = 1.2 * pr;
+    g.beginPath(); g.moveTo(mx, my - 5 * pr); g.lineTo(mx + 5 * pr, my); g.lineTo(mx, my + 5 * pr); g.lineTo(mx - 5 * pr, my); g.closePath(); g.stroke();
+    if (full || !off) { const tw = g.measureText(game.landmark.label).width; g.fillText(game.landmark.label, clamp(mx + 9 * pr, 4 * pr, w - tw - 4 * pr), my + 4 * pr); }
   }
   g.fillStyle = 'rgba(147,160,179,.35)';
   for (const a of asteroids) { const m = toMap(a.pos, _mp); if (m.x < -60 || m.y < -60 || m.x > w + 60 || m.y > h + 60) continue; g.beginPath(); g.arc(m.x, m.y, Math.max(1.5 * pr, a.r * sc), 0, 7); g.fill(); }

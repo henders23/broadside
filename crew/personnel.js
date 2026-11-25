@@ -82,15 +82,15 @@
   const leads={1:'renn',2:'okoye',3:'varro',4:'renn',5:'sato',6:'okoye',7:'varro',8:'vale',9:'renn',10:'sato'};
   const briefLines={
     1:'Civilian beacons are cutting out. One raider is trying to drive the convoy into the rocks.',
-    2:'The mine pattern matches a Navy doctrine manual, but these signal codes were deleted years ago.',
-    3:'Thorne values his ship more than his cause. If we can break his nerve, we can take prisoners.',
+    2:'Mines at four-hundred-metre intervals, straight out of our own manual. But the codes on that transponder were struck off before I was commissioned.',
+    3:'Thorne loves that ship more than his cause. Hurt her enough and he will strike. I would rather take prisoners than count bodies.',
     4:'That frequency is correcting for us before we change course. Something is predicting our intentions.',
-    5:'Its hull is alive. We are here to record what we can, not prove we can kill it.',
-    6:'Two ships, one set of decisions. Break the link between them and they are just two thin hulls.',
-    7:'Eleven thousand people on one ship. Whatever happens to us, the Lantern reaches that beacon.',
+    5:'It does not fly like a ship, captain. No burn, no drift; it just goes where it wants. We record it and we stay alive. That is the whole job.',
+    6:'Two hulls, one firing solution between them: their railguns alternate to the second. Break the link and they are two thin ships.',
+    7:'Eleven thousand people on one ship. I have watched two evacuations fail, captain. Not this one.',
     8:'The Pyre is twice our tonnage and she knows every trick we do. Keep the damage-control teams close, captain.',
-    9:'Its shields lean on those node ships. Kill the nodes and the numbers stop working for it.',
-    10:'The longer this takes, the more of it grows back. We go in, we keep firing, and we do not stop.'
+    9:'I think its shields lean on those node ships, captain. If I am right, kill the nodes and the numbers stop working for it.',
+    10:'She heals faster than we can come about. So we do not break off: one long pass, guns hot, and I will keep us inside her arc.'
   };
   // Fleet Admiral Harlan, who briefs each act and sends a transmission after every story operation.
   const harlan = {id:'harlan',name:'Fleet Admiral Gideon Harlan',title:'Commander, Frontier Fleet',image:'img/admiral-harlan.webp'};

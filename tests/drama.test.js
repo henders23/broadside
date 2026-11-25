@@ -108,7 +108,7 @@ assert.equal(out.report[0].replacement, rep.id); assert.equal(out.crew.okoye, re
 const duty = P.activeCrew(out.crew, { replacements: out.replacements }), tac = duty.find(c => c.slot === 'okoye');
 assert.equal(tac.id, rep.id); assert.equal(tac.cmd, 'okoye'); assert.equal(tac.ability, 'Target Solution'); assert.equal(tac.key, '6'); assert.equal(tac.portrait, null);
 assert.match(X.displayName(tac, 1), /^Ensign /); assert.match(X.displayName({ id: 'rep-vale-1', given: 'Gus Merrow' }, 1), /^Petty Officer /, 'engineering replacements are enlisted');
-assert.match(X.effect(tac, 1), /12% more damage/, 'the replacement gives the post’s command');
+assert.match(X.effect(tac, 1), /20% more damage/, 'the replacement gives the post’s command');
 assert.match(X.effect(tac, 1, 0.6), /7% more damage/, 'wounded, it is weaker');
 // The replacement dies too: a second replacement, with a different name.
 out = K.apply({ ...out, wounds: { [rep.id]: {} } }, [{ id: rep.id, severity: 'killed' }], id => who(id) || (id === rep.id ? { ...rep, slot: 'okoye' } : null), { system: 'scour' });

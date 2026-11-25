@@ -20,7 +20,7 @@ await suite('war', { random: 0.99 }, async ({ page, ctx, base, out, KEY, check, 
   await page.reload();
   const body = await page.textContent('#modalbody');
   check(await page.locator('#modal.wide').count() === 1 && await page.locator('#modalbody .tx').count() === 2, 'after-action has two large cards');
-  check(body.includes('Thorne talked') && body.includes('TRANSMISSION') && body.includes('Halloran is at Grimhold'), 'the lead officer reacts and Harlan transmits');
+  check(body.includes('Thorne’s people talked') && body.includes('TRANSMISSION') && body.includes('Halloran is at Grimhold'), 'the lead officer reacts and Harlan transmits');
   check(body.includes('THE WAR') && body.includes('Red Narrows') && body.includes('This decision changes a later battle'), 'the war and the stakes are in the report');
   const tx = await page.evaluate(() => { const r = document.querySelector('#modalbody .tx .crew-portrait').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
   check(tx[0] >= 120 && tx[1] >= 140, 'officer portrait is large: ' + tx.join('×'));

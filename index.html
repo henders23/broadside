@@ -2153,7 +2153,10 @@ function damage(s, dmg, kind, local, src) {
     if (s === player && s.hull >= s.C.hull * 0.25 && s.hull - hullD < s.C.hull * 0.25) Voice.say('hull-critical', 30, true);
     s.hull -= hullD;
     if (bridge && s === enemy && !game.enemyHalfReported && s.hull <= s.C.hull * 0.5) {
-      game.enemyHalfReported = true; bridge.report('okoye', 'Enemy hull below fifty percent. Their formation is breaking.');
+      game.enemyHalfReported = true;
+      // A story enemy has something to say at half hull (crew/campaign-data.js `mid`); otherwise the tactical officer calls it.
+      if (campaignMission && campaignMission.mid && typeof campaignMission.hail === 'number') bridge.incomingHail({ ...window.BroadsidePersonnel.commanders[campaignMission.hail], line: campaignMission.mid });
+      else bridge.report('okoye', 'Enemy hull below fifty percent. Their formation is breaking.');
     }
     if (Math.random() < clamp(hullD / 70, 0.12, 0.9)) {
       const list = FACING_SUBS[f], k = list[Math.random() < 0.6 ? 0 : Math.random() < 0.6 ? 1 : 2];

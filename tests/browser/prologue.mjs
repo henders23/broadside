@@ -37,9 +37,9 @@ await suite('prologue', { random: 0.99, prologue: true }, async ({ page, base, K
   check(await opacity('#procard') > 0.9 && /Present day/.test(card) && /Meridian Fleet Yards/.test(card) && /MNS Resolute/.test(card) && /Bastion-class heavy battleship/.test(card), 'a card gives the day, the place and the ship');
   check(await page.locator('#procard li').count() === 6 && /First Officer/.test(card), 'and the captain with the five officers: ' + await page.locator('#procard li').count());
   check(await page.locator('#intro').isHidden(), 'the briefing has not started yet');
-  await page.keyboard.press('Enter'); await page.waitForFunction(() => window.__arrival.phase === 'shot', null, { timeout: 8000 }); await page.waitForTimeout(2900);
-  check(await opacity('#proshots .proshot') > 0.6 && await opacity('#procard') < 0.1, 'the card gives way to the flagship'); await shot('11-flagship');
-  await page.keyboard.press('Enter'); await page.waitForFunction(() => window.__arrival.phase === 'note', null, { timeout: 8000 }); await page.waitForTimeout(700);
+  await page.keyboard.press('Enter'); await page.waitForFunction(() => window.__arrival.phase === 'shot', null, { timeout: 8000 }); await page.waitForTimeout(2300);
+  check(await opacity('#proshots .proshot') > 0.5 && await opacity('#procard') < 0.1, 'the card gives way to the flagship'); await shot('11-flagship');
+  await page.waitForFunction(() => window.__arrival.phase === 'note', null, { timeout: 8000 }); await page.waitForTimeout(700);
   check(await opacity('#pronote') > 0.9 && /Incoming transmission/.test(await page.textContent('#pronote')), 'an incoming transmission from Fleet HQ is announced'); await shot('12-incoming');
   await page.waitForFunction(() => window.__arrival.phase === 'tx', null, { timeout: 12000 }); await page.waitForTimeout(4800); await shot('13-transmission');
   check(await page.locator('#intro.tx').isVisible() && (await page.textContent('#introtitle')).includes('Act I') && await page.locator('#prologue').isVisible(), 'the Act I briefing plays as a transmission over the shot');

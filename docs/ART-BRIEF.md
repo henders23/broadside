@@ -25,6 +25,15 @@ For a future high-resolution per-character replacement pass, save each image as 
 | `vigil.webp` | The VIGIL Array, Directorate pickets (Operation 6) | The "face" of a machine intelligence: two identical sleek dark-metal heads side by side, faceless visors joined by one shared line of pale blue light, fine engraved circuitry. A dark data-relay chamber with blue light columns. |
 | `choir.webp` | The Choir, Wraith brood (Operation 7) | An alien collective: three translucent organic forms grown together like coral and orchid, ridged membranes with bioluminescent green veins, a suggestion of eyeless faces in the folds. The living interior of a bioship, green spore haze. |
 
+## The prologue
+
+The film before the Act I briefing (`campaign/prologue.js`). To replace a shot, keep its file name; stills are 16:9 WebP, 1280 × 720 or larger.
+
+- **Stills** (`img/prologue/`): `reach`, `settlers`, `war` and `reserve` were generated with ElevenLabs (gpt-image-2.5-sunburst, 1280 × 720); `corsairs` and `resolute` with Canva (cropped to 16:9, 1600 × 900). All share one closing line in their prompts: *Photorealistic, anamorphic lens, muted teal and amber colour grade, deep blacks, fine film grain. No text, no lettering, no logos, no borders.* Navy ships are described as *long, slab-sided gunmetal-grey space battleships with a stepped superstructure tower and rows of gun turrets*.
+- **Clip** (`video/prologue-departure.webm` and `.mp4`): a 7-second Suno Visuals take (video-2, 720p) of the flagship leaving dock, played at 0.8 speed. The other shots are stills because the accounts had no more video credit; each can become a clip by giving its entry in `PROLOGUE.shots` a `video` list in place of `img`.
+- **Narration** (`voice/prologue-narration.mp3`): ElevenLabs, eleven_v4, the library voice *Maven* (`OtHu0lbpdNTqJVqaxDtR`), one take. The text is the `cues` in `PROLOGUE`. A new take needs new cue times.
+- **Score** (`music/prologue-score.mp3`): "The Long Watch (Prologue)", generated with Suno. `tools/prologue.sh` mixes the two into `voice/prologue.mp3`, with the narration starting 3 s in.
+
 ## Harlan's voice
 
 **Status.** All 13 are recorded, generated with ElevenLabs in the voice The Clay Jockey (Broadside collection). In the Act I briefing `{ship}` is read as "your ship". Each clip is then softened (a cut around 2.6 kHz, a gentle de-ess and a high-shelf cut above 7 kHz, a small lift at 220 Hz) and mixed over a low-passed loop of `sfx/engine.mp3` about 22 dB under the voice, with a 0.35 s lead-in and 0.6 s tail of hum; loudness stays matched to the original take. A re-recorded line should get the same treatment.

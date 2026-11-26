@@ -107,6 +107,20 @@
 .service{margin-top:14px;padding:16px 22px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04)}.srow{display:flex;justify-content:space-between;align-items:center}.pips{display:flex;gap:5px}.pips i{display:block;width:18px;height:4px;border-radius:2px;background:rgba(255,255,255,.18)}.pips i.on{background:var(--amber)}.srank{display:flex;align-items:baseline;gap:14px;margin-top:8px}.srank b{font-size:22px;font-weight:400}.srank span{font-size:13px;color:var(--dim)}.xpbar{height:4px;margin-top:10px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden}.xpbar i{display:block;height:100%;background:var(--amber)}.service .stats{display:flex;gap:40px;margin-top:12px}.service .stats .k{font-size:10px}.service .stats b{display:block;margin-top:4px;font-size:17px;font-weight:400}.officer small .rk{color:var(--amber)}#modalbody .xpgains{margin:14px 0;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.05)}#modalbody .xpgains small{display:block;font:11px 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--amber);margin-bottom:6px}#modalbody .xprow{display:flex;justify-content:space-between;gap:12px;font-size:14px;line-height:1.7}#modalbody .xprow b{color:var(--amber);font-weight:600}
 #foes{position:absolute;left:480px;top:732px;width:1056px}#foelist{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:10px}.foe{display:flex;gap:12px;align-items:center;min-height:106px;padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03)}.foe .crew-portrait{width:70px;height:80px;border-radius:8px}.foe b{display:block;font-size:15px;font-weight:500}.foe small{display:block;margin:2px 0 6px;font-size:12px;color:var(--dim)}.foe .k{font-size:10px}.foe.unknown{justify-content:center;text-align:center;font-size:13px;color:var(--faint);border-style:dashed}
 /* opening briefing */
+/* prologue film */
+#prologue{position:absolute;inset:0;z-index:45;background:#000;overflow:hidden}#prologue[hidden]{display:none}
+#proshots,.proshot,#proplot,#prograin,#provig,#profade{position:absolute;inset:0;width:1600px;height:900px}
+.proshot{background:center/cover no-repeat;object-fit:cover;will-change:transform,opacity}#proplot{opacity:0}
+#prograin{pointer-events:none;opacity:.11;mix-blend-mode:overlay;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");animation:proGrain .5s steps(4) infinite}
+@keyframes proGrain{25%{background-position:-60px 40px}50%{background-position:90px -70px}75%{background-position:-30px -110px}}
+#provig{pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 52%,rgba(0,0,0,.6) 100%)}
+#prologue .bar{position:absolute;left:0;width:1600px;height:104px;background:#000}#prologue .bar.t{top:0}#prologue .bar.b{bottom:0}
+#profade{background:#000;opacity:0;pointer-events:none}
+#prosub{position:absolute;left:200px;width:1200px;bottom:128px;margin:0;text-align:center;font-size:25px;font-weight:300;line-height:1.4;letter-spacing:.01em;color:#fff;text-shadow:0 1px 3px #000,0 0 22px rgba(0,0,0,.95);opacity:0;transition:opacity .35s}#prosub.on{opacity:1}
+#protitle{position:absolute;left:0;width:1600px;top:252px;padding:120px 0;background:radial-gradient(ellipse 46% 50% at center,rgba(0,0,0,.72),rgba(0,0,0,0));text-align:center;opacity:0;pointer-events:none;text-shadow:0 0 40px rgba(0,0,0,.9)}#protitle b{display:block;font-size:76px;font-weight:200;letter-spacing:.5em;margin-right:-.5em}#protitle span{display:block;margin-top:18px;font:500 13px 'JetBrains Mono',monospace;letter-spacing:.5em;margin-right:-.5em;color:var(--amber);text-transform:uppercase}
+#proskip{position:absolute;right:64px;bottom:34px;height:36px;padding:0 18px;border-radius:18px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.35);font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.75)}#proskip:hover{color:#fff;border-color:rgba(255,255,255,.6)}#proskip kbd{font:inherit;opacity:.6;margin-left:8px}
+#progate{position:absolute;inset:0;width:1600px;height:900px;border:0;background:#000;font:500 13px 'JetBrains Mono',monospace;letter-spacing:.4em;text-transform:uppercase;color:var(--amber)}#progate[hidden]{display:none}
+@media (prefers-reduced-motion:reduce){#prograin{animation:none}}
 #intro{position:absolute;inset:0;z-index:35;background:#000;overflow:hidden}#intro[hidden]{display:none}
 #introportrait{position:absolute;left:0;top:0;width:675px;height:900px;background:url('img/admiral-harlan.webp') center top/cover no-repeat}
 #introportrait::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0) 55%,#000 100%),linear-gradient(0deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,0) 30%)}
@@ -199,6 +213,15 @@
 </section>
 <header id="top"><span id="brand">BROADSIDE</span><nav class="nav" aria-label="Campaign commands"><button class="current" id="tabMap">Map</button><button id="tabShip">Shipyard</button><button id="tabCrew">Officers</button><button id="tabCodex">Codex</button><button id="tabIntel">Intel</button><button id="tabNew">Saves</button><button id="tabDuel">Skirmish ↗</button></nav><span id="topright"><span id="fleetstatus" aria-live="polite"></span><button id="ambToggle" type="button" aria-label="Ship ambience" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"></path><path class="w" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"></path><path class="x" d="M16 9l6 6M22 9l-6 6"></path></svg></button></span></header>
 <div id="notice" role="status" aria-live="polite"></div>
+<section id="prologue" hidden aria-label="Prologue">
+<div id="proshots"></div><canvas id="proplot" width="1600" height="900"></canvas>
+<div id="provig"></div><div id="prograin"></div><i class="bar t"></i><i class="bar b"></i>
+<div id="protitle" aria-hidden="true"><b>BROADSIDE</b><span>The Shattered Reach</span></div>
+<div id="profade"></div>
+<p id="prosub" aria-live="polite"></p>
+<button id="progate" type="button" hidden>Press any key to begin</button>
+<button id="proskip" type="button">Skip <kbd>Esc</kbd></button>
+</section>
 <section id="intro" hidden role="dialog" aria-modal="true" aria-labelledby="introtitle">
 <div id="introportrait" role="img" aria-label="Portrait of Fleet Admiral Gideon Harlan"><div id="introname"><b>Gideon Harlan</b><span class="k">Fleet Admiral · Frontier Fleet</span></div></div>
 <div id="introtext">
@@ -230,6 +253,7 @@
 <script src="campaign/shipyard.js"></script>
 <script src="campaign/crew.js"></script>
 <script src="campaign/drama.js"></script>
+<script src="campaign/prologue.js"></script>
 <script src="campaign/reports.js"></script>
 <script type="importmap">
 {"imports":{

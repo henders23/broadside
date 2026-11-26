@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = normalize(join(dirname(fileURLToPath(import.meta.url)), '..', '..'));
 export const KEY = 'broadside-campaign-v1';
-const TYPES = { '.html': 'text/html', '.js': 'application/javascript', '.mjs': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.glb': 'model/gltf-binary', '.mp3': 'audio/mpeg' };
+const TYPES = { '.html': 'text/html', '.js': 'application/javascript', '.mjs': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.glb': 'model/gltf-binary', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.webm': 'video/webm' };
 
 async function playwright() {
   for (const spec of [process.env.PLAYWRIGHT, 'playwright', '/opt/node-tools/node_modules/playwright/index.mjs'].filter(Boolean)) {
@@ -27,7 +27,13 @@ function serve() {
   const server = createServer(async (req, res) => {
     const path = normalize(join(ROOT, decodeURIComponent(new URL(req.url, 'http://x').pathname)));
     if (!path.startsWith(ROOT)) { res.writeHead(403).end(); return; }
-    try { const body = await readFile(path.endsWith('/') ? join(path, 'index.html') : path); res.writeHead(200, { 'content-type': TYPES[extname(path)] || 'application/octet-stream' }).end(body); }
+    try {
+      const body = await readFile(path.endsWith('/') ? join(path, 'index.html') : path), type = TYPES[extname(path)] || 'application/octet-stream';
+      // Byte ranges, so sound and video can be seeked (the prologue suite jumps about its film).
+      const m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+      if (m && (m[1] || m[2])) { const from = m[1] ? +m[1] : body.length - +m[2], to = m[1] && m[2] ? Math.min(+m[2], body.length - 1) : body.length - 1; res.writeHead(206, { 'content-type': type, 'accept-ranges': 'bytes', 'content-range': `bytes ${from}-${to}/${body.length}`, 'content-length': to - from + 1 }).end(body.subarray(from, to + 1)); }
+      else res.writeHead(200, { 'content-type': type, 'accept-ranges': 'bytes', 'content-length': body.length }).end(body);
+    }
     catch (e) { res.writeHead(404).end(); }
   });
   return new Promise(r => server.listen(0, '127.0.0.1', () => r(server)));
@@ -42,6 +48,8 @@ export async function suite(name, opts, body) {
   const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
   await ctx.route('https://cdn.jsdelivr.net/npm/three@0.169.0/**', r => { const p = new URL(r.request().url()).pathname.replace('/npm/three@0.169.0/', ''); r.fulfill({ body: readFileSync(join(three, p)), contentType: 'application/javascript' }); });
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+  // The prologue film plays before the Act I briefing; only the suite that tests it (opts.prologue) sits through it.
+  if (!opts.prologue) await ctx.addInitScript(() => { window.__noPrologue = true; });
   if (opts.random != null) await ctx.addInitScript(v => { window.__campaignRandom = () => v; }, opts.random);
   const page = await ctx.newPage(), errors = [];
   page.setDefaultNavigationTimeout(120000);   // software WebGL on a busy runner can take a while to fire `load`

@@ -90,7 +90,7 @@ const Ambience={ctx:null,gain:null,bed:null,started:false,on:(()=>{try{return lo
  place(){if(!this.ctx||!window.BroadsideSoundscape||typeof state==='undefined'||!state)return;if(!this.bed)this.bed=window.BroadsideSoundscape.create(this.ctx,this.gain,.22);
   const s=byId[state.system]||byId[HOME];this.bed.set(window.BroadsideSoundscape.forRegion(s.region));},
  // Fades to where the hum should sit now; `slow` is the fade's time constant in seconds.
- level(slow=.6){if(!this.ctx)return;const t=this.ctx.currentTime,v=!this.on||document.hidden?0:harlanAudio?AMB_VOL*.35:AMB_VOL;this.gain.gain.cancelScheduledValues(t);this.gain.gain.setTargetAtTime(v,t,slow/3);},
+ level(slow=.6){if(!this.ctx)return;const t=this.ctx.currentTime,v=!this.on||document.hidden||(typeof prologue!=='undefined'&&prologue)?0:harlanAudio?AMB_VOL*.35:AMB_VOL;this.gain.gain.cancelScheduledValues(t);this.gain.gain.setTargetAtTime(v,t,slow/3);},
  toggle(){this.on=!this.on;try{localStorage.setItem(AMB_PREF,this.on?'on':'off');}catch(e){}if(this.on){if(this.ctx)this.ctx.resume();this.start();}this.level();this.mark();toast(this.on?'Ship ambience on':'Ship ambience off');},
  mark(){const b=$('ambToggle');if(b){b.setAttribute('aria-pressed',String(this.on));b.title=this.on?'Ship ambience on (M)':'Ship ambience off (M)';b.classList.toggle('off',!this.on);}}};
 for(const ev of ['pointerdown','keydown'])window.addEventListener(ev,()=>{Ambience.start();if(Ambience.ctx&&Ambience.ctx.state==='suspended')Ambience.ctx.resume();},{passive:true});

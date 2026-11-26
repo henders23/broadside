@@ -30,10 +30,39 @@
         : `Bring ${n.enemy} down. Tab enlarges the plot; P pauses.`,
       until: () => true, hold: 9 }
   ];
+  // The training exercise (title menu, or index.html?training): every key in turn, against a target that never fires.
+  // Its snapshot adds { climb, burn, looked, fore, torp }.
+  const pick = id => STEPS.find(s => s.id === id);
+  const TRAINING = [
+    { ...pick('throttle'), text: n => `${n.ship} starts at two-thirds ahead. Ring the engine telegraph up to full with W; S brings it back down.` },
+    { ...pick('rudder'), text: n => `A and D move the rudder, and it stays where you leave it; X centres it. Swing towards ${n.enemy}, the red contact on the plot.` },
+    { id: 'climb', title: 'Climb and dive', keys: 'R · F',
+      text: () => 'Hold R to climb and F to dive. The ship levels off when you let go. A shot from above or below lands on the same four shields.',
+      until: s => Math.abs(s.climb) > 0, hold: 0.8 },
+    { id: 'burn', title: 'Light the afterburner', keys: 'Shift',
+      text: () => 'Hold Shift for a burst of speed. The burner runs out and has to cool, so save it for closing the range or getting clear.',
+      until: s => s.burn, hold: 1 },
+    pick('shields'), pick('power'),
+    { id: 'look', title: 'Look around', keys: 'Tab · C · drag · wheel',
+      text: () => 'Tab enlarges the tactical plot. C swings the camera to look at the enemy and back. Drag turns the view and the wheel zooms.',
+      until: s => s.looked },
+    pick('broadside'),
+    { id: 'fore', title: 'Fire the forward guns', keys: 'Space',
+      text: n => `The forward weapon covers the bow. Point the bow at ${n.enemy} and fire with Space.`,
+      until: s => s.fore },
+    { id: 'torpedo', title: 'Launch a torpedo', keys: 'T',
+      text: () => 'T launches a torpedo from the bow tubes. Torpedoes are slow, weak against shields and deadly against bare hull, so knock a shield down first.',
+      until: s => s.torp },
+    { id: 'go', title: 'Finish the exercise', keys: 'P · N · M · G',
+      text: n => `Sink ${n.enemy}. It will not fire back. P pauses, N and M turn the music and the sound effects off, and G changes the graphics quality. Every key is listed under Controls on the title screen.`,
+      until: () => true, hold: 14 }
+  ];
   const FIRE_STEP = STEPS.findIndex(s => s.id === 'broadside');   // hostiles open fire once this step is done
   const HOLD_MAX = 50;
 
-  function create(names = {}) {
+  // opts.training: the training exercise's steps, and the target holds its fire throughout.
+  function create(names = {}, opts = {}) {
+    const STEPS = opts.training ? TRAINING : CAMPAIGN_STEPS;
     let i = 0, acc = 0, t = 0, skipped = false;
     const n = { ship: names.ship || 'the ship', enemy: names.enemy || 'the enemy', convoy: names.convoy || '' };
     return {
@@ -47,12 +76,14 @@
       get index() { return i; },
       get step() { const st = STEPS[i]; return st ? { id: st.id, title: st.title, keys: st.keys, text: st.text(n), n: i + 1, of: STEPS.length } : null; },
       get finished() { return i >= STEPS.length; },
-      get holdFire() { return !skipped && i <= FIRE_STEP && t < HOLD_MAX; }
+      get training() { return !!opts.training; },
+      get holdFire() { return opts.training ? true : !skipped && i <= FIRE_STEP && t < HOLD_MAX; }
     };
   }
   // A new campaign shows the tutorial in its first battle, and any save shows it again after the captain asks to replay it
   // (campaign Intel). Saves from before the tutorial existed, with operations already flown, are left alone.
   const wanted = save => !!save && (save.tutorial === 'again' || (save.tutorial == null && !(save.completed && save.completed.length)));
 
-  root.BroadsideTutorial = Object.freeze({ STEPS, FIRE_STEP, HOLD_MAX, create, wanted });
+  const CAMPAIGN_STEPS = STEPS;
+  root.BroadsideTutorial = Object.freeze({ TRAINING, STEPS, FIRE_STEP, HOLD_MAX, create, wanted });
 })(typeof window !== 'undefined' ? window : globalThis);

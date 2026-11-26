@@ -196,8 +196,9 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #menu.live{background:linear-gradient(90deg,rgba(4,6,11,.88) 0%,rgba(4,6,11,.5) 30%,rgba(4,6,11,0) 58%),linear-gradient(0deg,rgba(4,6,11,.8) 0%,rgba(4,6,11,0) 34%),linear-gradient(180deg,rgba(4,6,11,.55) 0%,rgba(4,6,11,0) 18%);align-items:flex-start;text-align:left}
 #menu.live #m-main{align-items:flex-start;margin-block:auto 0}
 #menu.live .titlebox{background:none;border:0;box-shadow:none;padding:0;align-items:flex-start}
-#menu.live .titlebox .tag{text-align:left;max-width:46ch}
-#menu.live .title{font-size:clamp(64px,min(12vw,17vh),176px);text-shadow:0 6px 40px rgba(0,0,0,.6)}
+#menu.live .titlebox .tag{text-align:left;max-width:52ch;font-size:14px;letter-spacing:.02em;text-transform:none;line-height:1.55;color:#c2ccda;text-shadow:0 1px 8px rgba(0,0,0,.8)}
+#menu.live .titlebox{gap:12px}#menu.live .mpage{gap:20px}
+#menu.live .title{font-size:clamp(60px,min(11vw,15vh),160px);text-shadow:0 6px 40px rgba(0,0,0,.6)}
 #menu.live .mbtn{background:rgba(0,0,0,.5);backdrop-filter:blur(6px)}#menu.live .mbtn.primary{background:rgba(44,31,9,.8)}
 #attract-cap{display:none;position:absolute;right:max(16px,env(safe-area-inset-right,0px),5vw);bottom:calc(26px + env(safe-area-inset-bottom,0px));margin:0;font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);text-align:right;max-width:44ch}
 #attract-cap::before{content:"";display:inline-block;width:7px;height:7px;margin-right:10px;border-radius:50%;background:#ff5a4a;box-shadow:0 0 8px #ff5a4a;vertical-align:1px}
@@ -207,11 +208,30 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
 #menu.left .mpage{align-items:flex-start}
 .titlebox{background:#000;border:1px solid var(--line);padding:clamp(18px,3vw,30px) clamp(20px,4vw,48px);display:flex;flex-direction:column;align-items:center;gap:14px;max-width:100%;box-shadow:0 24px 70px rgba(0,0,0,.65)}
 .titlebox .tag{text-align:center;max-width:54ch;font-size:12px}
-.mlist{display:flex;flex-direction:column;gap:8px;width:min(380px,100%)}
+.mlist{display:flex;flex-direction:column;gap:8px;width:min(430px,100%)}
+.eyebrow,.subtitle,.mfoot{font-family:var(--f-mono);text-transform:uppercase;margin:0}
+.eyebrow{font-size:11px;letter-spacing:.34em;color:var(--muted)}
+.subtitle{display:flex;align-items:center;gap:16px;font-size:clamp(12px,1.5vw,17px);letter-spacing:.5em;color:var(--hud-hi)}
+.subtitle::before,.subtitle::after{content:"";height:1px;width:clamp(28px,6vw,90px);background:var(--hud);opacity:.55}
+#menu.live .subtitle::before{display:none}
+.mfoot{font-size:10px;letter-spacing:.2em;color:var(--muted)}.mfoot kbd{font:inherit;border:1px solid var(--line);padding:1px 5px;margin-right:3px;color:var(--text)}
+.msub{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
+.mbtn.sm{min-height:38px;padding:0 12px;font-size:15px;color:#c9d2df;background:rgba(0,0,0,.6)}.mbtn.sm small{font-size:10px}
+.mbtn small{text-transform:uppercase;text-align:right}
+#menu.live .titlebox,#menu.live .mlist,#menu.live .mfoot,#menu.live #attract-cap{transition:opacity .9s ease}
+/* nobody at the helm for a while: the menu steps back and lets the fight play; any key or movement brings it back */
+#menu.live.main.idle .mlist,#menu.live.main.idle .mfoot,#menu.live.main.idle .tag,#menu.live.main.idle .eyebrow{opacity:0;pointer-events:none}
+#menu.live.main.idle{background:linear-gradient(0deg,rgba(4,6,11,.75) 0%,rgba(4,6,11,0) 30%)}
+#menu.live{transition:background 1s ease}
+@keyframes mIn{from{opacity:0;transform:translateY(12px)}}
+#menu.live #m-main .titlebox>*{animation:mIn .8s cubic-bezier(.2,.7,.2,1) backwards}#menu.live #m-main .titlebox>*:nth-child(2){animation-delay:.1s}#menu.live #m-main .titlebox>*:nth-child(3){animation-delay:.25s}#menu.live #m-main .titlebox>*:nth-child(4){animation-delay:.4s}
+#menu.live #m-main .mlist>*{animation:mIn .55s ease backwards}#menu.live #m-main .mlist>*:nth-child(1){animation-delay:.5s}#menu.live #m-main .mlist>*:nth-child(2){animation-delay:.58s}#menu.live #m-main .mlist>*:nth-child(3){animation-delay:.66s}#menu.live #m-main .mlist>*:nth-child(4){animation-delay:.76s}
+@media (prefers-reduced-motion:reduce){#menu.live #m-main .titlebox>*,#menu.live #m-main .mlist>*{animation:none}}
 .mbtn{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:50px;padding:0 18px;background:rgba(0,0,0,.84);border:1px solid var(--line);color:var(--text);font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-align:left}
 .mbtn small{font-family:var(--f-mono);font-size:11px;font-weight:400;letter-spacing:.14em;color:var(--hud)}
 .mbtn:hover,.mbtn:focus-visible{border-color:var(--hud);background:rgba(30,23,10,.92);outline:none}
-.mbtn.primary{justify-content:center;border-color:var(--hud);color:var(--hud-hi);background:rgba(44,31,9,.92)}
+.mbtn.primary{min-height:60px;font-size:24px;border-color:var(--hud);color:var(--hud-hi);background:rgba(44,31,9,.92)}
+.mbtn.fresh{border-color:#9fd8ff99}.mbtn.fresh small{color:#9fd8ff}
 .mpanel{background:rgba(0,0,0,.86);border:1px solid var(--line);padding:18px 22px 22px;display:flex;flex-direction:column;gap:16px;width:min(840px,100%);text-align:left}
 .mhead{display:flex;align-items:center;gap:16px}
 .mhead h2{margin:0;font-family:var(--f-display);font-weight:800;font-size:32px;line-height:1;text-transform:uppercase;letter-spacing:.04em}
@@ -361,19 +381,25 @@ kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border
     <p id="attract-cap" aria-hidden="true"></p>
     <div class="mpage" id="m-main">
       <div class="titlebox">
+        <span class="eyebrow">Meridian Navy · Frontier Fleet</span>
         <h1 class="title">Broad<span>side</span></h1>
-        <p class="tag">A capital ship duel. Turn your strongest shield into the fire, keep the enemy inside your firing arcs, and spend reactor power where the fight needs it.</p>
+        <span class="subtitle">The Shattered Reach</span>
+        <p class="tag">Command a capital ship. Turn your strongest shield into the fire, hold the enemy inside your firing arcs, and spend reactor power where the fight needs it.</p>
       </div>
       <nav class="mlist" aria-label="Main menu">
-        <button class="mbtn primary" id="campaign-menu" type="button">Campaign <small>THE SHATTERED REACH</small></button>
-        <button class="mbtn go" type="button">Skirmish · take command</button>
-        <button class="mbtn" type="button" data-page="ship">Select ship <small id="mv-ship"></small></button>
-        <button class="mbtn" type="button" data-page="diff">Enemy captain <small id="mv-diff"></small></button>
-        <button class="mbtn" type="button" data-page="gfx">Graphics <small id="mv-gfx"></small></button>
-        <button class="mbtn" type="button" data-page="controls">Controls</button>
-        <button class="mbtn" type="button" id="music1" aria-pressed="true">Music <small id="mv-music">On</small></button>
-        <button class="mbtn" type="button" id="fs">Full screen</button>
+        <button class="mbtn primary" id="campaign-menu" type="button"><span id="mv-camp-label">Campaign</span> <small id="mv-camp">The Shattered Reach</small></button>
+        <button class="mbtn go" type="button">Skirmish <small id="mv-skirm"></small></button>
+        <button class="mbtn" id="training-menu" type="button">Training <small id="mv-train">Learn the keys</small></button>
+        <div class="msub" role="group" aria-label="Options">
+          <button class="mbtn sm" type="button" data-page="ship">Ship <small id="mv-ship"></small></button>
+          <button class="mbtn sm" type="button" data-page="diff">Enemy <small id="mv-diff"></small></button>
+          <button class="mbtn sm" type="button" data-page="gfx">Graphics <small id="mv-gfx"></small></button>
+          <button class="mbtn sm" type="button" data-page="controls">Controls</button>
+          <button class="mbtn sm" type="button" id="music1" aria-pressed="true">Music <small id="mv-music">On</small></button>
+          <button class="mbtn sm" type="button" id="fs">Full screen</button>
+        </div>
       </nav>
+      <p class="mfoot" aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> choose · <kbd>Enter</kbd> select</p>
     </div>
 
     <div class="mpage" id="m-ship" hidden>
@@ -539,6 +565,8 @@ const choice = { ship: 'bastion', diff: 'captain' };
 const CAMPAIGN_KEY = window.BroadsideCampaign ? window.BroadsideCampaign.saveKey(localStorage) : 'broadside-campaign-v1';   // the active save slot
 const campaignParams = new URLSearchParams(location.search);
 const campaignMissionId = Number(campaignParams.get('campaign')) || 0;
+// The training exercise (crew/tutorial.js): every key in turn against a target that never fires. Title menu, or ?training.
+let training = campaignParams.has('training') && !campaignParams.has('encounter') && !campaignMissionId;
 let campaignMission = (() => {   // `let` so the balance tool can stage encounters in place (see __sim.fight)
   const C = window.BroadsideCampaign; if (!C) return null;
   if (campaignParams.has('encounter')) { const save = readCampaignSave(); return save && save.launch && Array.isArray(save.launch.enemies) && save.launch.enemies.length ? save.launch : null; }
@@ -1367,11 +1395,12 @@ function startGame() {
   const campaignSave = campaignMission ? readCampaignSave() : null, fleetRecs = campaignShips(campaignSave), flagRec = fleetRecs[0] || null;
   const pk = flagRec ? flagRec.ship : choice.ship;
   const others = Object.keys(CLASSES).filter(k => k !== pk && !CLASSES[k].campaignOnly);   // bosses, the Sentinel and the Thrall stay in the campaign
-  const ek = campaignMission && CLASSES[campaignMission.enemies[0].cls] ? campaignMission.enemies[0].cls : others[Math.floor(Math.random() * others.length)];
+  const ek = training ? 'scrapjaw' : campaignMission && CLASSES[campaignMission.enemies[0].cls] ? campaignMission.enemies[0].cls : others[Math.floor(Math.random() * others.length)];
   const fitted = rec => rec && window.BroadsideUpgrades ? window.BroadsideUpgrades.apply(CLASSES[rec.ship], rec.upgrades) : CLASSES[rec ? rec.ship : pk];
   player = makeShip(pk, 'p', flagRec ? fitted(flagRec) : CLASSES[pk]); enemy = makeShip(ek, 'e');
   if (flagRec) { player.recId = flagRec.id; paintShip(player, flagRec.paint); }
   player.target = enemy; enemy.target = player;
+  if (training) { enemy.name = 'Target hulk'; enemy.drone = true; enemy.hull = enemy.maxHull = Math.round(enemy.C.hull * 0.55); }
   if (campaignMission) {
     player.name = (flagRec && flagRec.shipName) || 'MNS Resolute';
     enemy.name = campaignMission.enemies[0].name;
@@ -1379,7 +1408,7 @@ function startGame() {
   }
   // How the battle opens (crew/openings.js): where everyone starts, which way they are heading, and whether the enemy
   // is hiding in the rocks or has yet to jump in. ?sim runs keep the old head-on start unless ?opening= asks for one.
-  const tutorialWanted = !!(window.BroadsideTutorial && campaignMission && !campaignMission.boss && (campaignParams.has('tutorial') || window.BroadsideTutorial.wanted(campaignSave)));
+  const tutorialWanted = training || !!(window.BroadsideTutorial && campaignMission && !campaignMission.boss && (campaignParams.has('tutorial') || window.BroadsideTutorial.wanted(campaignSave)));
   const opening = stageOpening(tutorialWanted);
   placeAt(player, opening.player); placeAt(enemy, opening.enemy);
   // Escorts form up either side of the flagship and fly under the AI, following the standing order.
@@ -1403,7 +1432,7 @@ function startGame() {
   campaignDiff = campaignMission && window.BroadsideCampaign ? window.BroadsideCampaign.difficulty(campaignSave && campaignSave.difficulty) : null;
   const aiKey = campaignDiff ? campaignDiff.ai : choice.diff;
   enemy.ai = { diff: DIFF[aiKey], side: Math.random() < 0.5 ? 1 : -1, shT: 2, pwT: 0, mode: 'close', sideT: 0 };
-  game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [], bridgeHits: { time: 0, last: -99, count: 0 }, opening, storm: 0, twist: null };
+  game = { time: 0, ending: false, endT: 0, outcome: null, tipT: 0, tipIdx: 0, warnT: 0, tips: [], bridgeHits: { time: 0, last: -99, count: 0 }, opening, storm: 0, twist: null, fired: {}, looked: false };
   // Where this is being fought: the system and its region (campaign), and the scenery laid for it.
   const sysHere = campaignMission && window.BroadsideCampaign ? window.BroadsideCampaign.byId[campaignMission.system] : null;
   game.place = sysHere ? { name: sysHere.name, region: sysHere.region, scenery: sceneryName, line: sysHere.description } : null;
@@ -1443,7 +1472,7 @@ function startGame() {
   bossEntrance();
   // First battle of a new campaign (or a replay asked for from Intel): the coached tutorial. ?tutorial forces it.
   tutorial = tutorialWanted
-    ? window.BroadsideTutorial.create({ ship: player.name, enemy: enemy.name, convoy: fleet?.convoy ? fleet.convoy.name.split(' · ')[0] : '' }) : null;
+    ? window.BroadsideTutorial.create({ ship: player.name, enemy: training ? 'the target hulk' : enemy.name, convoy: fleet?.convoy ? fleet.convoy.name.split(' · ')[0] : '' }, { training }) : null;
   tutorialPips = player.pips ? { ...player.pips } : null; drawCoach();
   $('escorts').hidden = !allies.length; escortHudT = 0;
   $('escort-hold').hidden = !fleet?.convoy;
@@ -1454,7 +1483,7 @@ function startGame() {
   if (unseen(enemy)) opening.hailPending = true;   // the captain hails when they show themselves
   else if (!intro) bridge?.incomingHail(campaignMission ? campaignMission.hail : 0);   // the opening has already shown it
   if(fleet)$('fleet-objective').textContent=fleet.status();
-  showMsg(openingMsg(opening, aiKey), 3.4, unseen(enemy) || opening.id === 'ambush');
+  showMsg(training ? 'Training exercise · the target will not fire back' : openingMsg(opening, aiKey), 3.4, unseen(enemy) || opening.id === 'ambush');
   if (!enemy.away) setTimeout(() => Sfx.play('sighted', 0.9, 1, { max: 1 }), 900);
   // One battle in three takes a turn partway through (crew/twists.js).
   game.twist = pickTwist(tutorialWanted); twistLine(null);
@@ -1478,7 +1507,7 @@ function stageOpening(tutorialWanted) {
   const keep = (SIM && !force) || O.fixed(campaignMission);   // ?sim balance runs and fixed-geometry goals keep the old field
   // A head-on meeting starts closer and faster than it used to, so the guns speak sooner. The coached first battle,
   // the fixed-geometry goals and ?sim runs keep the long approach.
-  const close = !keep && !tutorialWanted && !(campaignMission && campaignMission.boss);
+  const close = !keep && (training || !tutorialWanted) && !(campaignMission && campaignMission.boss);   // the training target starts close: it is an exercise, not an approach
   const L = O.layout(id, Math.random, keep ? { turn: 0 } : { close });
   L.close = close && L.id === 'headon'; L.keepField = keep; L.t = 0; L.hailPending = false; L.warned = false;
   return L;
@@ -1721,6 +1750,8 @@ function showOver() {
   w.textContent = win ? enemy.name + ' destroyed' : soft && player.alive ? soft : player.name + ' lost'; w.className = 'bigword ' + (win ? 'win' : 'lose');
   $('over-sub').textContent = win ? (enemy.captainFate ? captainFate(enemy) : 'The enemy ' + enemy.C.cls.toLowerCase() + ' is a drifting wreck.') :
     (!player.alive && whatSankYou()) || 'Keep your strongest facing toward the enemy, and move power to shields when a facing drops below a quarter.';
+  $('again').hidden = false; $('again').textContent = training ? 'Run it again' : 'Fight again'; $('tomenu').textContent = training ? 'Title screen' : 'Choose ship';
+  if (training && win) { w.textContent = 'Exercise complete'; $('over-sub').textContent = 'You have used every control a captain needs. The campaign opens with a real fight; Skirmish lets you pick the ship and the enemy captain.'; try { localStorage.setItem('broadside-trained', '1'); } catch (e) {} }
   const st = player.stats, acc = st.shots ? Math.round(st.hits / st.shots * 100) : 0;
   const t = game.time, mm = Math.floor(t / 60), ss = Math.floor(t % 60);
   const rows = [['Battle time', mm + ':' + String(ss).padStart(2, '0')], ['Damage dealt', Math.round(st.dealt)], ['Damage taken', Math.round(st.taken)], ['Gun accuracy', acc + '%'], ['Torpedo hits', st.torpHits]];
@@ -2613,7 +2644,7 @@ function aiUpdate(s, dt) {
   const ai = s.ai, D = ai.diff, t = s.target;
   if (!s.alive) return;
   // Lying in wait in the rocks, or holding fire while a surrender is offered: drift, guns cold.
-  if (s.lurk || s.ceasefire) { s.rudder += clamp(0 - s.rudder, -dt, dt); s.climb = 0; s.step = 1; return; }
+  if (s.lurk || s.ceasefire || s.drone) { s.rudder += clamp(0 - s.rudder, -dt, dt); s.climb = 0; s.step = 1; return; }
   if (!t || !t.alive || unseen(t)) { s.rudder += clamp(0 - s.rudder, -dt, dt); s.step = 2; return; }
   bearingTo(s, t.pos, _br); const b = _br.b, el = _br.el, dist = _br.d;
   const lance = s.groups.find(g => g.type === 'lance' || g.bow);
@@ -2709,6 +2740,7 @@ function tutorialTick(dt) {
   if (!tutorial || tutorial.finished || !player.alive) return;
   const uses = bridge ? Object.values(bridge.uses).reduce((a, b) => a + b, 0) : 1;
   const snap = { step: player.step, rudder: player.rudder, focus: player.focus, pips: player.pips, pips0: tutorialPips, uses,
+    climb: player.climb, burn: !!player.burn, looked: game.looked, fore: !!game.fired.Space, torp: !!game.fired.T,
     broadside: player.groups.some(g => (g.sub === 'port' || g.sub === 'stbd') && g.charge < 1) };
   if (tutorial.update(snap, dt)) { drawCoach(); Sfx.beep(880, 0.06, 0.05); }
 }
@@ -2743,6 +2775,7 @@ window.addEventListener('keydown', e => {
   if (state !== 'playing') return;
   if (kc && game.ending) { if (kc.real > 0.9) game.endT = Math.min(game.endT, 0); return; }   // skip the kill cam (not on a key still held from the fight)
   if (bridge && bridge.activateByKey(k)) return;
+  if (k === 'KeyC' || k === 'Tab') game.looked = true;
   if (k === 'KeyC') cam.mode = cam.mode === 'chase' ? 'target' : 'chase';
   if (k === 'Tab') { tacFull = !tacFull; $('tacfull').hidden = !tacFull; sizeCanvases(); }
   if(k==='KeyH'&&fleet?.toggleHold()){$('escort-hold').textContent=fleet.held?'RESUME CONVOY [H]':'HOLD CONVOY [H]';return;}
@@ -2760,7 +2793,7 @@ window.addEventListener('keydown', e => {
   if (k === 'Digit1') addPip(P, 'eng'); if (k === 'Digit2') addPip(P, 'shd'); if (k === 'Digit3') addPip(P, 'wpn');
   if (k === 'Digit4') setPips(P, 1, 1, 1);
   const wk = { KeyQ: 'Q', KeyE: 'E', Space: 'Space', KeyT: 'T' }[k];
-  if (wk) { const g = P.groups.find(g => g.key === wk); if (g && !fireGroup(P, g)) { Sfx.beep(220, 0.08, 0.05, 'sawtooth'); flashRow(g.id); } }
+  if (wk) { const g = P.groups.find(g => g.key === wk); if (g && !fireGroup(P, g)) { Sfx.beep(220, 0.08, 0.05, 'sawtooth'); flashRow(g.id); } else if (g) game.fired[wk] = true; }
   if (k === 'KeyB') { P.autofire = !P.autofire; $('autofire').textContent = P.autofire ? 'ON' : 'OFF'; showMsg(P.autofire ? 'Batteries free: guns fire when ready' : 'Batteries on manual', 1.6); }
 });
 $('escort-hold').addEventListener('click',()=>{
@@ -2804,12 +2837,13 @@ function pickShip(k) {
 }
 document.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => { choice.diff = b.dataset.d; saveChoice(); document.querySelectorAll('[data-d]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
 document.querySelectorAll('[data-d]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.d === choice.diff)));
-document.querySelectorAll('.go').forEach(b => b.addEventListener('click', startGame));
+document.querySelectorAll('.go').forEach(b => b.addEventListener('click', () => { training = false; startGame(); }));
+$('training-menu').addEventListener('click', () => { training = true; startGame(); });
 $('campaign-menu').addEventListener('click', () => { location.href = 'campaign.html'; });
 $('resume').addEventListener('click', () => pause(false));
-$('quit').addEventListener('click', () => campaignMission ? location.assign('campaign.html') : toMenu());
+$('quit').addEventListener('click', () => { training = false; campaignMission ? location.assign('campaign.html') : toMenu(); });
 $('again').addEventListener('click', startGame);
-$('tomenu').addEventListener('click', () => campaignMission ? location.assign('campaign.html') : toMenu('ship'));
+$('tomenu').addEventListener('click', () => campaignMission ? location.assign('campaign.html') : training ? (training = false, toMenu('main')) : toMenu('ship'));
 let menuPage = 'main';
 function showPage(pg) {
   const from = menuPage; menuPage = pg;
@@ -2822,10 +2856,29 @@ function showPage(pg) {
 }
 function menuValues() {
   $('mv-ship').textContent = CLASSES[choice.ship].name; $('mv-diff').textContent = DIFF[choice.diff].label; $('mv-gfx').textContent = gfx.q;
+  $('mv-skirm').textContent = `${CLASSES[choice.ship].name} · ${DIFF[choice.diff].label}`;
+  // A campaign under way is offered as "Continue", with where it stands.
+  const save = readCampaignSave(), C = window.BroadsideCampaign, begun = !!(save && (save.introSeen || (save.completed && save.completed.length)));
+  $('mv-camp-label').textContent = begun ? 'Continue campaign' : 'Campaign';
+  if (begun && C) { const n = C.actOf(save.completed), a = C.ACTS[n - 1], flag = (save.ships || []).find(x => x.id === save.flag) || (save.ships || [])[0];
+    $('mv-camp').textContent = (a ? `Act ${a.numeral}` : 'The Reach endures') + (flag && flag.shipName ? ' · ' + flag.shipName : ''); }
+  else $('mv-camp').textContent = 'The Shattered Reach';
+  let trained = false; try { trained = localStorage.getItem('broadside-trained') === '1'; } catch (e) {}
+  $('training-menu').classList.toggle('fresh', !trained && !begun); $('mv-train').textContent = trained || begun ? 'Learn the keys' : 'New captains start here';
 }
 document.querySelectorAll('[data-page]').forEach(b => b.addEventListener('click', () => showPage(b.dataset.page)));
 document.querySelectorAll('#menu .back').forEach(b => b.addEventListener('click', () => showPage('main')));
 window.addEventListener('keydown', e => { if (state === 'menu' && e.code === 'Escape' && menuPage !== 'main') showPage('main'); });
+// Title screen: the arrow keys walk the buttons, and after a while with nobody at the helm the menu steps back.
+window.addEventListener('keydown', e => {
+  if (state !== 'menu' || menuPage !== 'main' || (e.code !== 'ArrowDown' && e.code !== 'ArrowUp')) return;
+  const list = [...document.querySelectorAll('#m-main .mbtn')], i = list.indexOf(document.activeElement), n = e.code === 'ArrowDown' ? 1 : -1;
+  e.preventDefault(); list[i < 0 ? 0 : (i + n + list.length) % list.length].focus({ preventScroll: true });
+});
+const MENU_IDLE = 16; let menuIdleAt = performance.now();   // seconds by the wall clock, whatever the frame rate
+function menuWake() { menuIdleAt = performance.now(); $('menu').classList.remove('idle'); }
+function menuIdle() { if (state !== 'menu' || menuPage !== 'main' || !attract.on) { menuIdleAt = performance.now(); return; } if (performance.now() - menuIdleAt > MENU_IDLE * 1000) $('menu').classList.add('idle'); }
+for (const ev of ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart']) window.addEventListener(ev, menuWake, { passive: true });
 
 // ---------------- camera ----------------
 function updateCamera(dt, gdt = dt) {
@@ -3009,7 +3062,8 @@ function buildHud() {
     player.C.tip,
     'Torpedoes (<b>T</b>) are slow and weak against shields. Wait until a facing is down, then launch at that side.'
   ];
-  if (enemy.C.intel) game.tips.unshift(`<b>${enemy.name}</b> · ${enemy.C.intel}`);
+  if (training) game.tips = ['<b>Training exercise</b> · Follow the steps on the right. The target hulk will not fire back, so take your time.'];
+  else if (enemy.C.intel) game.tips.unshift(`<b>${enemy.name}</b> · ${enemy.C.intel}`);
   game.tipIdx = 0; game.tipT = 0; $('tip').style.opacity = 1; $('tip').innerHTML = game.tips[0];
 }
 function flashRow(id) { const o = wEls[id]; if (!o) return; const base = (o.r._c || 'wrow').replace(' off', ''); setC(o.r, base + ' off'); setTimeout(() => { if (o.r._c === base + ' off') setC(o.r, base); }, 300); }
@@ -3361,7 +3415,7 @@ async function boot() {
     const save = readCampaignSave(), C = window.BroadsideCampaign;
     const ok = save && (campaignMission.kind !== 'story' || C.storyAvailable(save.completed, campaignMission.story));
     if (ok) startGame(); else location.replace('campaign.html');
-  }
+  } else if (training) startGame();
 }
 let last = performance.now();
 // ---------------- gun camera ----------------
@@ -3412,7 +3466,7 @@ function frame(now) {
   if (state === 'playing') { if (intro) introUpdate(dt, rdt); else updateGame(dt); }
   else if (state === 'menu') {
     if (menuPage === 'ship') { if (attract.on) attractStop(); }
-    else { if (!attract.on) attractStart(); attractUpdate(dt); }
+    else { if (!attract.on) attractStart(); attractUpdate(dt); menuIdle(dt); }
   }
   else if (state === 'over') { for (const s of ships) { if (s.away) continue; helm(s, dt); firesUpdate(s, dt); } shellsUpdate(dt); torpsUpdate(dt); minesUpdate(dt); }
   if (state !== 'paused') { fire.update(dt); smoke.update(dt); updateFlashes(dt); ringsUpdate(dt); }

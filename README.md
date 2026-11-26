@@ -25,6 +25,10 @@ The game is about shield facings, reactor power, firing arcs and turning circles
 
 The title screen is a live engagement: two AI captains fight a real battle behind the menu, filmed by a cinematic camera that cuts between close shots and moves on to a new matchup and setting when one ship is destroyed.
 
+The menu sits bottom-left over the fight: **Campaign** (shown as *Continue campaign* with the act and flagship once one is under way), **Skirmish** and **Training**, with ship, enemy captain, graphics, controls, music and full screen in a smaller grid underneath. The arrow keys walk the buttons. Left alone for sixteen seconds the menu steps back to leave the title over the fight; any key or mouse movement brings it back. The title music is *Event Horizon Drift* (`music/event-horizon-drift.mp3`).
+
+**Training** is a short exercise against a target hulk that never fires: eleven coached steps, each finished by pressing the keys it names (engine telegraph, rudder, climb and dive, afterburner, shields, reactor power, plot and camera, broadside, forward guns, torpedo), then sink the target. `index.html?training` opens it directly. The steps are `TRAINING` in `crew/tutorial.js`; a new campaign's first battle still coaches the shorter set.
+
 ## Campaign: The Shattered Reach
 
 Play the new **captain-led campaign** at [campaign.html](campaign.html) (or use **Campaign** from the title menu). The existing skirmish mode remains available.

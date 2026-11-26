@@ -22,4 +22,17 @@ t.update(s,5);assert.equal(t.finished,false);t.update(s,4.5);assert.equal(t.fini
 const u=T.create({});u.update(base,T.HOLD_MAX+1);assert.equal(u.holdFire,false);
 const v=T.create({});v.skip();assert.equal(v.finished,true);assert.equal(v.holdFire,false);
 assert.equal(T.wanted({}),true);assert.equal(T.wanted({completed:[1,2]}),false,'a campaign already under way');assert.equal(T.wanted({completed:[1,2],tutorial:'again'}),true);assert.equal(T.wanted({tutorial:'again'}),true);assert.equal(T.wanted({tutorial:'done'}),false);assert.equal(T.wanted(null),false);
+
+// The training exercise: every key in turn; the target never fires, even when the steps are skipped.
+assert.equal(T.TRAINING.map(s=>s.id).join(),'throttle,rudder,climb,burn,shields,power,look,broadside,fore,torpedo,go');
+const w=T.create({ship:'MNS Resolute',enemy:'the target hulk'},{training:true});let q={...base,climb:0,burn:false,looked:false,fore:false,torp:false};
+assert.ok(w.training&&w.holdFire);assert.equal(w.step.of,11);
+q.step=4;w.update(q,.1);q.rudder=.6;w.update(q,1.6);assert.equal(w.step.id,'climb');
+q.climb=1;w.update(q,.5);assert.equal(w.step.id,'climb','held for a moment');w.update(q,.4);assert.equal(w.step.id,'burn');
+q.burn=true;w.update(q,1.1);assert.equal(w.step.id,'shields');q.focus=2;w.update(q,.1);q.pips={eng:5,shd:4,wpn:3};w.update(q,.1);assert.equal(w.step.id,'look');
+q.looked=true;w.update(q,.1);q.broadside=true;w.update(q,.1);assert.equal(w.step.id,'fore');assert.match(w.step.text,/target hulk/);
+q.fore=true;w.update(q,.1);q.torp=true;w.update(q,.1);assert.equal(w.step.id,'go');assert.ok(w.holdFire,'the target still holds its fire');
+w.update(q,15);assert.equal(w.finished,true);assert.ok(w.holdFire);
+const z=T.create({},{training:true});z.skip();assert.ok(z.finished&&z.holdFire);
+assert.equal(T.create({}).training,false);
 console.log('Tutorial tests passed ('+T.STEPS.length+' steps).');

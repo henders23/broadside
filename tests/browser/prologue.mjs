@@ -13,7 +13,7 @@ await suite('prologue', { random: 0.99, prologue: true }, async ({ page, base, K
   check((await film()).clock === 'audio', 'the film runs on its soundtrack: ' + (await film()).clock);
   check(await page.locator('.proshot').count() === 6, 'five stills and one clip are loaded');
   const sizes = await page.evaluate(async list => Promise.all(list.map(u => new Promise(r => { const i = new Image(); i.onload = () => r(i.naturalWidth); i.onerror = () => r(0); i.src = u; }))), await page.evaluate(() => PROLOGUE.shots.filter(s => s.img).map(s => s.img)));
-  check(sizes.every(w => w >= 1280), 'every still loads: ' + sizes.join(', '));
+  check(sizes.every(w => w >= 1600), 'every still loads: ' + sizes.join(', '));
   await seek(6.5); await shot('01-reach');
   check((await page.textContent('#prosub')).includes('Broken worlds') && await opacity('#prosub') > 0.9, 'the narration is subtitled');
   check(await opacity('.proshot') > 0.9, 'the first shot is up');

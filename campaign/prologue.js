@@ -1,6 +1,6 @@
 // The prologue: a short film before Fleet Admiral Harlan's Act I briefing, the first time a campaign opens, and the
 // arrival that joins the two (further down).
-// Stills with slow camera moves (two generated, three rendered from the original ship models), one drawn shot (the
+// Stills with slow camera moves (rendered from the ship models: docs/ART-BRIEF.md), one drawn shot (the
 // Kestrel beacons going dark) and one rendered clip of the flagship,
 // cut to a narration over a score (voice/prologue.mp3, mixed by tools/prologue.sh). Every time below is in seconds
 // from the start of that file, which is also the film's clock; without sound the film runs on the wall clock and

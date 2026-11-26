@@ -121,6 +121,20 @@
 #proskip{position:absolute;right:64px;bottom:34px;height:36px;padding:0 18px;border-radius:18px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.35);font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.75)}#proskip:hover{color:#fff;border-color:rgba(255,255,255,.6)}#proskip kbd{font:inherit;opacity:.6;margin-left:8px}
 #progate{position:absolute;inset:0;width:1600px;height:900px;border:0;background:#000;font:500 13px 'JetBrains Mono',monospace;letter-spacing:.4em;text-transform:uppercase;color:var(--amber)}#progate[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){#prograin{animation:none}}
+/* the arrival: card, flagship, incoming transmission, then the briefing over the shot */
+#prologue .bar{transition:transform 1.2s ease}#prologue.wide .bar.t{transform:translateY(-104px)}#prologue.wide .bar.b{transform:translateY(104px)}
+#procard{position:absolute;left:0;top:0;width:1600px;height:900px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;opacity:0;pointer-events:none;background:#000}#prologue:not(.arrive) #procard,#prologue:not(.arrive) #pronote{display:none}
+#procard .k{color:var(--amber);letter-spacing:.34em}#procard h2{margin:18px 0 0;font-size:58px;font-weight:200;letter-spacing:-.01em;line-height:1}#procard .where{margin:14px 0 0;font-size:16px;color:var(--dim);letter-spacing:.04em}
+#procard .ship{margin-top:54px;padding-top:34px;border-top:1px solid var(--rule);width:560px}#procard .ship b{display:block;font-size:30px;font-weight:300;letter-spacing:.02em}#procard .ship span{display:block;margin-top:8px;font:500 11px 'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+#procard ul{list-style:none;margin:30px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,auto);gap:16px 54px;text-align:left}#procard li{font-size:16px;font-weight:300}#procard li span{display:block;margin-bottom:4px;font:500 10px 'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+#pronote{position:absolute;left:64px;top:132px;display:flex;flex-direction:column;gap:6px;padding:16px 22px 16px 46px;border-radius:14px;border:1px solid rgba(255,214,150,.5);background:rgba(6,8,12,.82);opacity:0;pointer-events:none}#pronote i{position:absolute;left:20px;top:22px;width:10px;height:10px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:proBlink .7s steps(2) infinite}#pronote b{font-size:18px;font-weight:500;letter-spacing:.06em}#pronote span{font:500 11px 'JetBrains Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--amber)}
+@keyframes proBlink{50%{opacity:.15}}
+/* the Act I briefing as a transmission: the admiral in the corner, his orders beside him, the ship still in view */
+#intro.tx{z-index:46;background:linear-gradient(90deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.84) 46%,rgba(0,0,0,.4) 66%,rgba(0,0,0,0) 82%);animation:introIn .9s ease both}
+#intro.tx #introportrait{left:64px;top:84px;width:216px;height:288px;border-radius:14px;border:1px solid rgba(255,214,150,.45);overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.6)}#intro.tx #introportrait::after{background:linear-gradient(0deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,0) 42%)}
+#intro.tx #introname{left:14px;bottom:12px}#intro.tx #introname b{font-size:17px;font-weight:400}#intro.tx #introname .k{font-size:9px;letter-spacing:.12em;margin-top:3px}
+#intro.tx #introtext{left:312px;top:80px;width:740px}#intro.tx #introtext h1{font-size:40px;margin-top:8px}#intro.tx #introtext .sub{font-size:14px;margin-top:8px}
+#intro.tx #introbody{margin-top:18px;gap:11px}#intro.tx #introbody p{font-size:16px;line-height:1.5;text-shadow:0 1px 6px #000}#intro.tx #introorders{margin-top:16px;padding:12px 16px;background:rgba(0,0,0,.45)}#intro.tx #introorders li{font-size:14px}#intro.tx #introgo{margin-top:18px}
 #intro{position:absolute;inset:0;z-index:35;background:#000;overflow:hidden}#intro[hidden]{display:none}
 #introportrait{position:absolute;left:0;top:0;width:675px;height:900px;background:url('img/admiral-harlan.webp') center top/cover no-repeat}
 #introportrait::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0) 55%,#000 100%),linear-gradient(0deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,0) 30%)}
@@ -218,6 +232,8 @@
 <div id="provig"></div><div id="prograin"></div><i class="bar t"></i><i class="bar b"></i>
 <div id="protitle" aria-hidden="true"><b>BROADSIDE</b><span>The Shattered Reach</span></div>
 <div id="profade"></div>
+<div id="procard" aria-live="polite"></div>
+<div id="pronote" role="status"><i></i><b>Incoming transmission</b><span>Fleet HQ · Meridian Naval Command · Priority</span></div>
 <p id="prosub" aria-live="polite"></p>
 <button id="progate" type="button" hidden>Press any key to begin</button>
 <button id="proskip" type="button">Skip <kbd>Esc</kbd></button>

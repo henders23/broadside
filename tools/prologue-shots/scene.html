@@ -1,0 +1,47 @@
+<!doctype html><meta charset=utf-8><style>html,body{margin:0;background:#000;overflow:hidden}</style>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});r.toneMapping=THREE.ACESFilmicToneMapping;document.body.appendChild(r.domElement);
+const ENV=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),.04).texture;
+const cache={},ld=new GLTFLoader(),load=m=>cache[m]||(cache[m]=new Promise((ok,no)=>ld.load('/models/'+m+'.glb',g=>{const o=g.scene,b=new THREE.Box3().setFromObject(o),c=b.getCenter(new THREE.Vector3()),s=b.getSize(new THREE.Vector3());o.position.sub(c);const h=new THREE.Group();h.add(o);h.scale.setScalar(1/Math.max(s.x,s.y,s.z));ok(h);},undefined,no)));
+window.build=async D=>{const W=D.w||1920,H=D.h||1080;r.setSize(W,H);r.toneMappingExposure=D.exposure||1;
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(D.fov||30,W/H,.01,4000);scene.background=new THREE.Color(D.bg||0x010203);
+scene.environment=ENV;scene.environmentIntensity=D.env??.12;
+const V=a=>new THREE.Vector3(...a),L=(a,u)=>Array.isArray(a[0])?a[0].map((v,i)=>v+(a[1][i]-v)*u):a;
+const NOISE=`float h(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}float n(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(h(i),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z);}float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<6;i++){s+=a*n(p);p*=2.03;a*=.5;}return s;}`;
+// stars
+{const N=D.stars??2600,g=new THREE.BufferGeometry(),p=new Float32Array(N*3),c=new Float32Array(N*3);let s=11;const R=()=>(s=(s*16807)%2147483647)/2147483647;
+ for(let i=0;i<N;i++){const v=new THREE.Vector3(R()-.5,R()-.5,R()-.5).normalize().multiplyScalar(1500);p.set([v.x,v.y,v.z],i*3);const b=.25+R()*R()*1.4;c.set([b,b*(.9+R()*.1),b*(.85+R()*.3)],i*3);}
+ g.setAttribute('position',new THREE.BufferAttribute(p,3));g.setAttribute('color',new THREE.BufferAttribute(c,3));scene.add(new THREE.Points(g,new THREE.PointsMaterial({size:D.starSize||2.2,sizeAttenuation:false,vertexColors:true,toneMapped:false})));}
+// nebula backdrop
+for(const nb of D.nebulae||[]){const m=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,transparent:true,blending:THREE.AdditiveBlending,uniforms:{c1:{value:new THREE.Color(nb.c1)},c2:{value:new THREE.Color(nb.c2)},k:{value:nb.k||1},sc:{value:nb.scale||2},dir:{value:V(nb.dir||[0,0,-1]).normalize()},spread:{value:nb.spread||1.2},off:{value:nb.seed||0}},
+ vertexShader:`varying vec3 d;void main(){d=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+ fragmentShader:NOISE+`varying vec3 d;uniform vec3 c1,c2,dir;uniform float k,sc,spread,off;void main(){vec3 q=d*sc+off;float f=fbm(q+fbm(q*1.7)*1.3);float g=fbm(q*2.3+7.);float w=smoothstep(spread,0.,distance(d,dir));float v=pow(f,2.2)*w;gl_FragColor=vec4((mix(c1,c2,g)*v*2.4+c2*pow(f*w,6.)*3.)*k,1.);}`});
+ scene.add(new THREE.Mesh(new THREE.SphereGeometry(1400,48,32),m));}
+// planets
+for(const pl of D.planets||[]){const sun=V(pl.sun).normalize(),g=new THREE.SphereGeometry(pl.r,160,120);
+ const m=new THREE.ShaderMaterial({uniforms:{sun:{value:sun},a:{value:new THREE.Color(pl.sea||'#0b2a4a')},b:{value:new THREE.Color(pl.land||'#3b4a3a')},cl:{value:pl.clouds??1},sc:{value:pl.detail||3}},
+ vertexShader:`varying vec3 nw,pw,po;void main(){po=normalize(position);nw=normalize(mat3(modelMatrix)*normal);vec4 w=modelMatrix*vec4(position,1.);pw=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
+ fragmentShader:NOISE+`varying vec3 nw,pw,po;uniform vec3 sun,a,b;uniform float cl,sc;void main(){vec3 n=normalize(nw),v=normalize(cameraPosition-pw);float d=dot(n,sun);float day=smoothstep(-.12,.35,d);float l=smoothstep(.5,.62,fbm(po*sc+3.));vec3 col=mix(a,b,l);float c=smoothstep(.45,.75,fbm(po*sc*2.2+fbm(po*sc*4.)*.8+11.))*cl;col=mix(col,vec3(.95),c);col*=day*1.25;float rim=pow(1.-max(dot(n,v),0.),2.6);col+=vec3(.25,.55,1.)*rim*smoothstep(-.35,.25,d)*1.6;col+=vec3(1.,.55,.2)*pow(rim,1.5)*smoothstep(.25,-.05,abs(d))*1.2*smoothstep(-.4,.1,d);gl_FragColor=vec4(col,1.);}`});
+ const p=new THREE.Mesh(g,m);p.position.copy(V(pl.pos));scene.add(p);
+ const at=new THREE.Mesh(new THREE.SphereGeometry(pl.r*1.022,120,90),new THREE.ShaderMaterial({transparent:true,blending:THREE.AdditiveBlending,side:THREE.BackSide,depthWrite:false,uniforms:{sun:{value:sun}},vertexShader:`varying vec3 nw,pw;void main(){nw=normalize(mat3(modelMatrix)*normal);vec4 w=modelMatrix*vec4(position,1.);pw=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,fragmentShader:`varying vec3 nw,pw;uniform vec3 sun;void main(){vec3 v=normalize(cameraPosition-pw);float f=pow(max(dot(-normalize(nw),v),0.),.0)*pow(1.-abs(dot(normalize(nw),v)),.6);float g=pow(max(dot(normalize(nw),v)*-1.,0.),3.);float d=dot(-normalize(nw),sun);gl_FragColor=vec4((vec3(.2,.5,1.)*smoothstep(-.6,.3,-d)+vec3(1.,.6,.25)*smoothstep(.5,0.,abs(d+.05))*.9)*g*1.5,1.);}`}));at.position.copy(p.position);scene.add(at);}
+// lights
+for(const l of D.lights||[]){let o;if(l.type==='dir'){o=new THREE.DirectionalLight(l.color,l.i);o.position.copy(V(l.pos));}else{o=new THREE.PointLight(l.color,l.i,l.dist||0,l.decay??2);o.position.copy(V(l.pos));}scene.add(o);}
+// sprites
+const glowTex=(()=>{const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d'),g=x.createRadialGradient(128,128,0,128,128,128);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.12,'rgba(255,255,255,.75)');g.addColorStop(.35,'rgba(255,255,255,.18)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,256,256);return new THREE.CanvasTexture(c);})();
+const glow=(parent,pos,size,color,k=1)=>{const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:new THREE.Color(color).multiplyScalar(k),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));s.position.copy(V(pos));s.scale.setScalar(size);parent.add(s);return s;};
+for(const f of D.glows||[])glow(scene,f.pos,f.size,f.color,f.k||1);
+for(const b of D.boxes||[]){const m=new THREE.Mesh(new THREE.BoxGeometry(...b.size),new THREE.MeshStandardMaterial({color:b.color||'#2a2f36',metalness:.7,roughness:.55}));m.position.copy(V(b.pos));if(b.rot)m.rotation.set(...b.rot.map(v=>v*Math.PI/180));scene.add(m);}
+// tracers: additive stretched quads
+for(const t of D.tracers||[]){const a=V(t.from),b=V(t.to),len=a.distanceTo(b),m=new THREE.Mesh(new THREE.PlaneGeometry(len,t.w||.004),new THREE.MeshBasicMaterial({color:new THREE.Color(t.color||'#ffb060').multiplyScalar(t.k||3),blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,side:THREE.DoubleSide}));m.position.copy(a).lerp(b,.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),b.clone().sub(a).normalize());scene.add(m);const m2=m.clone();m2.rotateX(Math.PI/2);scene.add(m2);}
+// ships
+const movers=[];
+for(const sh of D.ships||[]){const base=await load(sh.model),g=new THREE.Group();g.add(base.clone(true));if(sh.dark!=null)g.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.color.multiplyScalar(sh.dark);o.material.envMapIntensity=sh.envK??1;}});
+ g.scale.setScalar(sh.scale||1);g.rotation.set(...(sh.rot||[0,0,0]).map(v=>v*Math.PI/180),'YXZ');for(const e of sh.engines||[])glow(g,e.pos,e.size,e.color||'#7fc4ff',e.k||2.2);for(const e of sh.fx||[])glow(g,e.pos,e.size,e.color,e.k||1);scene.add(g);movers.push([g,sh]);}
+window.renderAt=u=>{for(const [g,sh] of movers)g.position.copy(V(L(sh.pos,u)));cam.position.copy(V(L(D.cam,u)));cam.up.set(...(D.up||[0,1,0]));cam.lookAt(V(L(D.look,u)));r.render(scene,cam);};
+window.renderAt(D.u||0);return true;};
+window.__done=true;
+</script>

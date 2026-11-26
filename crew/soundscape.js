@@ -24,8 +24,8 @@ function forRegion(region){
 }
 
 // create(ctx, dest, level): a player on an AudioContext, feeding `dest`. set(id) cross-fades to that region's bed,
-// set(null) fades to silence; level(v) scales the whole bed (0..1), e.g. while paused.
-function create(ctx,dest,level=.06){
+// opts.air false leaves out the noise band (the campaign map: over the ship's hum it reads as hiss). set(null) fades to silence; level(v) scales the whole bed (0..1), e.g. while paused.
+function create(ctx,dest,level=.06,opts={}){
  const out=ctx.createGain();out.gain.value=level;out.connect(dest);
  let noise=null,cur=null,curId=null;
  function noiseBuffer(){
@@ -41,7 +41,7 @@ function create(ctx,dest,level=.06){
   let last=null;
   for(const [type,hz,lv] of def.tones){const o=osc(type,hz),v=ctx.createGain();v.gain.value=lv;o.connect(v);v.connect(lp);last=o;}
   if(def.drift&&last){const l=osc('sine',def.drift.rate),d=ctx.createGain();d.gain.value=def.drift.cents;l.connect(d);d.connect(last.detune);}
-  if(def.air){
+  if(def.air&&opts.air!==false){
    const src=ctx.createBufferSource(),bp=ctx.createBiquadFilter(),v=ctx.createGain(),l=osc('sine',def.air.rate),d=ctx.createGain();
    src.buffer=noiseBuffer();src.loop=true;bp.type='bandpass';bp.frequency.value=def.air.hz;bp.Q.value=def.air.q;
    v.gain.value=def.air.level*.55;d.gain.value=def.air.level*.45;l.connect(d);d.connect(v.gain);

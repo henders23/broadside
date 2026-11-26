@@ -87,7 +87,7 @@ const Ambience={ctx:null,gain:null,bed:null,started:false,on:(()=>{try{return lo
   try{const buf=await c.decodeAudioData(await(await fetch('music/ambience.mp3')).arrayBuffer()),src=c.createBufferSource();src.buffer=buf;src.loop=true;src.connect(this.gain);src.start();}catch(e){}
   this.level(2.5);this.place();},
  // The region the flagship is in has its own quiet bed under the hum (crew/soundscape.js).
- place(){if(!this.ctx||!window.BroadsideSoundscape||typeof state==='undefined'||!state)return;if(!this.bed)this.bed=window.BroadsideSoundscape.create(this.ctx,this.gain,.22);
+ place(){if(!this.ctx||!window.BroadsideSoundscape||typeof state==='undefined'||!state)return;if(!this.bed)this.bed=window.BroadsideSoundscape.create(this.ctx,this.gain,.22,{air:false});
   const s=byId[state.system]||byId[HOME];this.bed.set(window.BroadsideSoundscape.forRegion(s.region));},
  // Fades to where the hum should sit now; `slow` is the fade's time constant in seconds.
  level(slow=.6){if(!this.ctx)return;const t=this.ctx.currentTime,v=!this.on||document.hidden||(typeof prologue!=='undefined'&&prologue)?0:harlanAudio?AMB_VOL*.35:AMB_VOL;this.gain.gain.cancelScheduledValues(t);this.gain.gain.setTargetAtTime(v,t,slow/3);},

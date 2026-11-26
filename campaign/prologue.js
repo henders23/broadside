@@ -1,5 +1,7 @@
-// The prologue: a short film before Fleet Admiral Harlan's Act I briefing, the first time a campaign opens.
-// Generated stills with slow camera moves, one drawn shot (the Kestrel beacons going dark) and one generated clip,
+// The prologue: a short film before Fleet Admiral Harlan's Act I briefing, the first time a campaign opens, and the
+// arrival that joins the two (further down).
+// Stills with slow camera moves (two generated, three rendered from the original ship models), one drawn shot (the
+// Kestrel beacons going dark) and one rendered clip of the flagship,
 // cut to a narration over a score (voice/prologue.mp3, mixed by tools/prologue.sh). Every time below is in seconds
 // from the start of that file, which is also the film's clock; without sound the film runs on the wall clock and
 // the narration is read from the subtitles. Escape or Skip ends it. Intel replays it.
@@ -12,8 +14,7 @@ const PROLOGUE={len:56.6,audio:'voice/prologue.mp3',fade:[54,56.3],title:[50.2,5
   {id:'reserve',at:26.3,img:'img/prologue/reserve.webp',from:[1.14,-3,1],to:[1.06,2,-.5]},
   {id:'corsairs',at:33,img:'img/prologue/corsairs.webp',from:[1.03,0,0],to:[1.13,1.5,-1]},
   {id:'lane',at:37.1,plot:true},
-  {id:'resolute',at:44.9,img:'img/prologue/resolute.webp',from:[1.14,1.5,0],to:[1.08,0,0]},
-  {id:'departure',at:47.3,video:['video/prologue-departure.webm','video/prologue-departure.mp4'],rate:.8,from:[1.02,0,0],to:[1.02,0,0]}
+  {id:'departure',at:44.9,img:'img/prologue/resolute.webp',video:['video/prologue-departure.webm','video/prologue-departure.mp4'],rate:.77,from:[1.02,0,0],to:[1.02,0,0]}
  ],
  cues:[
   [3,5.3,'They call it the Shattered Reach.'],
@@ -36,16 +37,16 @@ let prologue=null;
 const proClamp=v=>v<0?0:v>1?1:v;
 
 // Plays the film over the whole stage, then calls done(). Safe to call while it is already playing (restarts it).
-function playPrologue(done){if(prologue)stopPrologue();const box=$('prologue'),host=$('proshots');host.innerHTML='';
+function playPrologue(done){if(prologue)stopPrologue();stopArrival();$('prologue').classList.remove('arrive','wide');const box=$('prologue'),host=$('proshots');host.innerHTML='';
  const still=matchMedia('(prefers-reduced-motion:reduce)').matches;
- const layers=PROLOGUE.shots.map(s=>{let e;if(s.plot)e=$('proplot');else if(s.video){e=document.createElement('video');e.muted=true;e.playsInline=true;e.preload='auto';for(const src of s.video){const c=document.createElement('source');c.src=src;c.type=src.endsWith('.webm')?'video/webm':'video/mp4';e.appendChild(c);}e.className='proshot';host.appendChild(e);}
+ const layers=PROLOGUE.shots.map(s=>{let e;if(s.plot)e=$('proplot');else if(s.video){e=document.createElement('video');e.muted=true;e.playsInline=true;e.preload='auto';if(s.img)e.poster=s.img;for(const src of s.video){const c=document.createElement('source');c.src=src;c.type=src.endsWith('.webm')?'video/webm':'video/mp4';e.appendChild(c);}e.className='proshot';host.appendChild(e);}
   else{e=document.createElement('div');e.className='proshot';e.style.backgroundImage=`url('${s.img}')`;host.appendChild(e);}e.style.opacity=0;return e;});
  const p=prologue={done,layers,still,t:0,last:performance.now(),clock:'held',audio:null,cue:-1,raf:0};
  box.hidden=false;$('prosub').textContent='';$('progate').hidden=true;$('proskip').focus();harlanQuiet();Ambience.level(.2);
  // The film's clock is the soundtrack. With no sound (or sound refused) it runs on the wall clock instead.
  const silent=()=>{if(prologue===p&&p.clock!=='wall'){p.clock='wall';p.last=performance.now();$('progate').hidden=true;}};
  if(window.__noVoice)silent();
- else{const a=p.audio=new Audio(PROLOGUE.audio);a.preload='auto';a.addEventListener('error',silent);a.addEventListener('ended',silent);a.addEventListener('playing',()=>{if(prologue===p&&p.clock!=='wall')p.clock='audio';});
+ else{const a=p.audio=new Audio(PROLOGUE.audio);a.preload='auto';a.volume=.9;a.addEventListener('error',silent);a.addEventListener('ended',silent);a.addEventListener('playing',()=>{if(prologue===p&&p.clock!=='wall')p.clock='audio';});
   // Browsers refuse sound until the page has been clicked or a key pressed: wait for one, on a black screen.
   a.play().catch(()=>{if(prologue===p&&p.clock==='held')$('progate').hidden=false;});}
  window.__prologue={get t(){return p.t;},seek(v){p.t=v;if(p.audio&&p.clock==='audio')p.audio.currentTime=v;},get clock(){return p.clock;}};
@@ -96,11 +97,45 @@ function prologuePlot(cv,t,len,still){const x=cv.getContext('2d'),W=1600,H=900;x
 // ended: the film ran to its end (true) or was skipped. Either way the campaign carries on with done().
 function stopPrologue(ended){const p=prologue;if(!p)return;prologue=null;cancelAnimationFrame(p.raf);if(p.audio){p.audio.pause();p.audio=null;}
  for(const e of p.layers)if(e.tagName==='VIDEO'){e.pause();e.removeAttribute('src');e.innerHTML='';e.load();}
- $('prologue').hidden=true;$('proshots').innerHTML='';window.__prologue=null;Ambience.level();if(ended!==undefined&&p.done)p.done();}
+ $('prologue').hidden=true;$('proshots').innerHTML='';window.__prologue=null;Ambience.level();if(ended!==undefined&&p.done)p.done(ended);}
 function skipPrologue(){stopPrologue(false);}
 
-// The opening of an act: Act I is the film and then the briefing; later acts are the briefing alone.
-function openAct(n){if(n===1&&!window.__noPrologue)playPrologue(()=>showIntro(1));else showIntro(n);}
+// ---------------- the arrival ----------------
+// What joins the film to the admiral: a black card (where and when, the ship and her officers), a fade up on the
+// flagship at the yards, an incoming-transmission notice, and then Harlan's Act I briefing as a transmission over
+// that shot (#intro.tx) instead of on a screen of its own. Runs on the wall clock. Enter, Space or a click moves on
+// a phase; Escape or Skip goes straight to the transmission. A skipped film arrives at the shot without the card.
+const ARRIVAL={card:[.3,7.4],shot:8.2,note:[10.4,13.6],tx:13.9,img:'img/prologue/resolute.webp'};
+let arrival=null;
+function playArrival(quick){if(arrival)stopArrival();const box=$('prologue'),host=$('proshots');host.innerHTML='';
+ const e=document.createElement('div');e.className='proshot';e.style.backgroundImage=`url('${ARRIVAL.img}')`;e.style.opacity=0;host.appendChild(e);
+ const sys=byId[HOME],base=Campaign.STATIONS[HOME],f=flag(),C=window.BroadsideShips&&window.BroadsideShips.CLASSES[f.ship];
+ const crew=Personnel?Personnel.activeCrew(state.crew,{replacements:state.replacements}):[];
+ $('procard').innerHTML=`<span class="k">Present day · fourteen years into the quiet</span><h2>${esc(base?base.name:sys.name)}</h2><p class="where">${esc(sys.name)} · ${esc(sys.region)} · Navy home space</p>
+  <div class="ship"><b>${esc(f.shipName)}</b><span>${C?esc(C.name+'-class '+C.cls.toLowerCase()):'Capital ship'} · flagship, Frontier Fleet</span></div>
+  <ul><li><span>Captain</span>You</li>${crew.map(c=>`<li><span>${esc(c.postName||c.post)}</span>${esc(c.name)}</li>`).join('')}</ul>`;
+ const a=arrival={t:quick?ARRIVAL.shot:0,last:performance.now(),shot:e,phase:'',raf:0,still:matchMedia('(prefers-reduced-motion:reduce)').matches};
+ box.hidden=false;box.classList.add('arrive');box.classList.remove('wide');$('prosub').classList.remove('on');$('protitle').style.opacity=0;$('profade').style.opacity=0;$('proplot').style.opacity=0;$('progate').hidden=true;$('proskip').hidden=false;$('proskip').focus();
+ window.__arrival={get phase(){return a.phase;},get t(){return a.t;},seek(v){a.t=v;}};Ambience.level(1.5);a.raf=requestAnimationFrame(arrivalTick);}
+function arrivalTick(now){const a=arrival;if(!a)return;a.t+=Math.min(.1,(now-a.last)/1000);a.last=now;const t=a.t,A=ARRIVAL;
+ const phase=t<A.card[1]?'card':t<A.note[0]?'shot':t<A.tx?'note':'tx';
+ $('procard').style.opacity=proClamp((t-A.card[0])/1.2)*(1-proClamp((t-(A.card[1]-.9))/.9));
+ a.shot.style.opacity=proClamp((t-A.shot)/2.2);const k=a.still?0:Math.min(1,Math.max(0,t-A.shot)/150);a.shot.style.transform=`scale(${(1.05+.1*k).toFixed(4)}) translate(${(1-2*k).toFixed(3)}%,0)`;
+ $('pronote').style.opacity=proClamp((t-A.note[0])/.35)*(1-proClamp((t-(A.note[1]-.3))/.3));
+ if(phase!==a.phase){a.phase=phase;
+  if(phase==='note')arrivalChirp();
+  if(phase==='tx'){$('prologue').classList.add('wide');$('proskip').hidden=true;showIntro(1);}}
+ a.raf=requestAnimationFrame(arrivalTick);}
+// Two short tones for the incoming transmission, on the ambience's audio context when sound is running.
+function arrivalChirp(){const c=Ambience.ctx;if(!c||!Ambience.on||window.__noVoice)return;const t=c.currentTime;
+ for(const [i,hz] of [880,1174.7].entries()){const o=c.createOscillator(),g=c.createGain();o.frequency.value=hz;g.gain.setValueAtTime(0,t+i*.16);g.gain.linearRampToValueAtTime(.05,t+i*.16+.01);g.gain.exponentialRampToValueAtTime(.0005,t+i*.16+.3);o.connect(g);g.connect(c.destination);o.start(t+i*.16);o.stop(t+i*.16+.35);}}
+// Enter, Space or a click: on to the next phase. Escape or Skip: straight to the transmission.
+function arrivalNext(all){const a=arrival;if(!a||a.phase==='tx')return;const A=ARRIVAL;a.t=all?A.tx:a.t<A.card[1]-.9?A.card[1]-.9:a.t<A.note[0]?A.note[0]:A.tx;if(all)a.shot.style.opacity=1;}
+function stopArrival(){const a=arrival;if(!a)return;arrival=null;cancelAnimationFrame(a.raf);const box=$('prologue');box.hidden=true;box.classList.remove('arrive','wide');$('proshots').innerHTML='';$('procard').style.opacity=0;$('pronote').style.opacity=0;$('proskip').hidden=false;window.__arrival=null;}
 
-$('proskip').addEventListener('click',skipPrologue);$('progate').addEventListener('click',prologueBegin);
-window.addEventListener('keydown',e=>{if(prologue&&e.key!=='Escape')prologueBegin();});
+// The opening of an act: Act I is the film, the arrival and then the briefing as a transmission; later acts are the
+// briefing alone.
+function openAct(n){if(n===1&&!window.__noPrologue)playPrologue(ended=>playArrival(!ended));else showIntro(n);}
+
+$('proskip').addEventListener('click',()=>{if(prologue)skipPrologue();else arrivalNext(true);});$('prologue').addEventListener('click',e=>{if(arrival&&e.target.id!=='proskip')arrivalNext(false);});$('progate').addEventListener('click',prologueBegin);
+window.addEventListener('keydown',e=>{if(prologue&&e.key!=='Escape')prologueBegin();else if(arrival&&(e.key==='Enter'||e.key===' ')&&arrival.phase!=='tx'){e.preventDefault();arrivalNext(false);}});

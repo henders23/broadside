@@ -999,7 +999,7 @@ const Voice = {
 // two looping tracks streamed by <audio> elements; tick() fades toward whichever one is wanted
 const Music = {
   on: true, want: null, tracks: {}, blocked: false,
-  TRACKS: { title: { url: 'music/weightless-descent.mp3', vol: 0.5 }, battle: { url: 'music/untitled.mp3', vol: 0.3 } },
+  TRACKS: { title: { url: 'music/event-horizon-drift.mp3', vol: 0.5 }, battle: { url: 'music/untitled.mp3', vol: 0.3 } },
   init() {
     try { this.on = localStorage.getItem('broadside-music') !== 'off'; } catch (e) {}
     for (const k in this.TRACKS) { const a = new Audio(this.TRACKS[k].url); a.loop = true; a.preload = 'auto'; a.volume = 0; this.tracks[k] = a; }
